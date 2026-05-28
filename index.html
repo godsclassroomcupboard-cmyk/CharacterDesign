@@ -455,7 +455,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       </span>
       <span>Story Lab</span>
     </div>
-    <div class="nav-tab" id="nav-community" onclick="switchSection('community')">
+    <div class="nav-tab">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       <span>Community</span>
     </div>
@@ -515,42 +515,21 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       <p style="color:#7C74B8;font-size:13px;font-weight:600;">Create, customise and collect amazing characters for your stories!</p>
     </div>
     <!-- Right: user info on light purple -->
-    <div class="topbar-right" style="background:linear-gradient(90deg,#E8E3FA,#E4DFFA);height:72px;padding:0 20px;border-bottom:1px solid #DDD8F5;position:relative;">
-      <!-- Signed-out state -->
-      <div id="topbar-signedout" style="display:flex;align-items:center;gap:10px;">
-        <button onclick="openAuthModal('signin')" class="btn-outline" style="padding:8px 18px;font-size:13px;">Sign in</button>
-        <button onclick="openAuthModal('signup')" class="btn-purple" style="padding:8px 18px;font-size:13px;">Join free</button>
+    <div class="topbar-right" style="background:linear-gradient(90deg,#E8E3FA,#E4DFFA);height:72px;padding:0 20px;border-bottom:1px solid #DDD8F5;">
+      <div style="text-align:right;">
+        <div style="font-size:10px;color:#9E98C8;font-weight:700;">Welcome,</div>
+        <div style="font-size:14px;font-weight:900;color:#1E1B4B;display:flex;align-items:center;gap:3px;">Lily
+          <svg viewBox="0 0 16 16" fill="#9E98C8" width="13" height="13"><path d="M4 6l4 4 4-4H4z"/></svg>
+        </div>
       </div>
-      <!-- Signed-in state (hidden until auth resolves) -->
-      <div id="topbar-signedin" style="display:none;align-items:center;gap:10px;">
-        <div style="text-align:right;">
-          <div style="font-size:10px;color:#9E98C8;font-weight:700;">Welcome,</div>
-          <div id="topbar-username" style="font-size:14px;font-weight:900;color:#1E1B4B;"></div>
-        </div>
-        <div id="topbar-avatar" onclick="toggleProfileDropdown()" style="width:38px;height:38px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 10px rgba(108,92,231,0.20);overflow:hidden;background:#C4A8DC;display:flex;align-items:center;justify-content:center;cursor:pointer;">
-          <svg viewBox="0 0 40 40" fill="none" width="38" height="38"><circle cx="20" cy="20" r="20" fill="#D4B8E0"/><circle cx="20" cy="15" r="7" fill="#A87CC8"/><ellipse cx="20" cy="34" rx="11" ry="9" fill="#C4A0DC"/></svg>
-        </div>
-        <div id="topbar-stars" style="background:#fff;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:5px;box-shadow:0 2px 10px rgba(108,92,231,0.10);font-weight:800;font-size:14px;color:#1E1B4B;">
-          <span style="font-size:15px;">⭐</span> <span id="topbar-star-count">0</span>
-        </div>
-        <!-- Profile dropdown -->
-        <div class="profile-dropdown" id="profile-dropdown">
-          <div class="profile-menu-item" onclick="switchSection('profile');toggleProfileDropdown()">
-            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="10" cy="7" r="4"/><path d="M3 18c0-4 3-7 7-7s7 3 7 7"/></svg>
-            My Profile
-          </div>
-          <div class="profile-menu-item" onclick="switchSection('community');toggleProfileDropdown()">
-            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M13 17v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1"/><circle cx="8" cy="8" r="3"/><path d="M18 17v-1a4 4 0 0 0-3-3.87M15 5.13a4 4 0 0 1 0 5.74"/></svg>
-            Community
-          </div>
-          <hr style="border:none;border-top:1px solid #F0ECFC;margin:4px 0;"/>
-          <div class="profile-menu-item" onclick="doSignOut()" style="color:#E84393;">
-            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M13 15l4-4-4-4M17 11H7M7 3H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h3"/></svg>
-            Sign out
-          </div>
-        </div>
+      <div style="width:38px;height:38px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 10px rgba(108,92,231,0.20);overflow:hidden;background:#C4A8DC;display:flex;align-items:center;justify-content:center;">
+        <svg viewBox="0 0 40 40" fill="none" width="38" height="38"><circle cx="20" cy="20" r="20" fill="#D4B8E0"/><circle cx="20" cy="15" r="7" fill="#A87CC8"/><ellipse cx="20" cy="34" rx="11" ry="9" fill="#C4A0DC"/></svg>
+      </div>
+      <div style="background:#fff;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:5px;box-shadow:0 2px 10px rgba(108,92,231,0.10);font-weight:800;font-size:14px;color:#1E1B4B;">
+        <span style="font-size:15px;">⭐</span> 1,250
       </div>
     </div>
+  </header>
 
   <!-- 3-column grid — sits on top of the folder-tab overlay -->
   <div style="flex:1;overflow:hidden;padding:16px 20px 16px 16px;display:grid;grid-template-columns:298px 1fr 280px;gap:16px;position:relative;z-index:2;">
@@ -769,24 +748,6 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
             <button onclick="downloadWorksheetPDF()" style="flex:1;padding:10px 8px;font-size:11px;font-weight:800;border:none;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;background:linear-gradient(90deg,#2ECC71,#27AE60);color:#fff;display:flex;align-items:center;justify-content:center;gap:5px;">
               ✏️ Worksheet PDF
             </button>
-          </div>
-
-          <!-- Save to Profile -->
-          <div style="margin-top:10px;padding-top:10px;border-top:1px solid #F0ECFC;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-              <span style="font-size:11px;font-weight:800;color:#6C5CE7;">Share with community?</span>
-              <label class="toggle-switch">
-                <input type="checkbox" id="make-public-toggle" />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-            <button id="save-to-profile-btn" onclick="handleSaveToProfile()" class="btn-purple" style="width:100%;padding:11px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;">
-              <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M9 2v10M3 8l6 6 6-6"/><rect x="2" y="14" width="14" height="2" rx="1"/></svg>
-              Save to My Profile
-            </button>
-            <div id="save-signin-hint" style="display:none;font-size:10px;color:#A29BFE;text-align:center;margin-top:6px;font-weight:700;">
-              <span onclick="openAuthModal('signin')" style="cursor:pointer;text-decoration:underline;">Sign in</span> or <span onclick="openAuthModal('signup')" style="cursor:pointer;text-decoration:underline;">join free</span> to save your creations!
-            </div>
           </div>
         </div>
       </div>
@@ -1177,7 +1138,6 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 </div><!-- end section-map -->
 
 </div><!-- end content-area -->
-
 <script>
 // ══════════════════════════════════════════
 // MASCOT IMAGE
