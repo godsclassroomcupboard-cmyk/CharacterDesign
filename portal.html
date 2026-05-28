@@ -347,8 +347,8 @@
 
   // ── ROLE PASSWORDS — change these to your preferred passwords ──
   const PASSWORDS = {
-    admin:   'LDBBaura1007~',
-    teacher: 'LDBBaura1007~'
+    admin:   'aurabot-admin-2024',
+    teacher: 'aurabot-teacher-2024'
   };
 
   let selectedRole = null;
@@ -395,16 +395,63 @@
 
   // ── TEACHER (Supabase email + password) ──
   async function doTeacherLogin() {
-    const email = document.getElementById('teacher-email').value.trim();
+    const email = document.getElementById('teacher-email').value.trim().toLowerCase();
     const pw    = document.getElementById('teacher-password').value;
     const btn   = document.getElementById('login-btn');
     if (!email || !pw) { showError('Please enter your email and password.'); return; }
 
     btn.textContent = 'Signing in…'; btn.disabled = true;
+
+    // First try signing in directly
     const { error } = await _sb.auth.signInWithPassword({ email, password: pw });
+
+    if (!error) {
+      // Success — go to dashboard
+      sessionStorage.setItem('aurabot_role', 'teacher');
+      sessionStorage.setItem('aurabot_auth', 'true');
+      btn.textContent = 'Sign In →'; btn.disabled = false;
+      window.location.href = 'teacher.html';
+      return;
+    }
+
+    // Sign-in failed — check if credentials match admin records (first-time login)
+    const adminData = JSON.parse(localStorage.getItem('aurabot_admin_data') || '{"teachers":[]}');
+    const knownTeacher = adminData.teachers.find(
+      t => t.email.toLowerCase() === email && t.password === pw
+    );
+
+    if (!knownTeacher) {
+      // Genuinely wrong credentials
+      btn.textContent = 'Sign In →'; btn.disabled = false;
+      showError('Incorrect email or password.');
+      shake(document.querySelector('.portal-card'));
+      return;
+    }
+
+    // Credentials match admin records — create Supabase account now (first-time setup)
+    btn.textContent = 'Setting up account…';
+    const { error: signupError } = await _sb.auth.signUp({
+      email,
+      password: pw,
+      options: { data: { display_name: knownTeacher.name, username: email.split('@')[0], role: 'teacher' } }
+    });
+
+    if (signupError && !signupError.message.toLowerCase().includes('already registered')) {
+      btn.textContent = 'Sign In →'; btn.disabled = false;
+      showError('Could not create account: ' + signupError.message);
+      return;
+    }
+
+    // Now sign in with the freshly created account
+    btn.textContent = 'Signing in…';
+    const { error: retryError } = await _sb.auth.signInWithPassword({ email, password: pw });
     btn.textContent = 'Sign In →'; btn.disabled = false;
 
-    if (error) { showError('Incorrect email or password.'); shake(document.querySelector('.portal-card')); return; }
+    if (retryError) {
+      // Supabase may require email confirmation — tell the teacher clearly
+      showError('Account created! Please check your email and click the confirmation link, then try logging in again.');
+      return;
+    }
 
     sessionStorage.setItem('aurabot_role', 'teacher');
     sessionStorage.setItem('aurabot_auth', 'true');
