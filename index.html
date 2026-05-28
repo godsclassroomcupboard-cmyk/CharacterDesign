@@ -1,0 +1,3009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aurabot – Character Bank</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@9.7.0/dist/index.iife.js"></script>
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet" />
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Nunito', sans-serif; background: #EAE7FC; min-height: 100vh; overflow: hidden; }
+
+/* ══════════════════════════════════════════
+   SIDEBAR — narrow dark strip
+══════════════════════════════════════════ */
+.sidebar {
+  width: 92px;
+  background: #1A1D3A;
+  display: flex; flex-direction: column; align-items: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+.sidebar-logo-area {
+  width: 100%;
+  background: #23274A;
+  padding: 18px 8px 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.sidebar-nav {
+  width: 100%;
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 12px 8px;
+  gap: 4px;
+  background: #1A1D3A;
+}
+.nav-tab {
+  width: 76px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 4px; padding: 9px 6px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #5C618A;
+  font-size: 10px; font-weight: 700;
+  text-align: center; line-height: 1.2;
+  transition: background 0.18s, color 0.18s;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid transparent;
+}
+.nav-tab:hover { background: rgba(162,155,254,0.10); color: #A29BFE; border-color: rgba(162,155,254,0.12); }
+.nav-tab.active {
+  background: rgba(108,92,231,0.18);
+  color: #fff;
+  border-color: rgba(162,155,254,0.20);
+}
+.nav-tab.active .nav-icon { color: #E84393; }
+.nav-tab svg { width: 20px; height: 20px; }
+.sidebar-bottom { padding: 10px 8px 18px; width: 100%; display:flex; justify-content:center; }
+
+/* ══════════════════════════════════════════
+   FOLDER-TAB EXTENSION
+   The dark navy bleeds into the content area
+   as a large rounded shape — like a filing
+   cabinet folder tab — behind the mascot card.
+══════════════════════════════════════════ */
+.content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  background: #EAE7FC;
+}
+
+/* The dark folder tab — wider so it extends further before the S-curve rises */
+.folder-tab-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 200px;
+  height: 72px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* placeholder - corner piece removed */
+
+/* ── TOP BAR ── */
+.topbar {
+  background: transparent;
+  padding: 0;
+  display: flex; align-items: stretch; justify-content: space-between;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 5;
+  height: 72px;
+}
+.topbar-left-dark {
+  width: 200px;
+  height: 72px;
+  background: transparent;
+  flex-shrink: 0;
+}
+.topbar-center {
+  flex: 1;
+  text-align: center;
+  /* sits on the light purple background */
+}
+.topbar-right {
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ── MASCOT CARD ── */
+.mascot-card {
+  background: linear-gradient(145deg, #3B2EA8 0%, #6C5CE7 55%, #9A60D0 100%);
+  border-radius: 20px;
+  overflow: hidden; position: relative;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding: 10px 8px 8px;
+  width: fit-content;
+  align-self: center;
+}
+.mascot-card::before {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(circle at 65% 25%, rgba(255,255,255,0.12) 0%, transparent 55%);
+  pointer-events:none;
+}
+.star-dot { position:absolute; border-radius:50%; background:#fff; animation: twinkle 2.5s ease-in-out infinite alternate; }
+@keyframes twinkle { from {opacity:0.25; transform:scale(0.6);} to {opacity:1; transform:scale(1.3);} }
+.mascot-bot { animation: botFloat 3s ease-in-out infinite; display:block; }
+@keyframes botFloat { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+.speech-bubble {
+  background:#fff; border-radius:14px; padding:9px 13px;
+  font-weight:800; font-size:13px; color:#222; line-height:1.4;
+  box-shadow:0 2px 12px rgba(0,0,0,0.12); position:relative;
+  align-self:flex-start; margin-bottom:12px; margin-left:4px; z-index:2;
+}
+.speech-bubble::after {
+  content:''; position:absolute; bottom:-10px; left:20px;
+  border-left:10px solid transparent; border-right:4px solid transparent;
+  border-top:12px solid #fff;
+}
+.glow-ring {
+  position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
+  width:110px; height:22px; border-radius:50%;
+  background:radial-gradient(ellipse,rgba(162,155,254,0.55) 0%,transparent 70%);
+  filter:blur(5px);
+}
+
+/* ── TAB TOGGLE ── */
+.tab-bar { background:#EDE9FC; border-radius:999px; display:flex; padding:4px; gap:2px; margin:14px 18px 0; }
+.tab-btn {
+  flex:1; padding:10px 12px; font-size:13px; font-weight:800; border:none;
+  border-radius:999px; cursor:pointer; transition:all 0.22s; font-family:'Nunito',sans-serif;
+}
+.tab-btn.active { background:linear-gradient(90deg,#6C5CE7,#9B59B6); color:#fff; box-shadow:0 2px 12px rgba(108,92,231,0.28); }
+.tab-btn.inactive { background:transparent; color:#6C5CE7; }
+
+/* ── FORM ── */
+input[type="text"] {
+  background:#F5F3FF; border:1.5px solid #E5E0FA; border-radius:10px;
+  padding:8px 13px; font-family:'Nunito',sans-serif; font-size:13px; color:#333;
+  outline:none; width:100%; transition:border-color 0.18s, box-shadow 0.18s;
+}
+input[type="text"]:focus { border-color:#A29BFE; box-shadow:0 0 0 3px rgba(162,155,254,0.18); }
+input[type="text"]::placeholder { color:#C0BADA; }
+.field-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #F0ECFC; }
+.field-row:last-child { border-bottom:none; }
+.field-label { min-width:155px; display:flex; align-items:center; gap:8px; font-weight:800; font-size:13px; color:#2D2D5A; }
+
+/* ── BUTTONS ── */
+.btn-purple {
+  background:linear-gradient(90deg,#6C5CE7 0%,#9B59B6 100%); color:#fff;
+  border-radius:999px; font-weight:800; font-family:'Nunito',sans-serif;
+  border:none; cursor:pointer; transition:transform 0.14s,box-shadow 0.14s;
+  box-shadow:0 4px 14px rgba(108,92,231,0.28);
+}
+.btn-purple:hover { transform:translateY(-1px); box-shadow:0 7px 22px rgba(108,92,231,0.35); }
+.btn-pink {
+  background:linear-gradient(90deg,#E84393 0%,#FF6EB4 100%); color:#fff;
+  border-radius:999px; font-weight:800; font-family:'Nunito',sans-serif;
+  border:none; cursor:pointer; transition:transform 0.14s,box-shadow 0.14s;
+  box-shadow:0 4px 14px rgba(232,67,147,0.25);
+}
+.btn-pink:hover { transform:translateY(-1px); box-shadow:0 7px 22px rgba(232,67,147,0.35); }
+.btn-outline {
+  background:#fff; color:#555; border:2px solid #E0DAF5; border-radius:999px;
+  font-weight:700; font-family:'Nunito',sans-serif; cursor:pointer;
+  transition:border-color 0.18s;
+}
+.btn-outline:hover { border-color:#A29BFE; }
+
+/* ── RIGHT PANEL ── */
+.right-panel {
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 28px rgba(108,92,231,0.10);
+  display: flex; flex-direction: column;
+}
+/* Folder-tab shape at top of right panel sections */
+.panel-header-folder {
+  position: relative;
+  padding: 16px 18px 14px;
+}
+.panel-header-folder::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 100%;
+  background: linear-gradient(180deg, #EDE8FF 0%, rgba(237,232,255,0) 100%);
+  border-radius: 20px 20px 0 0;
+  pointer-events: none;
+}
+/* Folder tab notch — the curved bump on top left of each section card */
+.folder-notch-card {
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  background: #fff;
+  box-shadow: 0 4px 22px rgba(108,92,231,0.09);
+}
+.folder-notch-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 56px; height: 14px;
+  background: linear-gradient(180deg,#DDD6FF 0%,#EDE8FF 100%);
+  border-radius: 0 0 14px 0;
+  z-index: 0;
+}
+.folder-tab-bg {
+  background: linear-gradient(180deg, #E8E2FF 0%, #F5F2FF 30%, #ffffff 75%);
+  border-radius: 20px 20px 0 0;
+}
+
+/* ── AI PREVIEW ILLUSTRATION AREA ── */
+.ai-illustration-area {
+  background: linear-gradient(180deg, #EDE8FF 0%, #F8F6FF 50%, #ffffff 100%);
+  border-radius: 16px;
+  width: 100%;
+  min-height: 200px;
+  display:flex; align-items:center; justify-content:center;
+  position:relative; overflow:hidden; margin-bottom:10px;
+}
+
+/* ── CHARACTER CARDS ── */
+.char-card {
+  border-radius:14px; overflow:hidden; background:#fff;
+  box-shadow:0 2px 10px rgba(108,92,231,0.09); cursor:pointer;
+  transition:transform 0.18s, box-shadow 0.18s;
+}
+.char-card:hover { transform:translateY(-3px); box-shadow:0 8px 22px rgba(108,92,231,0.16); }
+
+/* ── COMMUNITY CARD ── */
+.community-card {
+  display:flex; align-items:center; gap:12px; padding:10px;
+  border-radius:14px; background:#F8F5FF; border:1.5px solid #EAE4FD;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#C8C2EA; border-radius:99px; }
+
+/* ── LOADING SPINNER ── */
+.spinner {
+  width:36px; height:36px; border:3px solid #EDE9FC;
+  border-top-color:#6C5CE7; border-radius:50%;
+  animation:spin 0.7s linear infinite;
+}
+@keyframes spin { to{transform:rotate(360deg);} }
+
+/* ── GENERATED CHARACTER ── */
+.generated-char-wrap { animation: fadeInUp 0.5s ease forwards; }
+@keyframes fadeInUp { from{opacity:0;transform:translateY(18px);} to{opacity:1;transform:translateY(0);} }
+
+/* ── DRAWING STYLE PICKER ── */
+.style-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-bottom:14px; visibility:visible; opacity:1; }
+.style-chip {
+  padding:7px 6px; border-radius:10px; border:2px solid #E5E0FA;
+  background:#F8F5FF; cursor:pointer; text-align:center;
+  font-family:'Nunito',sans-serif; font-size:10px; font-weight:800; color:#6C5CE7;
+  transition:all 0.15s; line-height:1.3;
+  opacity:1; display:block;
+}
+.style-chip:hover { border-color:#A29BFE; background:#EDE9FF; }
+.style-chip.selected { background:linear-gradient(135deg,#6C5CE7,#9B59B6); color:#fff; border-color:transparent; box-shadow:0 3px 12px rgba(108,92,231,0.3); }
+.style-chip .style-icon { font-size:16px; display:block; margin-bottom:2px; }
+
+/* ── API KEY BAR ── */
+.api-key-bar {
+  display:flex; align-items:center; gap:7px;
+  background:#F5F3FF; border:1.5px solid #E5E0FA; border-radius:10px;
+  padding:7px 10px;
+}
+.api-key-bar input {
+  flex:1; background:none; border:none; outline:none;
+  font-family:'Nunito',sans-serif; font-size:11px; color:#333; min-width:0;
+}
+.api-key-bar input::placeholder { color:#C0BADA; font-size:10px; }
+.api-key-save {
+  background:linear-gradient(90deg,#6C5CE7,#9B59B6); color:#fff;
+  border:none; border-radius:7px; padding:5px 11px;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:11px; cursor:pointer;
+  white-space:nowrap;
+}
+
+/* ── AUTH MODAL ── */
+.auth-overlay {
+  position:fixed;inset:0;background:rgba(20,18,50,0.72);
+  backdrop-filter:blur(6px);z-index:1000;
+  display:flex;align-items:center;justify-content:center;
+}
+.auth-modal {
+  background:#fff;border-radius:24px;padding:36px 32px 28px;
+  width:360px;box-shadow:0 24px 64px rgba(108,92,231,0.28);
+  position:relative;
+}
+.auth-input {
+  width:100%;padding:11px 14px;border-radius:12px;
+  border:2px solid #E5E0FA;background:#F8F5FF;
+  font-family:'Nunito',sans-serif;font-size:14px;color:#333;
+  outline:none;margin-bottom:10px;transition:border-color 0.18s;
+}
+.auth-input:focus { border-color:#6C5CE7; }
+.auth-input::placeholder { color:#C0BADA; }
+
+/* ── PROFILE DROPDOWN ── */
+.profile-dropdown {
+  position:absolute;top:64px;right:16px;
+  background:#fff;border-radius:16px;padding:8px;
+  box-shadow:0 8px 32px rgba(108,92,231,0.18);
+  min-width:220px;z-index:100;
+  display:none;
+}
+.profile-dropdown.open { display:block; }
+.profile-menu-item {
+  padding:10px 14px;border-radius:10px;cursor:pointer;
+  font-size:13px;font-weight:700;color:#333;
+  display:flex;align-items:center;gap:9px;
+  transition:background 0.15s;
+}
+.profile-menu-item:hover { background:#F5F2FF; }
+
+/* ── COMMUNITY SECTION ── */
+.community-grid {
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:14px;padding:4px 2px;
+}
+.community-creation-card {
+  border-radius:16px;background:#fff;overflow:hidden;
+  box-shadow:0 3px 14px rgba(108,92,231,0.09);
+  transition:transform 0.18s,box-shadow 0.18s;cursor:pointer;
+}
+.community-creation-card:hover {
+  transform:translateY(-3px);
+  box-shadow:0 10px 28px rgba(108,92,231,0.16);
+}
+.star-btn {
+  background:none;border:none;cursor:pointer;
+  display:flex;align-items:center;gap:4px;
+  font-family:'Nunito',sans-serif;font-weight:800;font-size:12px;
+  color:#9E98C8;padding:4px 8px;border-radius:8px;
+  transition:color 0.15s,background 0.15s;
+}
+.star-btn:hover { background:#FFF5E0;color:#F6C90E; }
+.star-btn.starred { color:#F6C90E; }
+
+/* ── SAVE TO PROFILE TOAST ── */
+.toast {
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:#1A1D3A;color:#fff;padding:12px 22px;border-radius:99px;
+  font-weight:800;font-size:13px;z-index:500;
+  box-shadow:0 4px 20px rgba(0,0,0,0.22);
+  transition:transform 0.3s ease;pointer-events:none;
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+/* ── PUBLIC TOGGLE ── */
+.toggle-switch {
+  position:relative;display:inline-block;width:42px;height:22px;
+}
+.toggle-switch input { opacity:0;width:0;height:0; }
+.toggle-slider {
+  position:absolute;cursor:pointer;inset:0;
+  background:#E0DAF5;border-radius:22px;transition:0.3s;
+}
+.toggle-slider:before {
+  content:'';position:absolute;height:16px;width:16px;
+  left:3px;bottom:3px;background:white;border-radius:50%;
+  transition:0.3s;box-shadow:0 1px 4px rgba(0,0,0,0.18);
+}
+input:checked + .toggle-slider { background:#6C5CE7; }
+input:checked + .toggle-slider:before { transform:translateX(20px); }
+.beta-badge {
+  background:linear-gradient(90deg,#6C5CE7,#9B59B6); color:#fff;
+  font-size:9px; font-weight:900; padding:2px 8px; border-radius:999px; letter-spacing:0.5px;
+}
+.popular-badge {
+  background:linear-gradient(90deg,#F6C90E,#FFAA00); color:#fff;
+  font-size:9px; font-weight:900; padding:2px 8px; border-radius:999px;
+}
+</style>
+</head>
+<body>
+<div style="display:flex;height:100vh;overflow:hidden;">
+
+<!-- ════════════════ SIDEBAR ════════════════ -->
+<aside class="sidebar">
+  <!-- Logo zone — distinct darker color -->
+  <div class="sidebar-logo-area">
+    <div style="width:42px;height:42px;background:linear-gradient(135deg,#6C5CE7,#E84393);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 14px rgba(108,92,231,0.40);">
+      <svg viewBox="0 0 32 32" fill="none" width="24" height="24">
+        <rect x="6" y="10" width="20" height="16" rx="5" fill="#fff" opacity="0.95"/>
+        <circle cx="12" cy="18" r="2.4" fill="#6C5CE7"/>
+        <circle cx="20" cy="18" r="2.4" fill="#6C5CE7"/>
+        <rect x="13" y="22" width="6" height="2" rx="1" fill="#E84393"/>
+        <rect x="14" y="5" width="4" height="6" rx="2" fill="#A29BFE"/>
+        <circle cx="16" cy="5" r="1.4" fill="#6C5CE7"/>
+      </svg>
+    </div>
+    <span style="color:#A29BFE;font-size:9px;font-weight:900;letter-spacing:1.8px;text-transform:uppercase;margin-top:2px;">AURABOT</span>
+    <span style="color:#454870;font-size:7.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;">PROJECT</span>
+  </div>
+
+  <!-- Nav tabs -->
+  <div class="sidebar-nav">
+    <div class="nav-tab">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+      </span>
+      <span>Dashboard</span>
+    </div>
+    <div class="nav-tab active" id="nav-character" onclick="switchSection('character')">
+      <span class="nav-icon" style="color:#E84393;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      </span>
+      <span style="color:#E84393;">Character<br>Bank</span>
+    </div>
+    <div class="nav-tab" id="nav-map" onclick="switchSection('map')">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      </span>
+      <span>Map Bank</span>
+    </div>
+    <div class="nav-tab">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      </span>
+      <span>Story Lab</span>
+    </div>
+    <div class="nav-tab" id="nav-community" onclick="switchSection('community')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>Community</span>
+    </div>
+    <div class="nav-tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+      <span>Challenges</span>
+    </div>
+    <div style="flex:1;"></div>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="nav-tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      <span>Settings</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ════════════════ MAIN AREA ════════════════ -->
+<div class="content-area">
+
+<!-- ══ CHARACTER SECTION ══ -->
+<div id="section-character" style="display:contents;">
+
+  <!-- Folder tab: dark shape sits top-left. Left edge is straight (flush with sidebar).
+       The bottom-left corner is convex/rounded outward — the LIGHT PURPLE area 
+       curves around this corner. Right edge angles diagonally inward going down,
+       then sweeps into a curve at the bottom-right. -->
+  <div class="folder-tab-overlay">
+    <svg width="100%" height="100%" viewBox="0 0 200 72" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <!--
+        Left edge: straight down (flush with sidebar wall)
+        Bottom: extends right then curves up in an S
+        - Goes low/flat until about x=120, stays near bottom
+        - Then S-curves upward to exit at top-right
+        The red line shows: starts from bottom-left, runs mostly flat
+        rightward, then sweeps up through an S-curve to top-right
+      -->
+      <path d="
+        M 0,0
+        L 200,0
+        C 185,0 170,5 158,20
+        C 142,40 130,65 100,72
+        L 0,72
+        Z
+      " fill="#1A1D3A"/>
+    </svg>
+  </div>
+
+  <!-- Top Bar: left dark zone + center title + right user info -->
+  <header class="topbar">
+    <!-- Left dark zone: empty spacer — the sidebar already has the logo.
+         This dark band is purely the folder-tab shape continuation. -->
+    <div class="topbar-left-dark"></div>
+    <!-- Centre: title on light purple background -->
+    <div class="topbar-center" style="background:linear-gradient(90deg,#EEE9FC,#E8E3FA);height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-bottom:1px solid #DDD8F5;">
+      <h1 style="font-family:'Baloo 2',cursive;font-size:27px;font-weight:800;color:#1E1B4B;line-height:1.1;">Character Bank</h1>
+      <p style="color:#7C74B8;font-size:13px;font-weight:600;">Create, customise and collect amazing characters for your stories!</p>
+    </div>
+    <!-- Right: user info on light purple -->
+    <div class="topbar-right" style="background:linear-gradient(90deg,#E8E3FA,#E4DFFA);height:72px;padding:0 20px;border-bottom:1px solid #DDD8F5;position:relative;">
+      <!-- Signed-out state -->
+      <div id="topbar-signedout" style="display:flex;align-items:center;gap:10px;">
+        <button onclick="openAuthModal('signin')" class="btn-outline" style="padding:8px 18px;font-size:13px;">Sign in</button>
+        <button onclick="openAuthModal('signup')" class="btn-purple" style="padding:8px 18px;font-size:13px;">Join free</button>
+      </div>
+      <!-- Signed-in state (hidden until auth resolves) -->
+      <div id="topbar-signedin" style="display:none;align-items:center;gap:10px;">
+        <div style="text-align:right;">
+          <div style="font-size:10px;color:#9E98C8;font-weight:700;">Welcome,</div>
+          <div id="topbar-username" style="font-size:14px;font-weight:900;color:#1E1B4B;"></div>
+        </div>
+        <div id="topbar-avatar" onclick="toggleProfileDropdown()" style="width:38px;height:38px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 10px rgba(108,92,231,0.20);overflow:hidden;background:#C4A8DC;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <svg viewBox="0 0 40 40" fill="none" width="38" height="38"><circle cx="20" cy="20" r="20" fill="#D4B8E0"/><circle cx="20" cy="15" r="7" fill="#A87CC8"/><ellipse cx="20" cy="34" rx="11" ry="9" fill="#C4A0DC"/></svg>
+        </div>
+        <div id="topbar-stars" style="background:#fff;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:5px;box-shadow:0 2px 10px rgba(108,92,231,0.10);font-weight:800;font-size:14px;color:#1E1B4B;">
+          <span style="font-size:15px;">⭐</span> <span id="topbar-star-count">0</span>
+        </div>
+        <!-- Profile dropdown -->
+        <div class="profile-dropdown" id="profile-dropdown">
+          <div class="profile-menu-item" onclick="switchSection('profile');toggleProfileDropdown()">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="10" cy="7" r="4"/><path d="M3 18c0-4 3-7 7-7s7 3 7 7"/></svg>
+            My Profile
+          </div>
+          <div class="profile-menu-item" onclick="switchSection('community');toggleProfileDropdown()">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M13 17v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1"/><circle cx="8" cy="8" r="3"/><path d="M18 17v-1a4 4 0 0 0-3-3.87M15 5.13a4 4 0 0 1 0 5.74"/></svg>
+            Community
+          </div>
+          <hr style="border:none;border-top:1px solid #F0ECFC;margin:4px 0;"/>
+          <div class="profile-menu-item" onclick="doSignOut()" style="color:#E84393;">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M13 15l4-4-4-4M17 11H7M7 3H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h3"/></svg>
+            Sign out
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-- 3-column grid — sits on top of the folder-tab overlay -->
+  <div style="flex:1;overflow:hidden;padding:16px 20px 16px 16px;display:grid;grid-template-columns:298px 1fr 280px;gap:16px;position:relative;z-index:2;">
+
+    <!-- ── LEFT ── sits inside the dark folder-tab zone -->
+    <div style="display:flex;flex-direction:column;gap:14px;overflow-y:auto;padding-top:0;">
+
+      <!-- Mascot Card — top-left corner is flat (flush with dark bg), 
+           other corners rounded. The dark folder-tab behind it IS the frame. -->
+      <div class="mascot-card" style="margin-top:0;">
+        <div class="star-dot" style="top:16px;left:28px;width:6px;height:6px;animation-delay:0s;"></div>
+        <div class="star-dot" style="top:32px;right:38px;width:4px;height:4px;animation-delay:0.6s;"></div>
+        <div class="star-dot" style="top:58px;left:52px;width:3px;height:3px;animation-delay:1.1s;"></div>
+        <div class="star-dot" style="top:18px;right:22px;width:5px;height:5px;animation-delay:0.3s;"></div>
+        <div class="star-dot" style="top:75px;right:18px;width:3px;height:3px;animation-delay:1.6s;"></div>
+        <!-- Planets -->
+        <div style="position:absolute;top:14px;right:58px;width:20px;height:20px;border-radius:50%;background:radial-gradient(circle,#8E6AE8,#4B2AAA);opacity:0.7;"></div>
+        <div style="position:absolute;top:38px;left:12px;width:13px;height:13px;border-radius:50%;background:radial-gradient(circle,#C97AEA,#7B3BC8);opacity:0.5;"></div>
+        <div class="mascot-bot" style="position:relative;z-index:2;">
+          <img id="mascot-img-char" alt="Mascot" style="height:220px;width:auto;max-width:260px;object-fit:contain;display:block;" />
+          <!-- Setup prompt shown when no mascot loaded -->
+          <div id="mascot-setup-char" onclick="document.getElementById('mascot-file-input').click()" style="display:none;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:18px 10px;text-align:center;">
+            <svg viewBox="0 0 40 40" fill="none" width="38" height="38"><circle cx="20" cy="20" r="19" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-dasharray="4,3"/><path d="M20 12v16M12 20h16" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"/></svg>
+            <span style="color:rgba(255,255,255,0.75);font-size:11px;font-weight:800;line-height:1.3;">Click to load<br>mascot.png</span>
+          </div>
+        </div>
+        <div class="glow-ring"></div>
+      </div>
+      <input type="file" id="mascot-file-input" accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;" onchange="loadMascotFile(event)" />
+
+      <!-- My Characters -->
+      <div style="background:#fff;border-radius:18px;padding:16px;box-shadow:0 3px 18px rgba(108,92,231,0.08);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#1E1B4B;">My Characters</h3>
+          <span style="color:#6C5CE7;font-weight:800;font-size:12px;cursor:pointer;">View all</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;">
+          <div class="char-card">
+            <div style="background:linear-gradient(135deg,#EDE0FF,#D8CBFF);height:72px;display:flex;align-items:center;justify-content:center;">
+              <svg viewBox="0 0 50 60" width="44" height="54"><circle cx="25" cy="19" r="13" fill="#5B8AF0"/><path d="M12 48C12 36 38 36 38 48" fill="#E84393"/><circle cx="21" cy="19" r="2.5" fill="#fff"/><circle cx="29" cy="19" r="2.5" fill="#fff"/><path d="M21 26Q25 30 29 26" stroke="#333" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg>
+            </div>
+            <div style="padding:5px 6px;text-align:center;"><div style="font-weight:800;font-size:11px;color:#1E1B4B;">Zara</div><div style="font-size:11px;">⭐</div></div>
+          </div>
+          <div class="char-card">
+            <div style="background:linear-gradient(135deg,#FFF0DC,#FFD89B);height:72px;display:flex;align-items:center;justify-content:center;">
+              <svg viewBox="0 0 50 60" width="44" height="54"><circle cx="25" cy="19" r="13" fill="#C8822A"/><path d="M12 48C12 36 38 36 38 48" fill="#4B6FE8"/><rect x="15" y="13" width="8" height="7" rx="3.5" fill="#8B5A00" opacity="0.45"/><rect x="27" y="13" width="8" height="7" rx="3.5" fill="#8B5A00" opacity="0.45"/><circle cx="21" cy="19" r="2.2" fill="#fff"/><circle cx="29" cy="19" r="2.2" fill="#fff"/><path d="M21 26Q25 30 29 26" stroke="#333" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg>
+            </div>
+            <div style="padding:5px 6px;text-align:center;"><div style="font-weight:800;font-size:11px;color:#1E1B4B;">Jet</div><div style="font-size:11px;">⭐</div></div>
+          </div>
+          <div class="char-card">
+            <div style="background:linear-gradient(135deg,#DFF5E8,#B8EAC5);height:72px;display:flex;align-items:center;justify-content:center;">
+              <svg viewBox="0 0 50 60" width="44" height="54"><circle cx="25" cy="19" r="13" fill="#6BBF90"/><path d="M12 48C12 36 38 36 38 48" fill="#2D6B4A"/><circle cx="21" cy="19" r="2.2" fill="#fff"/><circle cx="29" cy="19" r="2.2" fill="#fff"/><path d="M21 26Q25 30 29 26" stroke="#333" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M19 7C21 3 25 5 25 3 C25 5 29 3 31 7" stroke="#4A9A70" stroke-width="1.5" fill="none"/></svg>
+            </div>
+            <div style="padding:5px 6px;text-align:center;"><div style="font-weight:800;font-size:11px;color:#1E1B4B;">Nyx</div><div style="font-size:11px;">✦</div></div>
+          </div>
+        </div>
+        <button class="btn-pink" style="width:100%;padding:12px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;">
+          <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15"><circle cx="9" cy="9" r="8"/><line x1="9" y1="5" x2="9" y2="13"/><line x1="5" y1="9" x2="13" y2="9"/></svg>
+          Create New Character
+        </button>
+      </div>
+    </div>
+
+    <!-- ── MIDDLE ── -->
+    <div style="background:#fff;border-radius:20px;box-shadow:0 4px 22px rgba(108,92,231,0.08);display:flex;flex-direction:column;overflow:hidden;">
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-create-btn" onclick="switchTab('create')">Create New Character</button>
+        <button class="tab-btn inactive" id="tab-bank-btn" onclick="switchTab('bank')">My Character Bank</button>
+      </div>
+
+      <div style="flex:1;overflow-y:auto;padding:14px 20px;" id="tab-create-content">
+        <h2 style="font-family:'Baloo 2',cursive;font-size:19px;font-weight:800;color:#6C5CE7;margin-bottom:12px;">Character Details</h2>
+        <div id="char-form">
+          <div class="field-row">
+            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><circle cx="10" cy="7" r="4"/><path d="M3 18c0-4 3.1-6 7-6s7 2 7 6"/></svg>Name</div>
+            <input type="text" id="f-name" placeholder="e.g. Zara Stormwhisper" />
+          </div>
+          <div class="field-row">
+            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><polygon points="10,2 12.5,7.5 18,8.2 14,12 15.4,17.5 10,14.5 4.6,17.5 6,12 2,8.2 7.5,7.5"/></svg>Stand Out Features</div>
+            <input type="text" id="f-features" placeholder="e.g. Silver hair, glowing eyes, Cybernetic arm" />
+          </div>
+          <div class="field-row">
+            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><line x1="10" y1="2" x2="10" y2="18"/><line x1="4" y1="6" x2="16" y2="6"/><line x1="4" y1="10" x2="16" y2="10"/><line x1="4" y1="14" x2="16" y2="14"/></svg>Height</div>
+            <input type="text" id="f-height" placeholder="e.g. 165cm" />
+          </div>
+          <div class="field-row">
+            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><path d="M6 3h8M6 3v4a4 4 0 0 0 8 0V3"/><path d="M5 17h10"/><path d="M8 17v-3M12 17v-3"/></svg>Build</div>
+            <input type="text" id="f-build" placeholder="e.g. Athletic" />
+          </div>
+          <div class="field-row">
+            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><path d="M17.7 3.8a4.6 4.6 0 0 0-6.5 0L10 5l-1.2-1.2a4.6 4.6 0 0 0-6.5 6.5L10 18l7.7-7.7a4.6 4.6 0 0 0 0-6.5z"/></svg>Character</div>
+            <input type="text" id="f-character" placeholder="e.g. Brave, Curious, Loyal" />
+          </div>
+          <div class="field-row">
+            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><circle cx="10" cy="10" r="8"/><line x1="10" y1="6" x2="10" y2="10"/><circle cx="10" cy="14" r="0.5" fill="#6C5CE7"/></svg>Fears</div>
+            <input type="text" id="f-fears" placeholder="e.g. Heights, Losing friends" />
+          </div>
+          <div class="field-row">
+            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><polygon points="13,2 3,14 10,14 7,18 17,6 10,6"/></svg>Strengths</div>
+            <input type="text" id="f-strengths" placeholder="e.g. Problem solving, Archery" />
+          </div>
+          <div class="field-row">
+            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><circle cx="10" cy="10" r="8"/><polyline points="10,6 10,10 13,12"/></svg>Interests</div>
+            <input type="text" id="f-interests" placeholder="e.g. Space travel, Robotics, Music" />
+          </div>
+          <div class="field-row" style="border-bottom:none;">
+            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><circle cx="10" cy="7" r="4"/><path d="M3 18c0-4 3.1-6 7-6s7 2 7 6"/></svg>Appearance</div>
+            <input type="text" id="f-appearance" placeholder="e.g. Short silver hair, scar on left cheek" />
+          </div>
+        </div>
+
+        <div style="margin-top:18px;">
+          <div style="font-weight:800;font-size:13px;color:#1E1B4B;margin-bottom:8px;">Character Image</div>
+          <!-- Upload drop zone -->
+          <div id="upload-zone"
+            onclick="document.getElementById('char-upload-input').click()"
+            ondragover="event.preventDefault();this.style.borderColor='#6C5CE7';"
+            ondragleave="this.style.borderColor='#E5E0FA';"
+            ondrop="handleImageDrop(event)"
+            style="border:2px dashed #E5E0FA;border-radius:12px;padding:20px 12px;text-align:center;cursor:pointer;background:#F8F5FF;transition:border-color 0.18s;margin-bottom:10px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#A29BFE" stroke-width="2" width="32" height="32" style="display:block;margin:0 auto 8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div style="font-weight:800;font-size:12px;color:#6C5CE7;">Upload a photo or drawing</div>
+            <div style="font-size:10px;color:#C0BADA;margin-top:3px;">Click or drag & drop · JPG, PNG, GIF, WebP</div>
+          </div>
+          <input type="file" id="char-upload-input" accept="image/*" style="display:none;" onchange="handleImageUpload(event)" />
+          <button class="btn-purple" style="width:100%;padding:11px;font-size:12px;display:flex;align-items:center;justify-content:center;gap:7px;" onclick="document.getElementById('char-upload-input').click()">
+            <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 2v10M3 8l6 6 6-6"/><rect x="2" y="14" width="14" height="2" rx="1"/></svg>
+            Upload Image
+          </button>
+        </div>
+      </div>
+
+      <div style="padding:14px 20px;border-top:1px solid #F0ECFC;display:flex;gap:10px;flex-shrink:0;">
+        <button class="btn-outline" style="padding:11px 24px;font-size:13px;">Cancel</button>
+        <button class="btn-purple" style="flex:1;padding:12px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;">
+          <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="17 5 7 15 3 11"/></svg>
+          Save to My Bank
+        </button>
+      </div>
+    </div>
+
+    <!-- ── RIGHT ── -->
+    <div style="display:flex;flex-direction:column;gap:16px;overflow-y:auto;">
+
+      <!-- Photo Preview — folder-tab curved top, light purple→white gradient -->
+      <div class="folder-notch-card" style="flex-shrink:0;">
+        <!-- Folder tab shaped header band -->
+        <div style="position:relative;background:linear-gradient(180deg,#E8E2FF 0%,#F0ECFF 40%,#F9F7FF 100%);border-radius:20px 20px 0 0;padding:16px 16px 10px;">
+          <svg style="position:absolute;top:0;left:0;pointer-events:none;" width="90" height="22" viewBox="0 0 90 22" fill="none">
+            <path d="M0 22 Q0 0 18 0 L72 0 Q90 0 90 22" fill="#E8E2FF"/>
+            <path d="M0 22 Q0 0 18 0 L72 0 Q90 0 90 22" fill="url(#folderGrad)"/>
+            <defs>
+              <linearGradient id="folderGrad" x1="0" y1="0" x2="0" y2="22">
+                <stop offset="0%" stop-color="#DDD6FF"/>
+                <stop offset="100%" stop-color="#E8E2FF"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div style="display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;">
+            <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#1E1B4B;">Character Photo</h3>
+            <span id="photo-change-btn" style="color:#6C5CE7;font-weight:800;font-size:12px;cursor:pointer;display:none;" onclick="document.getElementById('char-upload-input').click()">↺ Change</span>
+          </div>
+        </div>
+        <!-- Content -->
+        <div style="background:linear-gradient(180deg,#F5F2FF 0%,#FDFCFF 40%,#ffffff 100%);padding:12px 16px 16px;">
+
+          <!-- Normal illustration area (placeholder + cropped result) -->
+          <div class="ai-illustration-area" id="photo-preview-area">
+            <div style="position:absolute;top:-10px;right:-10px;width:80px;height:80px;background:radial-gradient(circle,rgba(162,155,254,0.25),transparent);border-radius:50%;pointer-events:none;"></div>
+            <div style="position:absolute;bottom:-5px;left:-5px;width:60px;height:60px;background:radial-gradient(circle,rgba(232,67,147,0.10),transparent);border-radius:50%;pointer-events:none;"></div>
+            <div id="ai-preview-inner" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:10px;">
+              <!-- Default placeholder character SVG -->
+              <svg id="placeholder-char" viewBox="0 0 100 180" fill="none" width="90" height="162" opacity="0.35">
+                <circle cx="50" cy="28" r="18" stroke="#A29BFE" stroke-width="2.5"/>
+                <line x1="50" y1="46" x2="50" y2="58" stroke="#A29BFE" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M18 70 Q50 58 82 70 L78 115 Q50 120 22 115 Z" stroke="#A29BFE" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+                <path d="M18 70 L6 105 Q8 112 14 110 L26 78" stroke="#A29BFE" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M82 70 L94 105 Q92 112 86 110 L74 78" stroke="#A29BFE" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M36 115 L30 155 Q29 162 36 162 L44 162 L46 115" stroke="#A29BFE" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M64 115 L70 155 Q71 162 64 162 L56 162 L54 115" stroke="#A29BFE" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <!-- Loading state -->
+              <div id="ai-loading" style="display:none;flex-direction:column;align-items:center;gap:12px;">
+                <div class="spinner"></div>
+                <span style="color:#9E98C8;font-size:12px;font-weight:700;">Loading image…</span>
+              </div>
+              <!-- Cropped result -->
+              <div id="ai-generated-output" style="display:none;width:100%;"></div>
+            </div>
+          </div>
+
+          <!-- ── CROP UI — flows naturally, not clipped ── -->
+          <div id="crop-overlay" style="display:none;background:#1A1D3A;border-radius:16px;flex-direction:column;align-items:center;padding:14px 12px 16px;gap:0;margin-bottom:0;">
+            <div style="font-size:11px;font-weight:800;color:#A29BFE;margin-bottom:10px;">Drag to reposition · Scroll to zoom</div>
+            <div id="crop-viewport" style="position:relative;width:200px;height:200px;overflow:hidden;border-radius:50%;border:3px solid #6C5CE7;cursor:grab;flex-shrink:0;">
+              <img id="crop-src-img" style="position:absolute;transform-origin:0 0;user-select:none;-webkit-user-drag:none;" draggable="false" />
+            </div>
+            <div style="font-size:9px;color:#8A8FC0;margin:10px 0 5px;">Crop shape</div>
+            <div style="display:flex;gap:6px;margin-bottom:12px;">
+              <button id="crop-circle-btn" onclick="setCropShape('circle')" style="padding:5px 12px;border-radius:99px;font-size:10px;font-weight:800;border:2px solid #6C5CE7;background:#6C5CE7;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;">⬤ Circle</button>
+              <button id="crop-square-btn" onclick="setCropShape('square')" style="padding:5px 12px;border-radius:99px;font-size:10px;font-weight:800;border:2px solid #5C618A;background:transparent;color:#A29BFE;cursor:pointer;font-family:'Nunito',sans-serif;">■ Square</button>
+              <button id="crop-free-btn" onclick="setCropShape('free')" style="padding:5px 12px;border-radius:99px;font-size:10px;font-weight:800;border:2px solid #5C618A;background:transparent;color:#A29BFE;cursor:pointer;font-family:'Nunito',sans-serif;">▭ Original</button>
+            </div>
+            <button onclick="applyCrop()" style="background:linear-gradient(90deg,#6C5CE7,#9B59B6);color:#fff;border:none;border-radius:99px;padding:10px 24px;font-size:12px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;">✓ Use This Photo</button>
+          </div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button onclick="downloadDossierPDF()" class="btn-pink" style="flex:1;padding:10px 8px;font-size:11px;display:flex;align-items:center;justify-content:center;gap:5px;">
+              📄 Dossier PDF
+            </button>
+            <button onclick="downloadDossierDOCX()" style="flex:1;padding:10px 8px;font-size:11px;font-weight:800;border:none;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;background:linear-gradient(90deg,#2B5CE7,#5B8EF0);color:#fff;display:flex;align-items:center;justify-content:center;gap:5px;">
+              📝 Dossier DOCX
+            </button>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button onclick="downloadWorksheetPDF()" style="flex:1;padding:10px 8px;font-size:11px;font-weight:800;border:none;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;background:linear-gradient(90deg,#2ECC71,#27AE60);color:#fff;display:flex;align-items:center;justify-content:center;gap:5px;">
+              ✏️ Worksheet PDF
+            </button>
+          </div>
+
+          <!-- Save to Profile -->
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid #F0ECFC;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <span style="font-size:11px;font-weight:800;color:#6C5CE7;">Share with community?</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="make-public-toggle" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <button id="save-to-profile-btn" onclick="handleSaveToProfile()" class="btn-purple" style="width:100%;padding:11px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;">
+              <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M9 2v10M3 8l6 6 6-6"/><rect x="2" y="14" width="14" height="2" rx="1"/></svg>
+              Save to My Profile
+            </button>
+            <div id="save-signin-hint" style="display:none;font-size:10px;color:#A29BFE;text-align:center;margin-top:6px;font-weight:700;">
+              <span onclick="openAuthModal('signin')" style="cursor:pointer;text-decoration:underline;">Sign in</span> or <span onclick="openAuthModal('signup')" style="cursor:pointer;text-decoration:underline;">join free</span> to save your creations!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Community Spotlight — also folder-notch style -->
+      <div class="folder-notch-card">
+        <div style="position:relative;background:linear-gradient(180deg,#E8E2FF 0%,#F0ECFF 40%,#F9F7FF 100%);border-radius:20px 20px 0 0;padding:14px 16px 10px;">
+          <svg style="position:absolute;top:0;left:0;pointer-events:none;" width="90" height="22" viewBox="0 0 90 22" fill="none">
+            <path d="M0 22 Q0 0 18 0 L72 0 Q90 0 90 22" fill="#E8E2FF"/>
+          </svg>
+          <div style="display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;">
+            <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#1E1B4B;">Community Spotlight</h3>
+            <span style="color:#6C5CE7;font-weight:800;font-size:12px;cursor:pointer;">View all</span>
+          </div>
+        </div>
+        <div style="background:linear-gradient(180deg,#F5F2FF 0%,#ffffff 60%);padding:10px 14px 14px;">
+          <div class="community-card">
+            <div style="width:58px;height:58px;border-radius:11px;background:linear-gradient(135deg,#C8E6FF,#8EC5FF);flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+              <svg viewBox="0 0 50 50" fill="none" width="52" height="52">
+                <circle cx="25" cy="18" r="12" fill="#A0C8E8"/>
+                <path d="M13 44C13 32 37 32 37 44" fill="#3A6A9C"/>
+                <path d="M15 11C17 5 23 7 25 5C27 7 33 5 35 11" fill="#C0D8F0" stroke="#A0C8E8" stroke-width="0.5"/>
+                <circle cx="21" cy="18" r="2.2" fill="#fff"/><circle cx="29" cy="18" r="2.2" fill="#fff"/>
+                <path d="M21 24Q25 28 29 24" stroke="#6E9CBC" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+              </svg>
+              <div style="position:absolute;top:3px;right:3px;background:#6C5CE7;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;color:#fff;">2</div>
+            </div>
+            <div style="flex:1;">
+              <div style="margin-bottom:3px;"><span class="popular-badge">⭐ Popular</span></div>
+              <div style="font-weight:900;font-size:13px;color:#1E1B4B;">Nova Skye</div>
+              <div style="font-size:11px;color:#9E98C8;font-weight:600;margin-bottom:4px;">By MiaRocks</div>
+              <div style="display:flex;align-items:center;gap:10px;font-size:11px;font-weight:700;color:#6B6B8A;">
+                <span style="display:flex;align-items:center;gap:3px;"><span style="color:#E84393;">♥</span> 245</span>
+                <span style="display:flex;align-items:center;gap:3px;"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" width="12" height="12"><path d="M12 2H2a.9.9 0 0 0-.9.9v8a.9.9 0 0 0 .9.9h2.6L7 14l2.4-2.2H12a.9.9 0 0 0 .9-.9v-8A.9.9 0 0 0 12 2z"/></svg> 32</span>
+              </div>
+            </div>
+          </div>
+          <button class="btn-pink" style="width:100%;padding:11px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;border-radius:999px;">
+            Explore Community Bank
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="3" y1="8" x2="13" y2="8"/><polyline points="9,4 13,8 9,12"/></svg>
+          </button>
+        </div>
+      </div>
+    </div><!-- end right column -->
+  </div><!-- end 3-col grid -->
+</div><!-- end section-character -->
+
+<!-- ══════════════════════════════════════════
+     MAP BANK SECTION (hidden by default)
+══════════════════════════════════════════ -->
+<div id="section-map" style="display:none;">
+
+  <!-- Dark folder tab overlay (same shape) -->
+  <div class="folder-tab-overlay">
+    <svg width="100%" height="100%" viewBox="0 0 200 72" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 0,0 L 200,0 C 185,0 170,5 158,20 C 142,40 130,65 100,72 L 0,72 Z" fill="#1A1D3A"/>
+    </svg>
+  </div>
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="topbar-left-dark"></div>
+    <div class="topbar-center" style="background:linear-gradient(90deg,#EEE9FC,#E8E3FA);height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-bottom:1px solid #DDD8F5;">
+      <h1 style="font-family:'Baloo 2',cursive;font-size:27px;font-weight:800;color:#1E1B4B;line-height:1.1;">Map Bank</h1>
+      <p style="color:#7C74B8;font-size:13px;font-weight:600;">Build vivid story worlds — places, regions and secrets for your tale!</p>
+    </div>
+    <div class="topbar-right" style="background:linear-gradient(90deg,#E8E3FA,#E4DFFA);height:72px;padding:0 20px;border-bottom:1px solid #DDD8F5;">
+      <div style="text-align:right;">
+        <div style="font-size:10px;color:#9E98C8;font-weight:700;">Welcome,</div>
+        <div style="font-size:14px;font-weight:900;color:#1E1B4B;display:flex;align-items:center;gap:3px;">Lily
+          <svg viewBox="0 0 16 16" fill="#9E98C8" width="13" height="13"><path d="M4 6l4 4 4-4H4z"/></svg>
+        </div>
+      </div>
+      <div style="width:38px;height:38px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 10px rgba(108,92,231,0.20);overflow:hidden;background:#C4A8DC;display:flex;align-items:center;justify-content:center;">
+        <svg viewBox="0 0 40 40" fill="none" width="38" height="38"><circle cx="20" cy="20" r="20" fill="#D4B8E0"/><circle cx="20" cy="15" r="7" fill="#A87CC8"/><ellipse cx="20" cy="34" rx="11" ry="9" fill="#C4A0DC"/></svg>
+      </div>
+      <div style="background:#fff;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:5px;box-shadow:0 2px 10px rgba(108,92,231,0.10);font-weight:800;font-size:14px;color:#1E1B4B;">
+        <span style="font-size:15px;">⭐</span> 1,250
+      </div>
+    </div>
+  </header>
+
+  <!-- 3-column grid -->
+  <div style="flex:1;overflow:hidden;padding:16px 20px 16px 16px;display:grid;grid-template-columns:298px 1fr 280px;gap:16px;position:relative;z-index:2;">
+
+    <!-- ── LEFT: Mascot + Form ── -->
+    <div style="display:flex;flex-direction:column;gap:14px;overflow-y:auto;padding-top:0;">
+
+      <!-- Mascot Card -->
+      <div class="mascot-card" style="margin-top:0;">
+        <div class="star-dot" style="top:16px;left:28px;width:6px;height:6px;animation-delay:0s;"></div>
+        <div class="star-dot" style="top:32px;right:38px;width:4px;height:4px;animation-delay:0.6s;"></div>
+        <div class="star-dot" style="top:58px;left:52px;width:3px;height:3px;animation-delay:1.1s;"></div>
+        <div class="star-dot" style="top:18px;right:22px;width:5px;height:5px;animation-delay:0.3s;"></div>
+        <div class="star-dot" style="top:75px;right:18px;width:3px;height:3px;animation-delay:1.6s;"></div>
+        <div style="position:absolute;top:14px;right:58px;width:20px;height:20px;border-radius:50%;background:radial-gradient(circle,#8E6AE8,#4B2AAA);opacity:0.7;"></div>
+        <div style="position:absolute;top:38px;left:12px;width:13px;height:13px;border-radius:50%;background:radial-gradient(circle,#C97AEA,#7B3BC8);opacity:0.5;"></div>
+
+        <div class="mascot-bot" style="position:relative;z-index:2;">
+          <img id="mascot-img-map" alt="Mascot" style="height:220px;width:auto;max-width:260px;object-fit:contain;display:block;" />
+        </div>
+        <div class="glow-ring"></div>
+      </div>
+
+      <!-- Map Details Form -->
+      <div class="folder-notch-card" style="flex:1;">
+        <div style="position:relative;background:linear-gradient(180deg,#E8E2FF 0%,#F0ECFF 40%,#F9F7FF 100%);border-radius:20px 20px 0 0;padding:14px 16px 10px;">
+          <svg style="position:absolute;top:0;left:0;pointer-events:none;" width="90" height="22" viewBox="0 0 90 22" fill="none">
+            <path d="M0 22 Q0 0 18 0 L72 0 Q90 0 90 22" fill="#E8E2FF"/>
+          </svg>
+          <div style="display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;">
+            <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#1E1B4B;">Map Details</h3>
+            <span class="beta-badge">NEW</span>
+          </div>
+        </div>
+        <div style="padding:10px 14px 4px;">
+          <div class="field-row">
+            <div class="field-label">
+              <svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><path d="M10 2a8 8 0 1 0 0 16A8 8 0 0 0 10 2z"/><path d="M10 6v4l3 3"/></svg>
+              Place Name
+            </div>
+            <input type="text" id="m-name" placeholder="e.g. Silverwood Forest" />
+          </div>
+          <div class="field-row">
+            <div class="field-label">
+              <svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><path d="M3 6l7-4 7 4v8l-7 4-7-4V6z"/></svg>
+              Place Type
+            </div>
+            <input type="text" id="m-type" placeholder="e.g. Enchanted forest, City, Dungeon" />
+          </div>
+          <div class="field-row">
+            <div class="field-label">
+              <svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><path d="M2 10c0-4.4 3.6-8 8-8s8 3.6 8 8-3.6 8-8 8-8-3.6-8-8z"/><path d="M10 6v8M6 10h8"/></svg>
+              World / Setting
+            </div>
+            <input type="text" id="m-world" placeholder="e.g. Medieval fantasy, Sci-fi galaxy" />
+          </div>
+          <div class="field-row">
+            <div class="field-label">
+              <svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><path d="M17.7 3.8a4.6 4.6 0 0 0-6.5 0L10 5l-1.2-1.2a4.6 4.6 0 0 0-6.5 6.5L10 18l7.7-7.7a4.6 4.6 0 0 0 0-6.5z"/></svg>
+              Mood / Atmosphere
+            </div>
+            <input type="text" id="m-mood" placeholder="e.g. Mysterious, Peaceful, Dangerous" />
+          </div>
+          <div class="field-row">
+            <div class="field-label">
+              <svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l2 2"/></svg>
+              Climate / Weather
+            </div>
+            <input type="text" id="m-climate" placeholder="e.g. Frozen tundra, Tropical, Stormy" />
+          </div>
+          <div class="field-row">
+            <div class="field-label">
+              <svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><polygon points="10,2 12.5,7.5 18,8.2 14,12 15.4,17.5 10,14.5 4.6,17.5 6,12 2,8.2 7.5,7.5"/></svg>
+              Key Landmarks
+            </div>
+            <input type="text" id="m-landmarks" placeholder="e.g. Ancient tower, Magic river, Market" />
+          </div>
+          <div class="field-row">
+            <div class="field-label">
+              <svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><circle cx="10" cy="10" r="3"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4"/></svg>
+              Inhabitants / Creatures
+            </div>
+            <input type="text" id="m-inhabitants" placeholder="e.g. Wood elves, Wild dragons, Merchants" />
+          </div>
+          <div class="field-row">
+            <div class="field-label">
+              <svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><path d="M4 4h12v12H4zM4 10h12M10 4v12"/></svg>
+              Hidden Secrets
+            </div>
+            <input type="text" id="m-secrets" placeholder="e.g. Underground vault, Cursed grove" />
+          </div>
+          <div class="field-row" style="border-bottom:none;">
+            <div class="field-label">
+              <svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><path d="M6 2h8l4 4v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path d="M14 2v4h4"/><path d="M6 9h8M6 13h5"/></svg>
+              Story Role
+            </div>
+            <input type="text" id="m-role" placeholder="e.g. Where the quest begins, Final battle" />
+          </div>
+        </div>
+
+        <div style="padding:10px 14px;">
+          <div style="font-weight:800;font-size:13px;color:#1E1B4B;margin-bottom:6px;">Map Style</div>
+          <select id="map-style-select" onchange="selectedMapStyle = this.value"
+            style="width:100%;padding:9px 12px;border-radius:10px;border:2px solid #E5E0FA;
+                   background:#F8F5FF;color:#1E1B4B;font-family:'Nunito',sans-serif;
+                   font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px;
+                   outline:none;appearance:auto;">
+            <option value="fantasy">🗺️ Fantasy Illustrated</option>
+            <option value="topdown">🏔️ Top-down Terrain</option>
+            <option value="ancient">📜 Ancient Parchment</option>
+            <option value="scifi">🚀 Sci-fi Blueprint</option>
+            <option value="watercolour">🎨 Watercolour</option>
+            <option value="dark">🌑 Dark &amp; Foreboding</option>
+          </select>
+
+          <div style="font-weight:800;font-size:13px;color:#1E1B4B;margin-bottom:6px;">Hugging Face API Key</div>
+          <div class="api-key-bar" style="margin-bottom:12px;">
+            <svg viewBox="0 0 18 18" fill="none" stroke="#A29BFE" stroke-width="2" width="14" height="14"><rect x="4" y="8" width="10" height="8" rx="2"/><path d="M6 8V5a3 3 0 0 1 6 0v3"/></svg>
+            <input type="password" id="map-api-key" placeholder="Same Hugging Face token as Character Bank…" />
+            <button class="api-key-save" onclick="saveMapKey()">Save</button>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <button class="btn-purple" style="padding:12px;font-size:12px;display:flex;align-items:center;justify-content:center;gap:7px;" onclick="generateMapDescription()">
+              <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 1v4M9 13v4M1 9h4M13 9h4M3.05 3.05l2.83 2.83M12.12 12.12l2.83 2.83M3.05 14.95l2.83-2.83M12.12 5.88l2.83-2.83"/></svg>
+              ✦ AI Describe
+            </button>
+            <button class="btn-pink" style="padding:12px;font-size:12px;display:flex;align-items:center;justify-content:center;gap:7px;" onclick="generateMapImage()">
+              <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="2" y="4" width="14" height="10" rx="2"/><path d="M2 13l4-4 3 3 3-4 4 5"/><circle cx="13" cy="7" r="1.5"/></svg>
+              🗺️ Generate Map
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:14px 20px;border-top:1px solid #F0ECFC;display:flex;gap:10px;flex-shrink:0;">
+        <button class="btn-outline" style="padding:11px 24px;font-size:13px;" onclick="clearMapForm()">Clear</button>
+        <button class="btn-purple" style="flex:1;padding:12px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;" onclick="saveMapToBank()">
+          <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="17 5 7 15 3 11"/></svg>
+          Save to Map Bank
+        </button>
+      </div>
+    </div>
+
+    <!-- ── CENTRE: Saved Maps Grid ── -->
+    <div style="display:flex;flex-direction:column;gap:14px;overflow-y:auto;">
+
+      <!-- Tab bar -->
+      <div class="tab-bar">
+        <button class="tab-btn active" id="maptab-saved-btn" onclick="switchMapTab('saved')">📍 My Maps</button>
+        <button class="tab-btn inactive" id="maptab-notes-btn" onclick="switchMapTab('notes')">📝 Location Notes</button>
+      </div>
+
+      <!-- My Maps grid -->
+      <div id="maptab-saved" style="display:block;">
+        <div id="map-bank-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <!-- Example placeholder cards -->
+          <div class="char-card" onclick="loadMap(0)">
+            <div style="height:90px;background:linear-gradient(135deg,#2A5A3C,#4A8A5C,#8ABF6A);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+              <svg viewBox="0 0 80 60" fill="none" width="80" height="60">
+                <rect width="80" height="60" fill="#2A5A3C"/>
+                <ellipse cx="20" cy="40" rx="14" ry="10" fill="#4A8A5C"/>
+                <ellipse cx="55" cy="35" rx="18" ry="12" fill="#3A7048"/>
+                <path d="M30 50 Q40 20 55 30" stroke="#8ABF6A" stroke-width="2" fill="none"/>
+                <circle cx="40" cy="28" r="4" fill="#E84393" opacity="0.9"/>
+                <path d="M38 12 L40 28 L42 12 Z" fill="#E84393" opacity="0.6"/>
+              </svg>
+              <div style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.5);color:#fff;border-radius:99px;font-size:8px;font-weight:800;padding:2px 7px;">FANTASY</div>
+            </div>
+            <div style="padding:9px 10px;">
+              <div style="font-weight:900;font-size:12px;color:#1E1B4B;margin-bottom:1px;">Silverwood Forest</div>
+              <div style="font-size:10px;color:#9E98C8;font-weight:600;">Enchanted · Mysterious</div>
+            </div>
+          </div>
+          <div class="char-card" onclick="loadMap(1)">
+            <div style="height:90px;background:linear-gradient(135deg,#1A2A4A,#2A4A7A,#3A6AA0);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+              <svg viewBox="0 0 80 60" fill="none" width="80" height="60">
+                <rect width="80" height="60" fill="#1A2A4A"/>
+                <rect x="15" y="20" width="12" height="30" fill="#2A4A7A"/>
+                <rect x="30" y="15" width="18" height="35" fill="#3A5A8A"/>
+                <rect x="52" y="22" width="14" height="28" fill="#2A4A7A"/>
+                <rect x="0" y="42" width="80" height="18" fill="#1A1A3A"/>
+                <circle cx="40" cy="8" r="5" fill="#F6C90E" opacity="0.8"/>
+              </svg>
+              <div style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.5);color:#fff;border-radius:99px;font-size:8px;font-weight:800;padding:2px 7px;">SCI-FI</div>
+            </div>
+            <div style="padding:9px 10px;">
+              <div style="font-weight:900;font-size:12px;color:#1E1B4B;margin-bottom:1px;">Nova Station Zeta</div>
+              <div style="font-size:10px;color:#9E98C8;font-weight:600;">Space city · Futuristic</div>
+            </div>
+          </div>
+          <div class="char-card" style="border:2px dashed #E0DAF5;box-shadow:none;background:#FAFAFE;cursor:pointer;" onclick="document.getElementById('m-name').focus()">
+            <div style="height:90px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;color:#C0BADA;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+              <span style="font-size:10px;font-weight:800;">Add new location</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Location Notes tab -->
+      <div id="maptab-notes" style="display:none;">
+        <div id="map-notes-list" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="text-align:center;padding:40px 20px;color:#C0BADA;">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" style="margin:0 auto 10px;display:block;"><path d="M8 6h32a2 2 0 0 1 2 2v32a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/><path d="M14 18h20M14 24h20M14 30h12"/></svg>
+            <div style="font-weight:800;font-size:13px;margin-bottom:4px;">No notes yet</div>
+            <div style="font-size:11px;">Save a location to start adding detailed notes about it for your story.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RIGHT: AI Preview + Writing Prompts ── -->
+    <div style="display:flex;flex-direction:column;gap:16px;overflow-y:auto;">
+
+      <!-- AI Map Preview -->
+      <div class="folder-notch-card" style="flex-shrink:0;">
+        <div style="position:relative;background:linear-gradient(180deg,#E8E2FF 0%,#F0ECFF 40%,#F9F7FF 100%);border-radius:20px 20px 0 0;padding:16px 16px 10px;">
+          <svg style="position:absolute;top:0;left:0;pointer-events:none;" width="90" height="22" viewBox="0 0 90 22" fill="none">
+            <path d="M0 22 Q0 0 18 0 L72 0 Q90 0 90 22" fill="#E8E2FF"/>
+          </svg>
+          <div style="display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;">
+            <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#1E1B4B;">Map Preview</h3>
+            <span class="beta-badge">BETA</span>
+          </div>
+        </div>
+        <div style="background:linear-gradient(180deg,#F5F2FF 0%,#FDFCFF 40%,#ffffff 100%);padding:12px 16px 16px;">
+          <div class="ai-illustration-area" style="min-height:180px;">
+            <div style="position:absolute;top:-10px;right:-10px;width:80px;height:80px;background:radial-gradient(circle,rgba(162,155,254,0.25),transparent);border-radius:50%;pointer-events:none;"></div>
+            <div id="map-preview-inner" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:10px;">
+              <!-- Placeholder map SVG -->
+              <svg id="placeholder-map" viewBox="0 0 160 130" fill="none" width="150" height="120">
+                <rect width="160" height="130" rx="8" fill="#2A3A50" opacity="0.12"/>
+                <!-- Terrain patches -->
+                <ellipse cx="40" cy="70" rx="28" ry="20" fill="#4A8A5C" opacity="0.5"/>
+                <ellipse cx="110" cy="55" rx="32" ry="22" fill="#3A7048" opacity="0.4"/>
+                <ellipse cx="80" cy="100" rx="22" ry="14" fill="#5A9A6C" opacity="0.35"/>
+                <!-- Mountains -->
+                <path d="M60 85 L72 60 L84 85Z" fill="#8A7A60" opacity="0.5"/>
+                <path d="M68 85 L82 55 L96 85Z" fill="#9A8A70" opacity="0.4"/>
+                <path d="M76 85 L86 65 L96 85Z" fill="#7A6A50" opacity="0.45"/>
+                <!-- River -->
+                <path d="M20 40 Q50 60 80 50 Q110 40 140 70" stroke="#5A8ABF" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.6"/>
+                <!-- Roads -->
+                <path d="M10 110 Q50 95 80 100 Q110 105 150 90" stroke="#C8B890" stroke-width="1.5" fill="none" stroke-dasharray="4,3" opacity="0.6"/>
+                <!-- Settlement dots -->
+                <circle cx="35" cy="48" r="5" fill="#E84393" opacity="0.8"/>
+                <circle cx="120" cy="80" r="4" fill="#6C5CE7" opacity="0.8"/>
+                <circle cx="80" cy="100" r="3.5" fill="#F6C90E" opacity="0.8"/>
+                <!-- Compass -->
+                <circle cx="140" cy="22" r="12" fill="white" opacity="0.85" stroke="#D0C8F0" stroke-width="1"/>
+                <text x="140" y="16" text-anchor="middle" fill="#6C5CE7" font-size="6" font-weight="bold" font-family="sans-serif">N</text>
+                <text x="140" y="31" text-anchor="middle" fill="#9E98C8" font-size="5" font-family="sans-serif">S</text>
+                <text x="133" y="24" text-anchor="middle" fill="#9E98C8" font-size="5" font-family="sans-serif">W</text>
+                <text x="148" y="24" text-anchor="middle" fill="#9E98C8" font-size="5" font-family="sans-serif">E</text>
+                <line x1="140" y1="14" x2="140" y2="30" stroke="#6C5CE7" stroke-width="1" opacity="0.5"/>
+                <line x1="132" y1="22" x2="148" y2="22" stroke="#6C5CE7" stroke-width="1" opacity="0.5"/>
+                <!-- Border -->
+                <rect width="160" height="130" rx="8" stroke="#C8B890" stroke-width="1.5" fill="none" opacity="0.4"/>
+              </svg>
+              <!-- Loading state -->
+              <div id="map-ai-loading" style="display:none;flex-direction:column;align-items:center;gap:12px;">
+                <div class="spinner"></div>
+                <span style="color:#9E98C8;font-size:12px;font-weight:700;">Generating map… (may take 20–40s)</span>
+              </div>
+              <!-- Generated image output -->
+              <div id="map-ai-output" style="display:none;width:100%;"></div>
+            </div>
+          </div>
+          <!-- Description output -->
+          <div id="map-desc-area" style="background:#F5F2FF;border-radius:10px;padding:9px 12px;margin-bottom:10px;font-size:12px;font-weight:600;color:#B8B4D0;min-height:38px;line-height:1.5;">Describe your location…</div>
+          <button class="btn-purple" style="width:100%;padding:11px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;" onclick="generateMapImage()">
+            <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M4 4v4h4"/><path d="M4 8A7 7 0 1 1 5.5 13.5"/></svg>
+            Regenerate Map
+          </button>
+        </div>
+      </div>
+
+      <!-- Writing Prompts panel -->
+      <div class="folder-notch-card">
+        <div style="position:relative;background:linear-gradient(180deg,#E8E2FF 0%,#F0ECFF 40%,#F9F7FF 100%);border-radius:20px 20px 0 0;padding:14px 16px 10px;">
+          <svg style="position:absolute;top:0;left:0;pointer-events:none;" width="90" height="22" viewBox="0 0 90 22" fill="none">
+            <path d="M0 22 Q0 0 18 0 L72 0 Q90 0 90 22" fill="#E8E2FF"/>
+          </svg>
+          <div style="display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;">
+            <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#1E1B4B;">Writing Prompts</h3>
+            <span style="color:#6C5CE7;font-weight:800;font-size:12px;cursor:pointer;" onclick="generateWritingPrompts()">↺ Refresh</span>
+          </div>
+        </div>
+        <div style="background:linear-gradient(180deg,#F5F2FF 0%,#ffffff 60%);padding:10px 14px 14px;">
+          <div id="writing-prompts-area">
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="background:#F5F2FF;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:600;color:#4A3A8A;line-height:1.5;border-left:3px solid #6C5CE7;">
+                ✏️ Fill in your location details and click <strong>AI Describe</strong> to get rich story-ready writing prompts for this place!
+              </div>
+            </div>
+          </div>
+          <button class="btn-pink" style="width:100%;padding:11px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;border-radius:999px;" onclick="generateWritingPrompts()">
+            ✦ Generate Writing Prompts
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="3" y1="8" x2="13" y2="8"/><polyline points="9,4 13,8 9,12"/></svg>
+          </button>
+        </div>
+      </div>
+
+    </div><!-- end right column -->
+  </div><!-- end 3-col grid -->
+</div><!-- end section-map -->
+
+</div><!-- end content-area -->
+
+<script>
+// ══════════════════════════════════════════
+// MASCOT IMAGE
+// ══════════════════════════════════════════
+function applyMascot(dataUrl) {
+  ['mascot-img-char','mascot-img-map'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.src = dataUrl; el.style.display = 'block'; }
+  });
+  const setup = document.getElementById('mascot-setup-char');
+  if (setup) setup.style.display = 'none';
+}
+
+function loadMascotFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const dataUrl = ev.target.result;
+    try { localStorage.setItem('mascot_dataurl', dataUrl); } catch(err) {}
+    applyMascot(dataUrl);
+  };
+  reader.readAsDataURL(file);
+}
+
+function initMascot() {
+  const stored = localStorage.getItem('mascot_dataurl');
+  if (stored) {
+    applyMascot(stored);
+  } else {
+    // Show setup prompt on character section mascot
+    const img = document.getElementById('mascot-img-char');
+    if (img) img.style.display = 'none';
+    const setup = document.getElementById('mascot-setup-char');
+    if (setup) setup.style.display = 'flex';
+  }
+}
+
+
+let selectedStyle = 'upload';
+let lastGeneratedDataUrl = null;  // stores the cropped character image
+
+// ── Crop state ──
+let cropImg = null;
+let cropX = 0, cropY = 0, cropScale = 1;
+let cropDragging = false, cropDragStartX = 0, cropDragStartY = 0, cropDragImgX = 0, cropDragImgY = 0;
+let cropShape = 'circle'; // 'circle' | 'square' | 'free'
+let cropViewSize = 200;
+
+// ── Tab switching ──
+function switchTab(tab) {
+  const cBtn = document.getElementById('tab-create-btn');
+  const bBtn = document.getElementById('tab-bank-btn');
+  if (tab === 'create') {
+    cBtn.className = 'tab-btn active';
+    bBtn.className = 'tab-btn inactive';
+  } else {
+    bBtn.className = 'tab-btn active';
+    cBtn.className = 'tab-btn inactive';
+  }
+}
+
+// ── Style picker (kept for compatibility) ──
+function selectStyle(el, style) {
+  document.querySelectorAll('.style-chip').forEach(c => c.classList.remove('selected'));
+  if (el) el.classList.add('selected');
+  selectedStyle = style;
+}
+
+// ── Gather form fields ──
+function getCharacterDetails() {
+  const fields = {
+    name:       document.getElementById('f-name').value.trim(),
+    features:   document.getElementById('f-features').value.trim(),
+    height:     document.getElementById('f-height').value.trim(),
+    build:      document.getElementById('f-build').value.trim(),
+    character:  document.getElementById('f-character').value.trim(),
+    fears:      document.getElementById('f-fears').value.trim(),
+    strengths:  document.getElementById('f-strengths').value.trim(),
+    interests:  document.getElementById('f-interests').value.trim(),
+    appearance: document.getElementById('f-appearance').value.trim(),
+  };
+  const filled = Object.entries(fields).filter(([,v]) => v).map(([k,v]) => `${k}: ${v}`);
+  return { fields, filled };
+}
+
+// ══════════════════════════════════════════
+// IMAGE UPLOAD & CROP
+// ══════════════════════════════════════════
+
+function handleImageDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').style.borderColor = '#E5E0FA';
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) loadImageFile(file);
+}
+
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (file) loadImageFile(file);
+  e.target.value = ''; // allow re-upload same file
+}
+
+function loadImageFile(file) {
+  const reader = new FileReader();
+  reader.onload = (ev) => openCropUI(ev.target.result);
+  reader.readAsDataURL(file);
+}
+
+function openCropUI(dataUrl) {
+  const overlay = document.getElementById('crop-overlay');
+  const imgEl   = document.getElementById('crop-src-img');
+  const previewArea = document.getElementById('photo-preview-area');
+
+  // Hide the illustration area, show the crop panel
+  if (previewArea) previewArea.style.display = 'none';
+  overlay.style.display = 'flex';
+  cropShape  = 'circle';
+  cropScale  = 1;
+  cropX      = 0;
+  cropY      = 0;
+
+  imgEl.onload = () => {
+    // Default: fit the shorter dimension to viewport size
+    const nat = { w: imgEl.naturalWidth, h: imgEl.naturalHeight };
+    const fit = cropViewSize / Math.min(nat.w, nat.h);
+    cropScale = fit;
+    // Centre it
+    cropX = (cropViewSize - nat.w * cropScale) / 2;
+    cropY = (cropViewSize - nat.h * cropScale) / 2;
+    applyCropTransform();
+  };
+  imgEl.src = dataUrl;
+
+  updateCropShapeUI();
+  setupCropListeners();
+  document.getElementById('photo-change-btn').style.display = 'block';
+}
+
+function setCropShape(shape) {
+  cropShape = shape;
+  updateCropShapeUI();
+  const vp = document.getElementById('crop-viewport');
+  if (shape === 'circle')      vp.style.borderRadius = '50%';
+  else if (shape === 'square') vp.style.borderRadius = '12px';
+  else                          vp.style.borderRadius = '8px';
+}
+
+function updateCropShapeUI() {
+  ['circle','square','free'].forEach(s => {
+    const btn = document.getElementById(`crop-${s}-btn`);
+    if (!btn) return;
+    if (s === cropShape) {
+      btn.style.background = '#6C5CE7'; btn.style.color = '#fff'; btn.style.borderColor = '#6C5CE7';
+    } else {
+      btn.style.background = 'transparent'; btn.style.color = '#A29BFE'; btn.style.borderColor = '#5C618A';
+    }
+  });
+}
+
+function applyCropTransform() {
+  const imgEl = document.getElementById('crop-src-img');
+  imgEl.style.width  = (imgEl.naturalWidth  * cropScale) + 'px';
+  imgEl.style.height = (imgEl.naturalHeight * cropScale) + 'px';
+  imgEl.style.left   = cropX + 'px';
+  imgEl.style.top    = cropY + 'px';
+}
+
+function setupCropListeners() {
+  const vp = document.getElementById('crop-viewport');
+  // Remove old listeners by cloning
+  const newVp = vp.cloneNode(true);
+  vp.parentNode.replaceChild(newVp, vp);
+  // Re-get the img inside the new viewport
+  const imgEl = document.getElementById('crop-src-img');
+
+  // Drag
+  newVp.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    cropDragging = true;
+    cropDragStartX = e.clientX; cropDragStartY = e.clientY;
+    cropDragImgX = cropX;       cropDragImgY   = cropY;
+    newVp.style.cursor = 'grabbing';
+  });
+  window.addEventListener('mousemove', (e) => {
+    if (!cropDragging) return;
+    cropX = cropDragImgX + (e.clientX - cropDragStartX);
+    cropY = cropDragImgY + (e.clientY - cropDragStartY);
+    applyCropTransform();
+  });
+  window.addEventListener('mouseup', () => { cropDragging = false; newVp.style.cursor = 'grab'; });
+
+  // Touch drag
+  newVp.addEventListener('touchstart', (e) => {
+    const t = e.touches[0];
+    cropDragging = true;
+    cropDragStartX = t.clientX; cropDragStartY = t.clientY;
+    cropDragImgX = cropX;       cropDragImgY   = cropY;
+  }, {passive:true});
+  newVp.addEventListener('touchmove', (e) => {
+    if (!cropDragging) return;
+    const t = e.touches[0];
+    cropX = cropDragImgX + (t.clientX - cropDragStartX);
+    cropY = cropDragImgY + (t.clientY - cropDragStartY);
+    applyCropTransform();
+  }, {passive:true});
+  newVp.addEventListener('touchend', () => { cropDragging = false; });
+
+  // Scroll to zoom
+  newVp.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.08 : 0.08;
+    const imgEl2 = document.getElementById('crop-src-img');
+    const newScale = Math.max(0.2, Math.min(10, cropScale + delta));
+    // Zoom toward centre of viewport
+    const cx = cropViewSize / 2;
+    const cy = cropViewSize / 2;
+    cropX = cx - (cx - cropX) * (newScale / cropScale);
+    cropY = cy - (cy - cropY) * (newScale / cropScale);
+    cropScale = newScale;
+    applyCropTransform();
+  }, {passive: false});
+}
+
+function applyCrop() {
+  const imgEl = document.getElementById('crop-src-img');
+  if (!imgEl.src) return;
+
+  const size = cropViewSize;
+  const canvas = document.createElement('canvas');
+  canvas.width  = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  // Clip to chosen shape
+  ctx.save();
+  if (cropShape === 'circle') {
+    ctx.beginPath();
+    ctx.arc(size/2, size/2, size/2, 0, Math.PI*2);
+    ctx.clip();
+  } else if (cropShape === 'square') {
+    ctx.beginPath();
+    ctx.roundRect(0, 0, size, size, 12);
+    ctx.clip();
+  }
+  // Draw image at current pan/zoom
+  ctx.drawImage(imgEl, cropX, cropY, imgEl.naturalWidth * cropScale, imgEl.naturalHeight * cropScale);
+  ctx.restore();
+
+  const croppedDataUrl = canvas.toDataURL('image/png');
+  lastGeneratedDataUrl = croppedDataUrl;
+
+  // Hide crop panel, show illustration area
+  document.getElementById('crop-overlay').style.display = 'none';
+  const previewArea = document.getElementById('photo-preview-area');
+  if (previewArea) previewArea.style.display = '';
+
+  // Show cropped result in preview
+  const placeholder = document.getElementById('placeholder-char');
+  const output      = document.getElementById('ai-generated-output');
+  if (placeholder) placeholder.style.display = 'none';
+  output.style.display = 'block';
+  output.innerHTML = `
+    <div class="generated-char-wrap" style="width:100%;text-align:center;">
+      <img src="${croppedDataUrl}" alt="Character photo"
+        style="max-width:100%;max-height:300px;object-fit:contain;border-radius:${cropShape==='circle'?'50%':cropShape==='square'?'12px':'14px'};
+               box-shadow:0 6px 28px rgba(108,92,231,0.22);" />
+      <div style="margin-top:8px;">
+        <a href="${croppedDataUrl}" download="character_photo.png"
+           style="background:linear-gradient(90deg,#6C5CE7,#9B59B6);color:#fff;border-radius:99px;
+                  padding:7px 16px;font-size:11px;font-weight:800;text-decoration:none;font-family:'Nunito',sans-serif;">
+           ↓ Download
+        </a>
+      </div>
+    </div>`;
+
+  // Scroll description into view softly
+  setTimeout(() => document.getElementById('ai-desc-area').scrollIntoView({behavior:'smooth', block:'nearest'}), 200);
+}
+
+// ── Section switcher ──
+function switchSection(section) {
+  const charSection = document.getElementById('section-character');
+  const mapSection  = document.getElementById('section-map');
+  const charNav     = document.getElementById('nav-character');
+  const mapNav      = document.getElementById('nav-map');
+
+  if (section === 'character') {
+    charSection.style.display = 'contents';
+    mapSection.style.display  = 'none';
+    charNav.classList.add('active');
+    mapNav.classList.remove('active');
+    charNav.querySelector('span:last-child').style.color = '#E84393';
+    charNav.querySelector('.nav-icon').style.color = '#E84393';
+    mapNav.querySelector('span:last-child').style.color = '';
+    mapNav.querySelector('.nav-icon').style.color = '';
+  } else {
+    charSection.style.display = 'none';
+    mapSection.style.display  = 'contents';
+    mapNav.classList.add('active');
+    charNav.classList.remove('active');
+    mapNav.querySelector('span:last-child').style.color = '#E84393';
+    mapNav.querySelector('.nav-icon').style.color = '#E84393';
+    charNav.querySelector('span:last-child').style.color = '';
+    charNav.querySelector('.nav-icon').style.color = '';
+    loadMapKey();
+  }
+}
+
+// ── Map Key persistence ──
+function saveMapKey() {
+  const key = document.getElementById('map-api-key').value.trim();
+  if (!key) return;
+  localStorage.setItem('stability_api_key', key);
+  const btn = document.querySelector('#section-map .api-key-save');
+  if (btn) { btn.textContent = '✓ Saved'; setTimeout(() => btn.textContent = 'Save', 2000); }
+}
+function loadMapKey() {
+  const k = localStorage.getItem('stability_api_key') || '';
+  const el = document.getElementById('map-api-key');
+  if (el) el.value = k;
+}
+
+// ── Map Tab switching ──
+function switchMapTab(tab) {
+  const savedBtn = document.getElementById('maptab-saved-btn');
+  const notesBtn = document.getElementById('maptab-notes-btn');
+  const savedDiv = document.getElementById('maptab-saved');
+  const notesDiv = document.getElementById('maptab-notes');
+  if (tab === 'saved') {
+    savedBtn.className = 'tab-btn active'; notesBtn.className = 'tab-btn inactive';
+    savedDiv.style.display = 'block';      notesDiv.style.display = 'none';
+  } else {
+    notesBtn.className = 'tab-btn active'; savedBtn.className = 'tab-btn inactive';
+    notesDiv.style.display = 'block';      savedDiv.style.display = 'none';
+  }
+}
+
+let selectedMapStyle = 'fantasy';
+let savedMaps = [
+  { name:'Silverwood Forest', type:'Enchanted forest', mood:'Mysterious', style:'FANTASY' },
+  { name:'Nova Station Zeta', type:'Space city', mood:'Futuristic', style:'SCI-FI' },
+];
+
+// ── Gather map form fields ──
+function getMapDetails() {
+  return {
+    name:        document.getElementById('m-name').value.trim(),
+    type:        document.getElementById('m-type').value.trim(),
+    world:       document.getElementById('m-world').value.trim(),
+    mood:        document.getElementById('m-mood').value.trim(),
+    climate:     document.getElementById('m-climate').value.trim(),
+    landmarks:   document.getElementById('m-landmarks').value.trim(),
+    inhabitants: document.getElementById('m-inhabitants').value.trim(),
+    secrets:     document.getElementById('m-secrets').value.trim(),
+    role:        document.getElementById('m-role').value.trim(),
+  };
+}
+
+function clearMapForm() {
+  ['m-name','m-type','m-world','m-mood','m-climate','m-landmarks','m-inhabitants','m-secrets','m-role']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  document.getElementById('map-desc-area').innerHTML = 'Describe your location…';
+  document.getElementById('map-desc-area').style.color = '#B8B4D0';
+}
+
+// ── Save to bank ──
+function saveMapToBank() {
+  const d = getMapDetails();
+  if (!d.name) { alert('Please enter a Place Name first!'); return; }
+  savedMaps.push(d);
+  renderMapBank();
+  alert(`"${d.name}" saved to your Map Bank! ✓`);
+}
+
+function renderMapBank() {
+  const grid = document.getElementById('map-bank-grid');
+  // keep first 2 example cards + add button, then add new ones
+  // For simplicity just show count badge
+  const badge = document.getElementById('map-count-badge');
+  if (badge) badge.textContent = savedMaps.length;
+}
+
+function loadMap(index) {
+  const m = savedMaps[index];
+  if (!m) return;
+  if (m.name)        document.getElementById('m-name').value        = m.name;
+  if (m.type)        document.getElementById('m-type').value        = m.type;
+  if (m.mood)        document.getElementById('m-mood').value        = m.mood;
+}
+
+// ── AI Describe (uses Anthropic Claude via API) ──
+async function generateMapDescription() {
+  const d = getMapDetails();
+  const filled = Object.entries(d).filter(([,v]) => v);
+  if (!filled.length) { alert('Please fill in at least one location detail first!'); return; }
+
+  const descArea = document.getElementById('map-desc-area');
+  descArea.innerHTML = '<span style="color:#A29BFE;">✦ Generating description…</span>';
+  descArea.style.color = '';
+
+  const details = filled.map(([k,v]) => `${k}: ${v}`).join('\n');
+  const prompt = `You are a creative writing assistant. Based on these story location details, write a rich, immersive 3-sentence description of this place that could appear in a novel. Make it vivid and evocative. Keep it under 60 words.\n\n${details}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.map(i => i.text || '').join('') || 'Could not generate description.';
+    descArea.innerHTML = `<span style="color:#4A3A8A;font-style:italic;">"${text}"</span>`;
+    // Also populate writing prompts
+    generateWritingPrompts();
+  } catch(err) {
+    descArea.innerHTML = `<span style="color:#E84393;">⚠ ${err.message}</span>`;
+  }
+}
+
+// ── Writing Prompts (uses Claude) ──
+async function generateWritingPrompts() {
+  const d = getMapDetails();
+  const filled = Object.entries(d).filter(([,v]) => v);
+  if (!filled.length) { alert('Fill in some location details first!'); return; }
+
+  const promptsArea = document.getElementById('writing-prompts-area');
+  promptsArea.innerHTML = '<div style="color:#A29BFE;text-align:center;padding:16px;font-weight:700;">✦ Generating prompts…</div>';
+
+  const details = filled.map(([k,v]) => `${k}: ${v}`).join('\n');
+  const prompt = `You are a creative writing coach. Based on this story location, generate exactly 3 short writing prompts (1-2 sentences each) to help an author write vivid scenes set here. Format as a JSON array of strings: ["prompt1","prompt2","prompt3"]. Return ONLY the JSON, no other text.\n\n${details}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.map(i => i.text || '').join('') || '[]';
+    let prompts;
+    try { prompts = JSON.parse(text.replace(/```json|```/g, '').trim()); }
+    catch(e) { prompts = [text]; }
+
+    const emojis = ['✏️','🌟','🔍'];
+    promptsArea.innerHTML = '<div style="display:flex;flex-direction:column;gap:8px;">' +
+      prompts.map((p,i) => `
+        <div style="background:#F5F2FF;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:600;color:#4A3A8A;line-height:1.5;border-left:3px solid #6C5CE7;">
+          ${emojis[i]||'📍'} ${p}
+        </div>`).join('') + '</div>';
+  } catch(err) {
+    promptsArea.innerHTML = `<div style="color:#E84393;font-weight:700;padding:10px;">⚠ ${err.message}</div>`;
+  }
+}
+
+// ── Generate Map Image (Hugging Face) ──
+async function generateMapImage() {
+  const d = getMapDetails();
+  const filled = Object.entries(d).filter(([,v]) => v);
+  if (!filled.length) { alert('Please fill in at least one location detail first!'); return; }
+
+  const apiKey = document.getElementById('map-api-key').value.trim()
+                 || localStorage.getItem('stability_api_key') || '';
+  if (!apiKey) { alert('Please enter your Hugging Face API key!'); document.getElementById('map-api-key').focus(); return; }
+
+  const placeholder = document.getElementById('placeholder-map');
+  const loading     = document.getElementById('map-ai-loading');
+  const output      = document.getElementById('map-ai-output');
+  const descArea    = document.getElementById('map-desc-area');
+
+  placeholder.style.display = 'none';
+  output.style.display      = 'none';
+  loading.style.display     = 'flex';
+
+  const stylePrompts = {
+    fantasy:     'fantasy illustrated map, hand-drawn style, parchment texture, ink illustration, mountains forests rivers settlements, top-down view, fantasy cartography, (best quality:1.2)',
+    topdown:     'top-down terrain map, satellite view art, illustrated landmasses, detailed geography, birds eye view, colourful terrain, (best quality:1.2)',
+    ancient:     'ancient parchment map, aged sepia tones, hand-drawn ink, old world cartography, weathered texture, compass rose, (best quality:1.2)',
+    scifi:       'sci-fi blueprint map, holographic display, neon grid lines, futuristic tactical map, dark background glowing elements, (best quality:1.2)',
+    watercolour: 'watercolour illustrated map, soft washes, delicate painting, dreamy pastel tones, artistic map illustration, (best quality:1.2)',
+    dark:        'dark foreboding map, gothic style, eerie atmosphere, deep shadows, menacing illustration, black ink, (best quality:1.2)',
+  };
+
+  const styleCfg = stylePrompts[selectedMapStyle] || stylePrompts.fantasy;
+  const locName = d.name || 'mysterious land';
+  const prompt = [
+    `map of ${locName}`,
+    d.type        && `a ${d.type}`,
+    d.mood        && `${d.mood} atmosphere`,
+    d.climate     && `${d.climate} climate`,
+    d.landmarks   && `featuring ${d.landmarks}`,
+    d.inhabitants && `inhabited by ${d.inhabitants}`,
+    styleCfg,
+    'no text, no labels, no words, highly detailed, bird\'s eye view map illustration, suitable for all ages',
+  ].filter(Boolean).join(', ');
+
+  try {
+    const res = await fetch(`https://router.huggingface.co/hf-inference/models/${HF_MODEL}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        inputs: prompt,
+        parameters: { width: 512, height: 512, num_inference_steps: 4 }
+      })
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      let errMsg = `HTTP ${res.status}`;
+      try { const p = JSON.parse(errText); errMsg = p?.error || p?.message || errMsg; } catch {}
+      if (res.status === 503) errMsg = 'Model is loading — wait 20s and try again';
+      throw new Error(errMsg);
+    }
+
+    const blob    = await res.blob();
+    const dataUrl = await new Promise((res, rej) => {
+      const reader = new FileReader();
+      reader.onload  = () => res(reader.result);
+      reader.onerror = rej;
+      reader.readAsDataURL(blob);
+    });
+
+    loading.style.display = 'none';
+    descArea.innerHTML = `
+      <span style="color:#6C5CE7;font-weight:900;">${locName}</span>
+      <span style="display:inline-block;background:#6C5CE7;color:#fff;font-size:9px;font-weight:900;padding:2px 8px;border-radius:99px;margin-left:6px;text-transform:uppercase;">${selectedMapStyle}</span>
+    `;
+
+    output.innerHTML = `
+      <div class="generated-char-wrap" style="width:100%;text-align:center;">
+        <img src="${dataUrl}" alt="${locName}"
+          style="max-width:100%;max-height:280px;object-fit:contain;border-radius:14px;box-shadow:0 6px 28px rgba(108,92,231,0.22);" />
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap;">
+          <a href="${dataUrl}" download="${locName.replace(/\s+/g,'_')}_map.png"
+             style="background:linear-gradient(90deg,#6C5CE7,#9B59B6);color:#fff;border-radius:99px;
+                    padding:8px 18px;font-size:11px;font-weight:800;text-decoration:none;font-family:'Nunito',sans-serif;">
+             ↓ Download Map
+          </a>
+          <button onclick="generateMapImage()"
+             style="background:#fff;border:2px solid #E5E0FA;border-radius:99px;padding:8px 18px;
+                    font-size:11px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;color:#6C5CE7;">
+             ↺ Regenerate
+          </button>
+        </div>
+      </div>`;
+    output.style.display = 'block';
+
+  } catch(err) {
+    loading.style.display   = 'none';
+    placeholder.style.display = 'block';
+    descArea.innerHTML = `
+      <span style="color:#E84393;font-weight:800;">⚠ ${err.message}</span><br>
+      <span style="color:#999;font-size:10px;">Check your Hugging Face token has Inference permissions.</span><br>
+      <button onclick="generateMapImage()" style="margin-top:8px;background:linear-gradient(90deg,#6C5CE7,#9B59B6);color:#fff;border:none;border-radius:99px;padding:7px 18px;font-size:11px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;">↺ Try again</button>
+    `;
+  }
+}
+
+// ══════════════════════════════════════════
+// DOSSIER EXPORT FUNCTIONS
+// ══════════════════════════════════════════
+
+function getDossierData() {
+  const { fields } = getCharacterDetails();
+  return { fields, imageDataUrl: lastGeneratedDataUrl };
+}
+
+// ── PDF Dossier — opens styled print window ──
+async function downloadDossierPDF() {
+  const { fields, imageDataUrl } = getDossierData();
+  const charName = fields.name || 'Unknown Character';
+  const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' });
+
+  const rows = [
+    ['Name',             fields.name],
+    ['Appearance',       fields.appearance],
+    ['Height',           fields.height],
+    ['Build',            fields.build],
+    ['Personality',      fields.character],
+    ['Strengths',        fields.strengths],
+    ['Fears',            fields.fears],
+    ['Interests',        fields.interests],
+    ['Notable Features', fields.features],
+  ].filter(([,v]) => v);
+
+  const tableRows = rows.map(([k,v]) => `
+    <tr>
+      <td class="label">${k}</td>
+      <td>${v}</td>
+    </tr>`).join('');
+
+  const imgBlock = imageDataUrl
+    ? `<img src="${imageDataUrl}" alt="${charName}" class="char-img" />`
+    : '';
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>Character Dossier – ${charName}</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 210mm;
+    height: 297mm;
+    overflow: hidden;
+    font-family: 'Courier Prime', 'Courier New', monospace;
+  }
+
+  /* Outer folder — fills the full page */
+  .folder {
+    width: 210mm;
+    height: 297mm;
+    background: #c9a87c;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding: 5mm 5mm 7mm;
+  }
+
+  /* Folder tab bump at top */
+  .folder-tab {
+    width: 32mm;
+    height: 5mm;
+    background: #b8966a;
+    border-radius: 3mm 3mm 0 0;
+    margin-left: 10mm;
+    margin-bottom: -1px;
+    flex-shrink: 0;
+  }
+
+  /* Inner cream paper */
+  .dossier {
+    flex: 1;
+    background: #f5f0e0;
+    border-radius: 1mm;
+    border: 0.5mm solid #c8b896;
+    padding: 8mm 10mm 10mm;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Paperclip SVG — positioned top-left */
+  .clip-wrap {
+    position: absolute;
+    top: -2mm; left: 14mm;
+    z-index: 10;
+  }
+
+  /* Coffee stains */
+  .stain {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, #8B6914 40%, transparent 70%);
+    pointer-events: none;
+  }
+  .stain-1 { width: 28mm; height: 28mm; bottom: 20mm; right: 8mm; opacity: 0.10; }
+  .stain-2 { width: 16mm; height: 16mm; top: 45mm; right: 18mm; opacity: 0.06; }
+
+  /* Header row */
+  .header-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 4mm;
+    flex-shrink: 0;
+  }
+  .badge {
+    display: inline-block;
+    background: #5a3a10;
+    color: #f5f0e0;
+    font-size: 7pt;
+    font-weight: 700;
+    padding: 1mm 3mm;
+    border-radius: 1mm;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .date-line {
+    font-size: 7pt;
+    color: #7a6040;
+    font-style: italic;
+    text-align: right;
+  }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 0.4mm solid #c8b896;
+    margin: 3mm 0;
+    flex-shrink: 0;
+  }
+
+  /* Character name */
+  .char-name {
+    font-family: 'Special Elite', 'Courier New', serif;
+    font-size: 20pt;
+    color: #2a1a08;
+    letter-spacing: 0.5px;
+    margin-bottom: 4mm;
+    flex-shrink: 0;
+  }
+
+  /* Image — centred, natural proportions, max 70mm tall */
+  .img-wrap {
+    text-align: center;
+    margin-bottom: 5mm;
+    flex-shrink: 0;
+  }
+  .char-img {
+    max-height: 70mm;
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border: 0.5mm solid #c8b896;
+    background: #fff;
+    border-radius: 1mm;
+    box-shadow: 1mm 1.5mm 4mm rgba(0,0,0,0.18);
+  }
+
+  /* Details table */
+  .details-wrap { flex: 1; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 8.5pt; }
+  tr { border-bottom: 0.3mm dotted #c8b896; }
+  td { padding: 1.2mm 2mm; vertical-align: top; color: #2a1a08; line-height: 1.4; }
+  td.label { font-weight: 700; width: 30mm; color: #5a3a10; white-space: nowrap; }
+
+  /* Footer note */
+  .footer-note {
+    font-size: 6.5pt;
+    color: #7a6040;
+    font-style: italic;
+    margin-top: 3mm;
+    flex-shrink: 0;
+  }
+
+  /* CONFIDENTIAL stamp */
+  .stamp {
+    position: absolute;
+    bottom: 10mm; right: 8mm;
+    border: 0.7mm solid #c0392b;
+    color: #c0392b;
+    font-family: 'Special Elite', serif;
+    font-size: 13pt;
+    font-weight: bold;
+    padding: 1.5mm 4mm;
+    border-radius: 1mm;
+    letter-spacing: 3px;
+    opacity: 0.80;
+    transform: rotate(-12deg);
+    text-transform: uppercase;
+  }
+
+  /* Screen preview — show the full folder feel */
+  @media screen {
+    body {
+      background: #d4b896;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+    }
+    .folder {
+      box-shadow: 4px 6px 24px rgba(0,0,0,0.35);
+      border-radius: 3mm;
+    }
+  }
+
+  /* Print — no extra backgrounds; colours still print */
+  @media print {
+    html, body { background: none; }
+    .folder { box-shadow: none; border-radius: 0; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div class="folder">
+  <div class="folder-tab"></div>
+  <div class="dossier">
+
+    <!-- Paperclip (SVG so it prints) -->
+    <div class="clip-wrap">
+      <svg width="14" height="52" viewBox="0 0 14 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="1" width="10" height="42" rx="5" stroke="#aaa" stroke-width="2.5" fill="none"/>
+        <rect x="5" y="10" width="6" height="34" rx="3" stroke="#bbb" stroke-width="2" fill="none"/>
+      </svg>
+    </div>
+
+    <div class="stain stain-1"></div>
+    <div class="stain stain-2"></div>
+
+    <!-- Header -->
+    <div class="header-row">
+      <span class="badge">Character Dossier</span>
+      <span class="date-line">Filed: ${today}<br>Aurabot Character Bank</span>
+    </div>
+    <hr class="divider"/>
+
+    <!-- Name -->
+    <div class="char-name">${charName}</div>
+
+    ${imgBlock ? `<div class="img-wrap">${imgBlock}</div>` : ''}
+
+    <!-- Details table -->
+    <div class="details-wrap">
+      <table>${tableRows}</table>
+    </div>
+
+    <hr class="divider"/>
+    <div class="footer-note">
+      Character image uploaded by author · All details as provided.
+    </div>
+
+    <div class="stamp">Confidential</div>
+  </div>
+</div>
+<script>
+  // Wait for fonts + image before printing
+  document.fonts.ready.then(() => {
+    const img = document.querySelector('.char-img');
+    if (img && !img.complete) {
+      img.onload = () => setTimeout(() => window.print(), 150);
+    } else {
+      setTimeout(() => window.print(), 300);
+    }
+  });
+<\/script>
+</body>
+</html>`);
+  win.document.close();
+}
+
+// ── DOCX Dossier — uses docx.js library ──
+function loadDocxLibrary() {
+  return new Promise((resolve, reject) => {
+    if (typeof docx !== 'undefined') { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/docx@9.7.0/dist/index.iife.js';
+    s.onload = () => typeof docx !== 'undefined' ? resolve() : reject(new Error('docx loaded but global not found'));
+    s.onerror = () => reject(new Error('Could not load DOCX library. Check your internet connection.'));
+    document.head.appendChild(s);
+  });
+}
+
+async function downloadDossierDOCX() {
+  try {
+    await loadDocxLibrary();
+  } catch (err) {
+    alert('⚠ ' + err.message);
+    return;
+  }
+
+  const { fields, imageDataUrl } = getDossierData();
+  const charName = fields.name || 'Unknown Character';
+  const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' });
+
+  const {
+    Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+    ImageRun, AlignmentType, BorderStyle, WidthType, ShadingType,
+    VerticalAlign, HeadingLevel
+  } = docx;
+
+  const rows = [
+    ['Name',        fields.name],
+    ['Appearance',  fields.appearance],
+    ['Height',      fields.height],
+    ['Build',       fields.build],
+    ['Personality', fields.character],
+    ['Strengths',   fields.strengths],
+    ['Fears',       fields.fears],
+    ['Interests',   fields.interests],
+    ['Notable Features', fields.features],
+  ].filter(([,v]) => v);
+
+  const cellBorder = { style: BorderStyle.SINGLE, size: 1, color: 'C8B896' };
+  const borders = { top: cellBorder, bottom: cellBorder, left: cellBorder, right: cellBorder };
+  const noBorder = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
+  const noBorders = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
+
+  // Build detail table rows
+  const tableRows = rows.map(([k,v]) => new TableRow({
+    children: [
+      new TableCell({
+        borders,
+        width: { size: 1800, type: WidthType.DXA },
+        shading: { fill: 'EDE4D4', type: ShadingType.CLEAR },
+        margins: { top: 60, bottom: 60, left: 100, right: 80 },
+        children: [new Paragraph({ children: [new TextRun({ text: k, bold: true, font: 'Courier New', size: 20, color: '5A3A10' })] })],
+      }),
+      new TableCell({
+        borders,
+        width: { size: 5700, type: WidthType.DXA },
+        margins: { top: 60, bottom: 60, left: 100, right: 100 },
+        shading: { fill: 'F5F0E0', type: ShadingType.CLEAR },
+        children: [new Paragraph({ children: [new TextRun({ text: v, font: 'Courier New', size: 20, color: '2A1A08' })] })],
+      }),
+    ]
+  }));
+
+  // Build image section
+  let imageChildren = [];
+  if (imageDataUrl) {
+    try {
+      // Convert dataUrl to ArrayBuffer
+      const base64 = imageDataUrl.split(',')[1];
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+      const mimeMatch = imageDataUrl.match(/data:([^;]+);/);
+      const mimeType = mimeMatch ? mimeMatch[1] : 'image/png';
+      const imgType = mimeType.includes('jpeg') || mimeType.includes('jpg') ? 'jpg' : 'png';
+
+      imageChildren = [
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          children: [new ImageRun({
+            data: bytes.buffer,
+            transformation: { width: 160, height: 200 },
+            type: imgType,
+          })],
+        }),
+        new Paragraph({ children: [new TextRun('')] }),
+      ];
+    } catch (e) {
+      imageChildren = [new Paragraph({ children: [new TextRun({ text: '[Image unavailable]', italics: true, color: '999999', font: 'Courier New', size: 18 })] })];
+    }
+  }
+
+  const doc = new Document({
+    sections: [{
+      properties: {
+        page: {
+          size: { width: 12240, height: 15840 },
+          margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 },
+          borders: {
+            pageBorderTop:    { style: BorderStyle.DOUBLE, size: 6, color: 'C8A878', space: 24 },
+            pageBorderBottom: { style: BorderStyle.DOUBLE, size: 6, color: 'C8A878', space: 24 },
+            pageBorderLeft:   { style: BorderStyle.DOUBLE, size: 6, color: 'C8A878', space: 24 },
+            pageBorderRight:  { style: BorderStyle.DOUBLE, size: 6, color: 'C8A878', space: 24 },
+          },
+        },
+      },
+      children: [
+        // Header badge
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 0, after: 80 },
+          children: [new TextRun({ text: '— CHARACTER DOSSIER —', bold: true, font: 'Courier New', size: 22, color: '5A3A10', allCaps: true })],
+        }),
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 0, after: 120 },
+          children: [new TextRun({ text: `Filed: ${today}  |  Aurabot Character Bank`, font: 'Courier New', size: 16, color: '7A6040', italics: true })],
+        }),
+        // Divider
+        new Paragraph({
+          border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'C8B896', space: 1 } },
+          spacing: { before: 0, after: 240 },
+          children: [],
+        }),
+        // Character name
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 0, after: 200 },
+          children: [new TextRun({ text: charName, bold: true, font: 'Courier New', size: 40, color: '2A1A08' })],
+        }),
+        // Character image
+        ...imageChildren,
+        // Details table
+        new Table({
+          width: { size: 7500, type: WidthType.DXA },
+          columnWidths: [1800, 5700],
+          rows: tableRows,
+        }),
+        new Paragraph({ children: [new TextRun('')], spacing: { before: 200, after: 0 } }),
+        // Divider
+        new Paragraph({
+          border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'C8B896', space: 1 } },
+          spacing: { before: 0, after: 200 },
+          children: [],
+        }),
+        // Footer note
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          children: [new TextRun({ text: `Character image uploaded by author  •  Created with Aurabot Character Bank`, font: 'Courier New', size: 16, color: '5A3A10', italics: true })],
+        }),
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 80, after: 0 },
+          children: [new TextRun({ text: '✦  CONFIDENTIAL  ✦', bold: true, font: 'Courier New', size: 20, color: 'C0392B', allCaps: true })],
+        }),
+      ],
+    }],
+  });
+
+  try {
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${charName.replace(/\s+/g,'_')}_dossier.docx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    alert('Error generating DOCX: ' + err.message);
+    console.error(err);
+  }
+}
+
+// ── Worksheet PDF — blank hand-write version, styled to match dossier ──
+function downloadWorksheetPDF() {
+  const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' });
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>Character Worksheet</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 210mm; height: 297mm; overflow: hidden; font-family: 'Courier New', monospace; }
+
+  .folder {
+    width: 210mm; height: 297mm;
+    background: #c9a87c;
+    display: flex; flex-direction: column;
+    position: relative;
+    padding: 5mm 5mm 7mm;
+  }
+  .folder-tab {
+    width: 42mm; height: 5mm;
+    background: #b8966a;
+    border-radius: 3mm 3mm 0 0;
+    margin-left: 10mm; margin-bottom: -1px;
+    flex-shrink: 0;
+  }
+  .dossier {
+    flex: 1;
+    background: #f5f0e0;
+    border-radius: 1mm;
+    border: 0.5mm solid #c8b896;
+    padding: 8mm 10mm 10mm;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .clip-wrap {
+    position: absolute;
+    top: -2mm; left: 14mm;
+    z-index: 10;
+  }
+  .stain {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, #8B6914 40%, transparent 70%);
+    pointer-events: none;
+  }
+  .stain-1 { width: 28mm; height: 28mm; bottom: 20mm; right: 8mm; opacity: 0.10; }
+  .stain-2 { width: 16mm; height: 16mm; top: 45mm; right: 18mm; opacity: 0.06; }
+  .header-row {
+    display: flex; align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 4mm; flex-shrink: 0;
+  }
+  .badge {
+    display: inline-block;
+    background: #5a3a10; color: #f5f0e0;
+    font-size: 7pt; font-weight: 700;
+    padding: 1mm 3mm; border-radius: 1mm;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  .date-line { font-size: 7pt; color: #7a6040; font-style: italic; text-align: right; }
+  .divider { border: none; border-top: 0.4mm solid #c8b896; margin: 3mm 0; flex-shrink: 0; }
+  .char-name {
+    font-family: 'Special Elite', 'Courier New', serif;
+    font-size: 20pt; color: #2a1a08;
+    letter-spacing: 0.5px; margin-bottom: 4mm; flex-shrink: 0;
+  }
+  .stamp {
+    position: absolute; bottom: 10mm; right: 8mm;
+    border: 0.7mm solid #c0392b; color: #c0392b;
+    font-family: 'Special Elite', serif;
+    font-size: 13pt; font-weight: bold;
+    padding: 1.5mm 4mm; border-radius: 1mm;
+    letter-spacing: 3px; opacity: 0.80;
+    transform: rotate(-12deg); text-transform: uppercase;
+  }
+  .footer-note {
+    font-size: 6.5pt; color: #7a6040;
+    font-style: italic; margin-top: 3mm; flex-shrink: 0;
+  }
+
+  /* Layout: stacked — image on top, fields below */
+  .two-col { display: flex; flex-direction: column; flex: 1; overflow: hidden; gap: 4mm; }
+
+  /* Top: image draw box — fixed 1/3 of A4 page height */
+  .image-col { flex-shrink: 0; height: 88mm; }
+  .draw-box {
+    height: 100%;
+    width: 68mm;
+    border: 0.5mm solid #c8b896;
+    background: #fff;
+    border-radius: 1mm;
+    box-shadow: 1mm 1.5mm 4mm rgba(0,0,0,0.18);
+    position: relative;
+  }
+  .draw-box-label {
+    position: absolute; bottom: 3mm; left: 0; right: 0;
+    text-align: center;
+    font-size: 7pt; color: #c8b896; font-style: italic; letter-spacing: 0.5px;
+  }
+
+  /* Bottom: fields in two columns */
+  .fields-col { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 0 8mm; overflow: hidden; align-content: start; }
+  .field-block { margin-bottom: 3mm; }
+  .field-label {
+    font-weight: 700; font-size: 8.5pt; color: #5a3a10;
+    margin-bottom: 1.5mm; letter-spacing: 0.3px;
+  }
+  .write-line {
+    border-bottom: 0.4mm solid #c8b896;
+    height: 7mm; margin-bottom: 1mm;
+  }
+
+  @media screen {
+    body { background: #d4b896; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .folder { box-shadow: 4px 6px 24px rgba(0,0,0,0.35); border-radius: 3mm; }
+  }
+  @media print {
+    html, body { background: none; }
+    .folder { box-shadow: none; border-radius: 0; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div class="folder">
+  <div class="folder-tab"></div>
+  <div class="dossier">
+
+    <div class="clip-wrap">
+      <svg width="14" height="52" viewBox="0 0 14 52" fill="none">
+        <rect x="2" y="1" width="10" height="42" rx="5" stroke="#aaa" stroke-width="2.5" fill="none"/>
+        <rect x="5" y="10" width="6" height="34" rx="3" stroke="#bbb" stroke-width="2" fill="none"/>
+      </svg>
+    </div>
+
+    <div class="stain stain-1"></div>
+    <div class="stain stain-2"></div>
+
+    <div class="header-row">
+      <span class="badge">Character Worksheet</span>
+      <span class="date-line">Filed: ${today}<br>Aurabot Character Bank</span>
+    </div>
+    <hr class="divider"/>
+
+    <div class="char-name">My Character</div>
+
+    <div class="two-col">
+
+      <!-- LEFT: blank drawing box -->
+      <div class="image-col">
+        <div class="draw-box">
+          <div class="draw-box-label">Draw your character here</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: writable fields -->
+      <div class="fields-col">
+        <div class="field-block">
+          <div class="field-label">Character Name</div>
+          <div class="write-line"></div>
+        </div>
+        <div class="field-block">
+          <div class="field-label">Appearance</div>
+          <div class="write-line"></div>
+          <div class="write-line"></div>
+        </div>
+        <div class="field-block">
+          <div class="field-label">Height</div>
+          <div class="write-line"></div>
+        </div>
+        <div class="field-block">
+          <div class="field-label">Build</div>
+          <div class="write-line"></div>
+        </div>
+        <div class="field-block">
+          <div class="field-label">Personality / Character</div>
+          <div class="write-line"></div>
+          <div class="write-line"></div>
+        </div>
+        <div class="field-block">
+          <div class="field-label">Strengths</div>
+          <div class="write-line"></div>
+          <div class="write-line"></div>
+        </div>
+        <div class="field-block">
+          <div class="field-label">Fears</div>
+          <div class="write-line"></div>
+          <div class="write-line"></div>
+        </div>
+        <div class="field-block">
+          <div class="field-label">Interests</div>
+          <div class="write-line"></div>
+          <div class="write-line"></div>
+        </div>
+        <div class="field-block">
+          <div class="field-label">Stand Out Features</div>
+          <div class="write-line"></div>
+          <div class="write-line"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <hr class="divider"/>
+    <div class="footer-note">Character image uploaded by author · All details as provided.</div>
+
+    <div class="stamp">Worksheet</div>
+  </div>
+</div>
+<script>
+  document.fonts.ready.then(() => setTimeout(() => window.print(), 300));
+<\/script>
+</body>
+</html>`);
+  win.document.close();
+}
+
+// ════════════════════════════════════════════════════════════
+//  SUPABASE INTEGRATION
+//  Replace the two placeholder strings below with your real
+//  values from Supabase Dashboard → Settings → API
+// ════════════════════════════════════════════════════════════
+const SUPABASE_URL      = 'https://nwhaliuajvovesnrdfrr.supabase.co/rest/v1/';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53aGFsaXVhanZvdmVzbnJkZnJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDUyMzEsImV4cCI6MjA5NTQ4MTIzMX0.cGZ_yqeTyQYyyUAIc1CrV-M6iwN34CtSzjYBF_nG9xE';
+
+const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── Auth state ───────────────────────────────────────────────
+let _currentUser    = null;
+let _currentProfile = null;
+let _myStarredIds   = new Set();
+let _communityOffset = 0;
+let _communitySortBy = 'stars';
+
+// ── Supabase init ────────────────────────────────────────────
+(async () => {
+  const { data: { session } } = await _sb.auth.getSession();
+  if (session?.user) await _onSignIn(session.user);
+  else _onSignOut();
+
+  _sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN'  && session?.user) await _onSignIn(session.user);
+    if (event === 'SIGNED_OUT') _onSignOut();
+  });
+})();
+
+async function _onSignIn(user) {
+  _currentUser = user;
+  const { data } = await _sb.from('profiles').select('*').eq('id', user.id).single();
+  _currentProfile = data;
+  _myStarredIds   = await _getMyStarredIds();
+  _updateTopbar();
+  _showSaveButton();
+}
+
+function _onSignOut() {
+  _currentUser = null; _currentProfile = null; _myStarredIds = new Set();
+  _updateTopbar();
+  _showSaveButton();
+}
+
+function _updateTopbar() {
+  const out = document.getElementById('topbar-signedout');
+  const inn = document.getElementById('topbar-signedin');
+  if (_currentProfile) {
+    out.style.display = 'none';
+    inn.style.display = 'flex';
+    document.getElementById('topbar-username').textContent  = _currentProfile.display_name || _currentProfile.username;
+    document.getElementById('topbar-star-count').textContent = _currentProfile.star_points ?? 0;
+  } else {
+    out.style.display = 'flex';
+    inn.style.display = 'none';
+  }
+  // also update map topbar if present
+  ['topbar-signedout-map','topbar-signedin-map'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = id.includes('out') ? (_currentProfile ? 'none' : 'flex') : (_currentProfile ? 'flex' : 'none');
+  });
+}
+
+function _showSaveButton() {
+  const btn  = document.getElementById('save-to-profile-btn');
+  const hint = document.getElementById('save-signin-hint');
+  if (!btn) return;
+  if (_currentUser) { btn.style.display = 'flex'; if (hint) hint.style.display = 'none'; }
+  else              { btn.style.display = 'none'; if (hint) hint.style.display = 'block'; }
+}
+
+// ── Auth Modal ───────────────────────────────────────────────
+function openAuthModal(mode = 'signup') {
+  document.getElementById('auth-overlay').style.display = 'flex';
+  document.getElementById('auth-signup-form').style.display = mode === 'signup' ? 'block' : 'none';
+  document.getElementById('auth-signin-form').style.display = mode === 'signin' ? 'block' : 'none';
+  document.getElementById('auth-error-signup').style.display = 'none';
+  document.getElementById('auth-error-signin').style.display = 'none';
+}
+function closeAuthModal() {
+  document.getElementById('auth-overlay').style.display = 'none';
+}
+
+async function handleSignUp() {
+  const displayName = document.getElementById('signup-displayname').value.trim();
+  const username    = document.getElementById('signup-username').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'');
+  const email       = document.getElementById('signup-email').value.trim();
+  const password    = document.getElementById('signup-password').value;
+  const errEl       = document.getElementById('auth-error-signup');
+  const btn         = document.getElementById('signup-submit-btn');
+
+  if (!displayName || !username || !email || !password) { _showAuthError(errEl,'Please fill in all fields'); return; }
+  if (password.length < 8) { _showAuthError(errEl,'Password must be at least 8 characters'); return; }
+
+  btn.textContent = 'Creating account…'; btn.disabled = true;
+  const { error } = await _sb.auth.signUp({
+    email, password,
+    options: { data: { username, display_name: displayName } }
+  });
+  btn.textContent = 'Create Account ✨'; btn.disabled = false;
+
+  if (error) { _showAuthError(errEl, error.message); return; }
+  closeAuthModal();
+  showToast('🎉 Account created! Check your email to confirm.');
+}
+
+async function handleSignIn() {
+  const email    = document.getElementById('signin-email').value.trim();
+  const password = document.getElementById('signin-password').value;
+  const errEl    = document.getElementById('auth-error-signin');
+  const btn      = document.getElementById('signin-submit-btn');
+
+  if (!email || !password) { _showAuthError(errEl,'Please enter email and password'); return; }
+
+  btn.textContent = 'Signing in…'; btn.disabled = true;
+  const { error } = await _sb.auth.signInWithPassword({ email, password });
+  btn.textContent = 'Sign In →'; btn.disabled = false;
+
+  if (error) { _showAuthError(errEl, error.message); return; }
+  closeAuthModal();
+  showToast('👋 Welcome back!');
+}
+
+async function doSignOut() {
+  await _sb.auth.signOut();
+  toggleProfileDropdown();
+  showToast('Signed out — see you soon!');
+}
+
+function _showAuthError(el, msg) {
+  el.textContent = msg; el.style.display = 'block';
+}
+
+function toggleProfileDropdown() {
+  document.getElementById('profile-dropdown').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  const dd = document.getElementById('profile-dropdown');
+  if (dd && !dd.closest('.topbar-right')?.contains(e.target)) dd.classList.remove('open');
+});
+
+// ── Save character to profile ────────────────────────────────
+async function handleSaveToProfile() {
+  if (!_currentUser) { openAuthModal('signup'); return; }
+
+  const btn = document.getElementById('save-to-profile-btn');
+  btn.textContent = 'Saving…'; btn.disabled = true;
+
+  try {
+    const { fields } = getCharacterDetails();
+    const isPublic   = document.getElementById('make-public-toggle')?.checked ?? false;
+
+    // Get images
+    const sketchDataUrl = uploadedSketchDataUrl || null;
+    const aiArtDataUrl  = lastGeneratedDataUrl  || null;
+
+    const charId = crypto.randomUUID();
+
+    // Upload images to storage
+    async function uploadImg(dataUrl, type) {
+      if (!dataUrl || !dataUrl.startsWith('data:')) return dataUrl;
+      const res  = await fetch(dataUrl);
+      const blob = await res.blob();
+      const ext  = blob.type === 'image/png' ? 'png' : 'jpg';
+      const path = `${_currentUser.id}/${charId}/${type}.${ext}`;
+      const { error } = await _sb.storage.from('character-images').upload(path, blob, { upsert:true, contentType: blob.type });
+      if (error) throw error;
+      return _sb.storage.from('character-images').getPublicUrl(path).data.publicUrl;
+    }
+
+    const [sketchUrl, aiArtUrl] = await Promise.all([
+      uploadImg(sketchDataUrl, 'sketch'),
+      uploadImg(aiArtDataUrl,  'ai_art'),
+    ]);
+
+    // Insert character row
+    const { error } = await _sb.from('characters').insert({
+      id:                 charId,
+      user_id:            _currentUser.id,
+      name:               fields.name       || null,
+      appearance:         fields.appearance || null,
+      height:             fields.height     || null,
+      build:              fields.build      || null,
+      personality:        fields.character  || null,
+      strengths:          fields.strengths  || null,
+      fears:              fields.fears      || null,
+      interests:          fields.interests  || null,
+      features:           fields.features   || null,
+      art_style:          selectedStyle,
+      sketch_description: document.getElementById('sketch-description')?.value?.trim() || null,
+      sketch_url:         sketchUrl,
+      ai_art_url:         aiArtUrl,
+      is_public:          isPublic,
+    });
+
+    if (error) throw error;
+    showToast(isPublic ? '🌟 Saved & shared with the community!' : '✅ Saved to your profile!');
+  } catch(err) {
+    console.error('[Save]', err);
+    showToast('⚠ Save failed: ' + err.message);
+  } finally {
+    btn.textContent = 'Save to My Profile'; btn.disabled = false;
+  }
+}
+
+// ── Community feed ───────────────────────────────────────────
+async function loadCommunity(sortBy = 'stars') {
+  _communitySortBy  = sortBy;
+  _communityOffset  = 0;
+
+  document.getElementById('sort-stars-btn').className  = sortBy === 'stars'  ? 'btn-purple' : 'btn-outline';
+  document.getElementById('sort-newest-btn').className = sortBy === 'newest' ? 'btn-purple' : 'btn-outline';
+  document.getElementById('community-loading').style.display = 'flex';
+  document.getElementById('community-grid').style.display    = 'none';
+  document.getElementById('community-empty').style.display   = 'none';
+
+  const items = await _fetchCommunity(0, sortBy);
+  _renderCommunityGrid(items, false);
+}
+
+async function loadMoreCommunity() {
+  _communityOffset += 20;
+  const items = await _fetchCommunity(_communityOffset, _communitySortBy);
+  _renderCommunityGrid(items, true);
+}
+
+async function _fetchCommunity(offset, sortBy) {
+  let q = _sb.from('community_feed').select('*').range(offset, offset + 19);
+  if (sortBy === 'stars')  q = q.order('star_count',  { ascending: false });
+  if (sortBy === 'newest') q = q.order('created_at',  { ascending: false });
+  const { data, error } = await q;
+  if (error) { console.error('[Community]', error); return []; }
+  return data ?? [];
+}
+
+function _renderCommunityGrid(items, append) {
+  const grid    = document.getElementById('community-grid');
+  const loading = document.getElementById('community-loading');
+  const empty   = document.getElementById('community-empty');
+  const loadBtn = document.getElementById('load-more-btn');
+
+  loading.style.display = 'none';
+
+  if (!append && items.length === 0) {
+    empty.style.display = 'block'; grid.style.display = 'none';
+    loadBtn.style.display = 'none'; return;
+  }
+
+  grid.style.display = 'grid';
+  if (!append) grid.innerHTML = '';
+
+  items.forEach(item => {
+    const isStarred = _myStarredIds.has(item.id);
+    const card = document.createElement('div');
+    card.className = 'community-creation-card';
+    card.id = `cc-${item.id}`;
+    const imgSrc = item.ai_art_url || item.sketch_url || '';
+    card.innerHTML = `
+      <div style="height:160px;background:linear-gradient(135deg,#EDE0FF,#D8CBFF);overflow:hidden;position:relative;">
+        ${imgSrc ? `<img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" />` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:40px;">🎨</div>`}
+        <div style="position:absolute;top:8px;right:8px;background:rgba(108,92,231,0.85);color:#fff;font-size:9px;font-weight:900;padding:2px 8px;border-radius:99px;text-transform:uppercase;">${item.art_style || 'art'}</div>
+      </div>
+      <div style="padding:10px 12px 12px;">
+        <div style="font-weight:900;font-size:14px;color:#1E1B4B;margin-bottom:2px;">${_esc(item.name || 'Unnamed')}</div>
+        <div style="font-size:11px;color:#9E98C8;font-weight:700;margin-bottom:8px;">by ${_esc(item.display_name || item.username)}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <button class="star-btn ${isStarred ? 'starred' : ''}" id="star-btn-${item.id}" onclick="handleStarToggle('${item.id}',this)">
+            ${isStarred ? '⭐' : '☆'} <span id="star-count-${item.id}">${item.star_count}</span>
+          </button>
+          <span style="font-size:10px;color:#C0BADA;font-weight:600;">${_timeAgo(item.created_at)}</span>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  });
+
+  loadBtn.style.display = items.length === 20 ? 'block' : 'none';
+}
+
+async function handleStarToggle(characterId, btn) {
+  if (!_currentUser) { openAuthModal('signin'); return; }
+  const wasStarred = _myStarredIds.has(characterId);
+  if (wasStarred) {
+    await _sb.from('stars').delete().eq('user_id',_currentUser.id).eq('character_id',characterId);
+    _myStarredIds.delete(characterId);
+  } else {
+    await _sb.from('stars').insert({ user_id:_currentUser.id, character_id:characterId });
+    _myStarredIds.add(characterId);
+  }
+  const { data } = await _sb.from('characters').select('star_count').eq('id',characterId).single();
+  const newCount = data?.star_count ?? 0;
+  const nowStarred = !wasStarred;
+  btn.className = `star-btn ${nowStarred ? 'starred' : ''}`;
+  btn.innerHTML = `${nowStarred ? '⭐' : '☆'} <span id="star-count-${characterId}">${newCount}</span>`;
+}
+
+async function _getMyStarredIds() {
+  if (!_currentUser) return new Set();
+  const { data } = await _sb.from('stars').select('character_id').eq('user_id',_currentUser.id);
+  return new Set((data ?? []).map(r => r.character_id));
+}
+
+// ── Profile section ──────────────────────────────────────────
+async function loadProfile() {
+  if (!_currentProfile) return;
+
+  document.getElementById('profile-display-name').textContent = _currentProfile.display_name || _currentProfile.username;
+  document.getElementById('profile-username').textContent     = '@' + _currentProfile.username;
+  document.getElementById('profile-star-points').textContent  = _currentProfile.star_points ?? 0;
+
+  document.getElementById('profile-loading').style.display = 'flex';
+  document.getElementById('profile-grid').style.display    = 'none';
+  document.getElementById('profile-empty').style.display   = 'none';
+
+  const { data, error } = await _sb
+    .from('characters')
+    .select('*')
+    .eq('user_id', _currentUser.id)
+    .order('created_at', { ascending: false });
+
+  document.getElementById('profile-loading').style.display = 'none';
+
+  if (error || !data?.length) {
+    document.getElementById('profile-empty').style.display = 'block';
+    document.getElementById('profile-char-count').textContent = '0 saved';
+    return;
+  }
+
+  document.getElementById('profile-char-count').textContent = `${data.length} saved`;
+  const grid = document.getElementById('profile-grid');
+  grid.style.display = 'grid';
+  grid.innerHTML = '';
+
+  data.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'community-creation-card';
+    const imgSrc = item.ai_art_url || item.sketch_url || '';
+    card.innerHTML = `
+      <div style="height:140px;background:linear-gradient(135deg,#EDE0FF,#D8CBFF);overflow:hidden;position:relative;">
+        ${imgSrc ? `<img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" />` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:36px;">🎨</div>`}
+        ${item.is_public ? `<div style="position:absolute;top:8px;left:8px;background:rgba(46,204,113,0.9);color:#fff;font-size:8px;font-weight:900;padding:2px 7px;border-radius:99px;">PUBLIC</div>` : ''}
+      </div>
+      <div style="padding:10px 12px 12px;">
+        <div style="font-weight:900;font-size:13px;color:#1E1B4B;margin-bottom:6px;">${_esc(item.name || 'Unnamed')}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button onclick="deleteProfileChar('${item.id}',this)" style="background:none;border:1.5px solid #F9A8D4;border-radius:8px;padding:4px 10px;font-size:10px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;color:#E84393;">Delete</button>
+          <button onclick="togglePublicChar('${item.id}',${item.is_public},this)" style="background:none;border:1.5px solid #A29BFE;border-radius:8px;padding:4px 10px;font-size:10px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;color:#6C5CE7;">${item.is_public ? 'Make private' : 'Share'}</button>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+async function deleteProfileChar(id, btn) {
+  if (!confirm('Delete this character? This cannot be undone.')) return;
+  await _sb.from('characters').delete().eq('id',id).eq('user_id',_currentUser.id);
+  btn.closest('.community-creation-card').remove();
+  showToast('Character deleted.');
+}
+
+async function togglePublicChar(id, currentlyPublic, btn) {
+  const newState = !currentlyPublic;
+  await _sb.from('characters').update({ is_public:newState }).eq('id',id).eq('user_id',_currentUser.id);
+  btn.textContent = newState ? 'Make private' : 'Share';
+  btn.closest('.community-creation-card').querySelector('[style*="PUBLIC"]')?.remove();
+  showToast(newState ? '🌍 Now shared with community!' : '🔒 Set to private.');
+}
+
+// ── Section switching (extend existing) ─────────────────────
+const _origSwitchSection = typeof switchSection === 'function' ? switchSection : null;
+function switchSection(name) {
+  ['character','map','community','profile'].forEach(s => {
+    const el = document.getElementById(`section-${s}`);
+    if (el) el.style.display = s === name ? (s === 'character' || s === 'map' ? 'contents' : 'flex') : 'none';
+  });
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  const activeTab = document.getElementById(`nav-${name}`);
+  if (activeTab) activeTab.classList.add('active');
+
+  if (name === 'community') loadCommunity(_communitySortBy);
+  if (name === 'profile') {
+    if (!_currentUser) { openAuthModal('signin'); return; }
+    loadProfile();
+  }
+}
+
+// ── Helpers ──────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function _esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function _timeAgo(iso) {
+  const diff = (Date.now() - new Date(iso)) / 1000;
+  if (diff < 60)    return 'just now';
+  if (diff < 3600)  return `${Math.floor(diff/60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+  return `${Math.floor(diff/86400)}d ago`;
+}
+
+// Add profile nav tab to sidebar nav
+document.addEventListener('DOMContentLoaded', () => {
+  _showSaveButton();
+});
+
+window.addEventListener('load', () => {
+  initMascot();
+  if (typeof gsap !== 'undefined') {
+    gsap.from('.mascot-bot', { y:28, opacity:0, duration:0.8, ease:'back.out(1.4)', delay:0.15 });
+    gsap.from('.speech-bubble', { x:-16, opacity:0, duration:0.5, ease:'power2.out', delay:0.5 });
+    gsap.from('.char-card', { y:16, opacity:0, duration:0.45, stagger:0.08, ease:'power2.out', delay:0.25 });
+    gsap.from('.field-row', { x:-8, opacity:0, duration:0.35, stagger:0.04, ease:'power2.out', delay:0.35 });
+    gsap.from('.folder-notch-card', { y:16, opacity:0, duration:0.55, stagger:0.12, ease:'power2.out', delay:0.2 });
+    try { gsap.from('.style-chip', { scale:0.85, opacity:0, duration:0.3, stagger:0.04, ease:'back.out(1.5)', delay:0.45 }); } catch(e) {}
+  }
+});
+</script>
+<!-- ══════════════════════════════════════════
+     COMMUNITY SECTION
+══════════════════════════════════════════ -->
+<div id="section-community" style="display:none;flex-direction:column;height:100%;">
+  <div class="folder-tab-overlay">
+    <svg width="100%" height="100%" viewBox="0 0 200 72" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 0,0 L 200,0 C 185,0 170,5 158,20 C 142,40 130,65 100,72 L 0,72 Z" fill="#1A1D3A"/>
+    </svg>
+  </div>
+  <header class="topbar">
+    <div class="topbar-left-dark"></div>
+    <div class="topbar-center" style="background:linear-gradient(90deg,#EEE9FC,#E8E3FA);height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-bottom:1px solid #DDD8F5;">
+      <h1 style="font-family:'Baloo 2',cursive;font-size:27px;font-weight:800;color:#1E1B4B;line-height:1.1;">Community Bank</h1>
+      <p style="color:#7C74B8;font-size:13px;font-weight:600;">Explore and star amazing creations from other students!</p>
+    </div>
+    <div class="topbar-right" style="background:linear-gradient(90deg,#E8E3FA,#E4DFFA);height:72px;padding:0 20px;border-bottom:1px solid #DDD8F5;"></div>
+  </header>
+
+  <div style="flex:1;overflow-y:auto;padding:20px 24px;position:relative;z-index:2;">
+    <!-- Sort bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:800;color:#1E1B4B;">All Creations</div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="loadCommunity('stars')" id="sort-stars-btn" class="btn-purple" style="padding:7px 16px;font-size:12px;">⭐ Most Starred</button>
+        <button onclick="loadCommunity('newest')" id="sort-newest-btn" class="btn-outline" style="padding:7px 16px;font-size:12px;">🆕 Newest</button>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div id="community-loading" style="display:flex;align-items:center;justify-content:center;padding:48px;gap:12px;">
+      <div class="spinner"></div>
+      <span style="color:#A29BFE;font-weight:700;">Loading community creations…</span>
+    </div>
+
+    <!-- Empty state -->
+    <div id="community-empty" style="display:none;text-align:center;padding:48px 24px;">
+      <div style="font-size:48px;margin-bottom:12px;">🎨</div>
+      <div style="font-family:'Baloo 2',cursive;font-size:20px;font-weight:800;color:#1E1B4B;margin-bottom:8px;">Be the first to share!</div>
+      <div style="color:#9E98C8;font-size:14px;font-weight:600;">Create a character, toggle "Share with community" and save it to see it here.</div>
+    </div>
+
+    <!-- Grid -->
+    <div id="community-grid" class="community-grid" style="display:none;"></div>
+
+    <!-- Load more -->
+    <div style="text-align:center;margin-top:20px;">
+      <button id="load-more-btn" onclick="loadMoreCommunity()" class="btn-outline" style="padding:10px 28px;font-size:13px;display:none;">Load more</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MY PROFILE SECTION
+══════════════════════════════════════════ -->
+<div id="section-profile" style="display:none;flex-direction:column;height:100%;">
+  <div class="folder-tab-overlay">
+    <svg width="100%" height="100%" viewBox="0 0 200 72" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 0,0 L 200,0 C 185,0 170,5 158,20 C 142,40 130,65 100,72 L 0,72 Z" fill="#1A1D3A"/>
+    </svg>
+  </div>
+  <header class="topbar">
+    <div class="topbar-left-dark"></div>
+    <div class="topbar-center" style="background:linear-gradient(90deg,#EEE9FC,#E8E3FA);height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-bottom:1px solid #DDD8F5;">
+      <h1 style="font-family:'Baloo 2',cursive;font-size:27px;font-weight:800;color:#1E1B4B;line-height:1.1;">My Profile</h1>
+      <p style="color:#7C74B8;font-size:13px;font-weight:600;">Your saved characters and star collection</p>
+    </div>
+    <div class="topbar-right" style="background:linear-gradient(90deg,#E8E3FA,#E4DFFA);height:72px;padding:0 20px;border-bottom:1px solid #DDD8F5;"></div>
+  </header>
+
+  <div style="flex:1;overflow-y:auto;padding:20px 24px;position:relative;z-index:2;">
+    <!-- Profile header card -->
+    <div style="background:#fff;border-radius:20px;padding:20px 24px;margin-bottom:20px;box-shadow:0 3px 18px rgba(108,92,231,0.08);display:flex;align-items:center;gap:18px;">
+      <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#6C5CE7,#E84393);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg viewBox="0 0 40 40" fill="none" width="40" height="40"><circle cx="20" cy="15" r="8" fill="rgba(255,255,255,0.9)"/><ellipse cx="20" cy="34" rx="13" ry="10" fill="rgba(255,255,255,0.7)"/></svg>
+      </div>
+      <div style="flex:1;">
+        <div id="profile-display-name" style="font-family:'Baloo 2',cursive;font-size:22px;font-weight:800;color:#1E1B4B;"></div>
+        <div id="profile-username" style="color:#9E98C8;font-size:13px;font-weight:700;"></div>
+      </div>
+      <div style="text-align:center;background:#FFF8E0;border-radius:16px;padding:12px 20px;">
+        <div style="font-size:28px;line-height:1;">⭐</div>
+        <div id="profile-star-points" style="font-weight:900;font-size:20px;color:#1E1B4B;">0</div>
+        <div style="font-size:10px;color:#9E98C8;font-weight:700;">Star Points</div>
+      </div>
+    </div>
+
+    <!-- Saved characters -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:800;color:#1E1B4B;">My Characters</div>
+      <span id="profile-char-count" style="color:#9E98C8;font-size:13px;font-weight:700;">0 saved</span>
+    </div>
+
+    <div id="profile-loading" style="display:flex;align-items:center;justify-content:center;padding:32px;gap:12px;">
+      <div class="spinner"></div>
+      <span style="color:#A29BFE;font-weight:700;">Loading your characters…</span>
+    </div>
+
+    <div id="profile-empty" style="display:none;text-align:center;padding:32px;">
+      <div style="font-size:40px;margin-bottom:10px;">✏️</div>
+      <div style="font-weight:800;color:#1E1B4B;font-size:16px;margin-bottom:6px;">No characters saved yet</div>
+      <div style="color:#9E98C8;font-size:13px;">Create a character and click "Save to My Profile"!</div>
+      <button onclick="switchSection('character')" class="btn-purple" style="margin-top:14px;padding:10px 24px;font-size:13px;">Create a Character</button>
+    </div>
+
+    <div id="profile-grid" class="community-grid" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     AUTH MODAL
+══════════════════════════════════════════ -->
+<div id="auth-overlay" class="auth-overlay" style="display:none;">
+  <div class="auth-modal">
+    <button onclick="closeAuthModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#999;">✕</button>
+
+    <!-- Signup form -->
+    <div id="auth-signup-form">
+      <div style="text-align:center;margin-bottom:22px;">
+        <div style="font-family:'Baloo 2',cursive;font-size:24px;font-weight:800;color:#1E1B4B;margin-bottom:4px;">Join Aurabot! 🤖</div>
+        <div style="color:#9E98C8;font-size:13px;font-weight:600;">Create your free student account</div>
+      </div>
+      <input class="auth-input" id="signup-displayname" type="text" placeholder="Your name (e.g. Lily)" />
+      <input class="auth-input" id="signup-username"    type="text" placeholder="Username (e.g. lily_creates)" />
+      <input class="auth-input" id="signup-email"       type="email" placeholder="Email address" />
+      <input class="auth-input" id="signup-password"    type="password" placeholder="Password (min 8 characters)" />
+      <div id="auth-error-signup" style="color:#E84393;font-size:12px;font-weight:700;margin-bottom:8px;display:none;"></div>
+      <button id="signup-submit-btn" onclick="handleSignUp()" class="btn-purple" style="width:100%;padding:13px;font-size:14px;margin-top:4px;">
+        Create Account ✨
+      </button>
+      <div style="text-align:center;margin-top:14px;font-size:13px;color:#9E98C8;font-weight:600;">
+        Already have an account? <span onclick="openAuthModal('signin')" style="color:#6C5CE7;cursor:pointer;font-weight:800;">Sign in</span>
+      </div>
+    </div>
+
+    <!-- Signin form -->
+    <div id="auth-signin-form" style="display:none;">
+      <div style="text-align:center;margin-bottom:22px;">
+        <div style="font-family:'Baloo 2',cursive;font-size:24px;font-weight:800;color:#1E1B4B;margin-bottom:4px;">Welcome back! 👋</div>
+        <div style="color:#9E98C8;font-size:13px;font-weight:600;">Sign in to your account</div>
+      </div>
+      <input class="auth-input" id="signin-email"    type="email"    placeholder="Email address" />
+      <input class="auth-input" id="signin-password" type="password" placeholder="Password" />
+      <div id="auth-error-signin" style="color:#E84393;font-size:12px;font-weight:700;margin-bottom:8px;display:none;"></div>
+      <button id="signin-submit-btn" onclick="handleSignIn()" class="btn-purple" style="width:100%;padding:13px;font-size:14px;margin-top:4px;">
+        Sign In →
+      </button>
+      <div style="text-align:center;margin-top:14px;font-size:13px;color:#9E98C8;font-weight:600;">
+        New here? <span onclick="openAuthModal('signup')" style="color:#6C5CE7;cursor:pointer;font-weight:800;">Create free account</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div id="toast" class="toast"></div>
+
+</div><!-- end outer flex -->
+</body>
+</html>
