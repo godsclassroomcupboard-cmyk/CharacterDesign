@@ -286,7 +286,7 @@
           </div>
         </div>
         <table class="data-table">
-          <thead><tr><th>Name</th><th>Class</th><th>Login Code</th><th>Characters</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Name</th><th>Class</th><th>Email</th><th>Characters</th><th>Actions</th></tr></thead>
           <tbody id="students-tbody"></tbody>
         </table>
       </div>
@@ -352,10 +352,21 @@
         <select id="s-class"></select>
       </div>
     </div>
-    <p style="font-size:12px;font-weight:700;color:#9E98C8;">A login code will be auto-generated for the student.</p>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Student Email</label>
+        <input type="email" id="s-email" placeholder="e.g. emma@school.ac.nz"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="s-password" placeholder="Set a password (min 8 chars)"/>
+      </div>
+    </div>
+    <p style="font-size:12px;font-weight:700;color:#9E98C8;">Student will use their email and this password to log in via the portal.</p>
+    <div id="add-student-error" style="display:none;color:#E84393;font-size:12px;font-weight:700;margin-bottom:8px;"></div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal('add-student-modal')">Cancel</button>
-      <button class="btn btn-purple" onclick="addStudent()">Add Student</button>
+      <button class="btn btn-purple" id="add-student-btn" onclick="addStudent()">Add Student</button>
     </div>
   </div>
 </div>
@@ -539,22 +550,62 @@
     document.getElementById('add-student-modal').classList.add('open');
   }
 
-  function addStudent() {
-    const name = document.getElementById('s-name').value.trim();
-    const classId = parseInt(document.getElementById('s-class').value);
-    if (!name) { toast('Please enter student name'); return; }
+  async function addStudent() {
+    const name     = document.getElementById('s-name').value.trim();
+    const email    = document.getElementById('s-email').value.trim().toLowerCase();
+    const password = document.getElementById('s-password').value.trim();
+    const classId  = parseInt(document.getElementById('s-class').value);
+    const errEl    = document.getElementById('add-student-error');
+    const btn      = document.getElementById('add-student-btn');
+    errEl.style.display = 'none';
+
+    if (!name || !email || !password) { errEl.textContent = 'Please fill in all fields'; errEl.style.display = 'block'; return; }
+    if (password.length < 8) { errEl.textContent = 'Password must be at least 8 characters'; errEl.style.display = 'block'; return; }
+
     const d = loadData();
     const cls = d.classes.find(c => c.id === classId);
     if (!cls) return;
     if (!cls.students) cls.students = [];
-    const code = generateCode();
-    cls.students.push({ id: Date.now(), name, code, characters: 0, feedback: [] });
+
+    const code = generateCode(); // still keep code for login cards / teacher reference
+
+    btn.textContent = 'Creating…';
+    btn.disabled = true;
+
+    // Create Supabase account for the student
+    const { error: signupError } = await _sb.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          display_name: name,
+          username: code,
+          class_code: code,
+          student_name: name,
+          role: 'student'
+        }
+      }
+    });
+
+    btn.textContent = 'Add Student';
+    btn.disabled = false;
+
+    if (signupError && !signupError.message.includes('already registered')) {
+      errEl.textContent = 'Supabase error: ' + signupError.message;
+      errEl.style.display = 'block';
+      return;
+    }
+
+    cls.students.push({ id: Date.now(), name, email, code, characters: 0, feedback: [] });
     saveData(d);
     closeModal('add-student-modal');
+    document.getElementById('s-name').value = '';
+    document.getElementById('s-email').value = '';
+    document.getElementById('s-password').value = '';
     renderStudentsTable();
     renderLoginCards();
     updateOverviewStats();
-    toast(`${name} added · Code: ${code} ✓`);
+    toast(`${name} added ✓`);
   }
 
   function removeStudent(classId, studentId) {
@@ -578,7 +629,7 @@
         rows.push(`<tr>
           <td><strong>${s.name}</strong></td>
           <td><span class="pill pill-purple">${c.name}</span></td>
-          <td><code style="background:#F0ECFC;padding:2px 8px;border-radius:6px;font-size:12px;letter-spacing:2px;">${s.code}</code></td>
+          <td style="font-size:12px;">${s.email || '<span style="color:#9E98C8">—</span>'}</td>
           <td>${s.characters||0}</td>
           <td><button class="btn btn-red btn-sm" onclick="removeStudent(${c.id},${s.id})">Remove</button></td>
         </tr>`);
@@ -595,15 +646,17 @@
       (c.students||[]).forEach(s => {
         cards.push(`
           <div class="login-card">
-            <div>
+            <div style="flex:1;">
               <div class="login-card-label">Student</div>
               <div class="login-card-name">${s.name}</div>
               <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);margin-top:2px;">${c.name}</div>
             </div>
             <div style="text-align:right;">
-              <div class="login-card-label">Login Code</div>
-              <div class="login-card-code">${s.code}</div>
-              <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:2px;">aurabotcharacter.netlify.app</div>
+              <div class="login-card-label">Login at</div>
+              <div style="font-size:11px;font-weight:800;color:var(--lavender);margin-bottom:6px;">aurabotcharacter.netlify.app/portal.html</div>
+              <div class="login-card-label">Email</div>
+              <div style="font-size:12px;font-weight:800;color:white;margin-bottom:4px;">${s.email || '—'}</div>
+              <div class="login-card-label">Password set by teacher</div>
             </div>
           </div>`);
       });

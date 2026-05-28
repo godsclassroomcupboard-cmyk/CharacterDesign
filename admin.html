@@ -279,8 +279,8 @@
             <input type="text" id="t-name" placeholder="e.g. Ms Johnson"/>
           </div>
           <div class="form-group">
-            <label>Username</label>
-            <input type="text" id="t-username" placeholder="e.g. ms.johnson"/>
+            <label>Email</label>
+            <input type="email" id="t-email" placeholder="e.g. johnson@school.ac.nz"/>
           </div>
           <div class="form-group">
             <label>Password</label>
@@ -296,7 +296,7 @@
       <div class="panel">
         <div class="panel-title"><span>🎓</span> Teacher Accounts</div>
         <table class="data-table">
-          <thead><tr><th>Name</th><th>Username</th><th>Classes</th><th>Students</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>Classes</th><th>Students</th><th>Actions</th></tr></thead>
           <tbody id="teachers-tbody">
             <tr><td colspan="5"><div class="empty-state"><div class="empty-icon">👤</div><p>No teachers added yet</p></div></td></tr>
           </tbody>
@@ -412,7 +412,13 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  // ── SUPABASE ──
+  const SUPABASE_URL      = 'https://nwhaliuajvovesnrdfrr.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53aGFsaXVhanZvdmVzbnJkZnJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDUyMzEsImV4cCI6MjA5NTQ4MTIzMX0.cGZ_yqeTyQYyyUAIc1CrV-M6iwN34CtSzjYBF_nG9xE';
+  const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
   // ── AUTH GUARD ──
   if (sessionStorage.getItem('aurabot_role') !== 'admin') {
     window.location.href = 'portal.html';
@@ -446,20 +452,41 @@
   }
 
   // ── TEACHERS ──
-  function addTeacher() {
-    const name = document.getElementById('t-name').value.trim();
-    const user = document.getElementById('t-username').value.trim();
-    const pw   = document.getElementById('t-password').value.trim();
-    if (!name || !user || !pw) { toast('Please fill in all fields'); return; }
+  async function addTeacher() {
+    const name  = document.getElementById('t-name').value.trim();
+    const email = document.getElementById('t-email').value.trim().toLowerCase();
+    const pw    = document.getElementById('t-password').value.trim();
+    if (!name || !email || !pw) { toast('Please fill in all fields'); return; }
+    if (pw.length < 8) { toast('Password must be at least 8 characters'); return; }
     const d = loadData();
-    if (d.teachers.find(t => t.username === user)) { toast('Username already exists'); return; }
-    d.teachers.push({ id: Date.now(), name, username: user, password: pw });
+    if (d.teachers.find(t => t.email === email)) { toast('A teacher with that email already exists'); return; }
+
+    // Create Supabase account for the teacher
+    const { data, error } = await _sb.auth.admin
+      ? // service role not available from browser — use signUp instead
+        { data: null, error: { message: 'use-signup' } }
+      : { data: null, error: { message: 'use-signup' } };
+
+    // We use signUp which sends a confirmation email — teacher clicks it to activate
+    const { error: signupError } = await _sb.auth.signUp({
+      email,
+      password: pw,
+      options: { data: { display_name: name, username: email.split('@')[0], role: 'teacher' } }
+    });
+
+    if (signupError && !signupError.message.includes('already registered')) {
+      toast('Supabase error: ' + signupError.message);
+      return;
+    }
+
+    const teacherId = Date.now();
+    d.teachers.push({ id: teacherId, name, email, password: pw });
     saveData(d);
     document.getElementById('t-name').value = '';
-    document.getElementById('t-username').value = '';
+    document.getElementById('t-email').value = '';
     document.getElementById('t-password').value = '';
     renderTeachers();
-    toast('Teacher account created ✓');
+    toast('Teacher account created — they will get a confirmation email ✓');
   }
 
   let deleteId = null;
@@ -490,7 +517,7 @@
       const students = classes.reduce((a, c) => a + (c.students||[]).length, 0);
       return `<tr>
         <td><strong>${t.name}</strong></td>
-        <td><span class="pill pill-purple">${t.username}</span></td>
+        <td><span class="pill pill-purple">${t.email}</span></td>
         <td>${classes.length}</td>
         <td>${students}</td>
         <td><button class="btn btn-red" style="padding:6px 12px;font-size:12px;" onclick="deleteTeacher(${t.id})">Remove</button></td>

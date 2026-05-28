@@ -294,24 +294,38 @@
     </div>
   </div>
 
-  <!-- Admin / Teacher: password field -->
-  <div id="staff-login">
+  <!-- Admin: password only -->
+  <div id="admin-login" style="display:none;">
     <div class="input-wrap">
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <label for="admin-password">Admin Password</label>
+      <input type="password" id="admin-password" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()"/>
     </div>
   </div>
 
-  <!-- Student: login code -->
+  <!-- Teacher: email + password via Supabase -->
+  <div id="teacher-login" style="display:none;">
+    <div class="input-wrap">
+      <label for="teacher-email">Email</label>
+      <input type="email" id="teacher-email" placeholder="your@school.ac.nz" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div class="input-wrap">
+      <label for="teacher-password">Password</label>
+      <input type="password" id="teacher-password" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+  </div>
+
+  <!-- Student: email + password -->
   <div id="student-login" style="display:none;">
     <div class="input-wrap">
-      <label for="student-code">Your Login Code</label>
-      <input type="text" id="student-code" placeholder="e.g. AB3X7K" maxlength="6"
-        style="text-transform:uppercase;letter-spacing:4px;font-size:18px;font-weight:900;text-align:center;"
-        onkeydown="if(event.key==='Enter')doLogin()" oninput="this.value=this.value.toUpperCase()"/>
+      <label for="student-email">Email</label>
+      <input type="email" id="student-email" placeholder="your@school.ac.nz" onkeydown="if(event.key==='Enter')doLogin()"/>
     </div>
-    <p style="font-size:12px;font-weight:700;color:rgba(162,155,254,0.6);text-align:center;margin-top:-8px;margin-bottom:16px;">
-      Your teacher will give you this code
+    <div class="input-wrap">
+      <label for="student-password">Password</label>
+      <input type="password" id="student-password" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <p style="font-size:12px;font-weight:700;color:rgba(162,155,254,0.6);text-align:center;margin-bottom:4px;">
+      Your teacher will give you your login details
     </p>
   </div>
 
@@ -329,8 +343,8 @@
 
   // ── ROLE PASSWORDS — change these to your preferred passwords ──
   const PASSWORDS = {
-    admin:   'LDBBaura1007~',
-    teacher: 'LDBBaura1007~'
+    admin:   'aurabot-admin-2024',
+    teacher: 'aurabot-teacher-2024'
   };
 
   let selectedRole = null;
@@ -339,139 +353,74 @@
     selectedRole = role;
     document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
     document.getElementById('role-' + role).classList.add('selected');
-
-    // Show/hide the correct input
-    document.getElementById('staff-login').style.display  = role === 'student' ? 'none' : 'block';
-    document.getElementById('student-login').style.display = role === 'student' ? 'block' : 'none';
     document.getElementById('error-msg').style.display = 'none';
 
-    // Focus the right field
-    if (role === 'student') {
-      document.getElementById('student-code').focus();
-    } else {
-      document.getElementById('password').focus();
-    }
+    // Show the right login form
+    document.getElementById('admin-login').style.display   = role === 'admin'   ? 'block' : 'none';
+    document.getElementById('teacher-login').style.display = role === 'teacher' ? 'block' : 'none';
+    document.getElementById('student-login').style.display = role === 'student' ? 'block' : 'none';
 
-    // Update button label
-    document.getElementById('login-btn').textContent = role === 'student' ? 'Enter Aurabot →' : 'Enter Portal →';
+    // Update button label and focus
+    const labels = { admin: 'Enter Admin Dashboard →', teacher: 'Sign In →', student: 'Enter Aurabot →' };
+    document.getElementById('login-btn').textContent = labels[role];
+    const focusIds = { admin: 'admin-password', teacher: 'teacher-email', student: 'student-email' };
+    setTimeout(() => document.getElementById(focusIds[role])?.focus(), 50);
   }
 
   async function doLogin() {
-    const errEl = document.getElementById('error-msg');
-    const card  = document.querySelector('.portal-card');
-    errEl.style.display = 'none';
-
-    if (!selectedRole) {
-      showError('Please select a role first.');
-      return;
-    }
-
-    if (selectedRole === 'student') {
-      await doStudentLogin();
-    } else {
-      doStaffLogin();
-    }
+    document.getElementById('error-msg').style.display = 'none';
+    if (!selectedRole) { showError('Please select a role first.'); return; }
+    if (selectedRole === 'admin')   doAdminLogin();
+    if (selectedRole === 'teacher') await doTeacherLogin();
+    if (selectedRole === 'student') await doStudentLogin();
   }
 
-  // ── STAFF LOGIN (admin / teacher) ──
-  function doStaffLogin() {
-    const pw    = document.getElementById('password').value.trim();
-    const errEl = document.getElementById('error-msg');
-    const card  = document.querySelector('.portal-card');
-
-    if (pw === PASSWORDS[selectedRole]) {
-      sessionStorage.setItem('aurabot_role', selectedRole);
+  // ── ADMIN (single password) ──
+  function doAdminLogin() {
+    const pw = document.getElementById('admin-password').value.trim();
+    if (pw === PASSWORDS.admin) {
+      sessionStorage.setItem('aurabot_role', 'admin');
       sessionStorage.setItem('aurabot_auth', 'true');
-      if (selectedRole === 'admin') {
-        window.location.href = 'admin.html';
-      } else {
-        window.location.href = 'teacher.html';
-      }
+      window.location.href = 'admin.html';
     } else {
-      showError('Incorrect password. Please try again.');
-      document.getElementById('password').value = '';
-      shake(card);
+      showError('Incorrect admin password.');
+      document.getElementById('admin-password').value = '';
+      shake(document.querySelector('.portal-card'));
     }
   }
 
-  // ── STUDENT LOGIN (login code) ──
-  async function doStudentLogin() {
-    const code  = document.getElementById('student-code').value.trim().toUpperCase();
-    const card  = document.querySelector('.portal-card');
+  // ── TEACHER (Supabase email + password) ──
+  async function doTeacherLogin() {
+    const email = document.getElementById('teacher-email').value.trim();
+    const pw    = document.getElementById('teacher-password').value;
     const btn   = document.getElementById('login-btn');
+    if (!email || !pw) { showError('Please enter your email and password.'); return; }
 
-    if (!code || code.length < 4) {
-      showError('Please enter your login code.');
-      return;
-    }
+    btn.textContent = 'Signing in…'; btn.disabled = true;
+    const { error } = await _sb.auth.signInWithPassword({ email, password: pw });
+    btn.textContent = 'Sign In →'; btn.disabled = false;
 
-    // Look up student in teacher's local class data
-    const teacherData = JSON.parse(localStorage.getItem('aurabot_teacher_data') || '{"classes":[]}');
-    let foundStudent = null;
-    let foundClass   = null;
+    if (error) { showError('Incorrect email or password.'); shake(document.querySelector('.portal-card')); return; }
 
-    teacherData.classes.forEach(cls => {
-      (cls.students || []).forEach(s => {
-        if (s.code === code) { foundStudent = s; foundClass = cls; }
-      });
-    });
+    sessionStorage.setItem('aurabot_role', 'teacher');
+    sessionStorage.setItem('aurabot_auth', 'true');
+    window.location.href = 'teacher.html';
+  }
 
-    if (!foundStudent) {
-      showError("Code not recognised. Check your code and try again.");
-      shake(card);
-      return;
-    }
+  // ── STUDENT (Supabase email + password) ──
+  async function doStudentLogin() {
+    const email = document.getElementById('student-email').value.trim();
+    const pw    = document.getElementById('student-password').value;
+    const btn   = document.getElementById('login-btn');
+    if (!email || !pw) { showError('Please enter your email and password.'); return; }
 
-    // Student found — sign them into Supabase using code-based credentials
-    // Students sign in with: email = code@aurabot.app, password = code (simple, teacher-managed)
-    btn.textContent = 'Signing in…';
-    btn.disabled = true;
+    btn.textContent = 'Signing in…'; btn.disabled = true;
+    const { error } = await _sb.auth.signInWithPassword({ email, password: pw });
+    btn.textContent = 'Enter Aurabot →'; btn.disabled = false;
 
-    const studentEmail    = code.toLowerCase() + '@student.aurabotapp.com';
-    const studentPassword = code + '-' + (foundClass.id || 'aurabot');
+    if (error) { showError('Incorrect email or password. Ask your teacher if you need help.'); shake(document.querySelector('.portal-card')); return; }
 
-    // Try sign in first; if that fails, create the account
-    let { error } = await _sb.auth.signInWithPassword({ email: studentEmail, password: studentPassword });
-
-    if (error && error.message.includes('Invalid login credentials')) {
-      // First time — create Supabase account for this student
-      const { error: signupError } = await _sb.auth.signUp({
-        email: studentEmail,
-        password: studentPassword,
-        options: {
-          data: {
-            username: code,
-            display_name: foundStudent.name,
-            class_code: code
-          },
-          emailRedirectTo: null
-        }
-      });
-      if (signupError && !signupError.message.includes('already registered')) {
-        btn.textContent = 'Enter Aurabot →';
-        btn.disabled = false;
-        showError('Sign-in failed: ' + signupError.message);
-        return;
-      }
-      // Sign in after signup
-      const { error: signinError } = await _sb.auth.signInWithPassword({ email: studentEmail, password: studentPassword });
-      if (signinError) {
-        btn.textContent = 'Enter Aurabot →';
-        btn.disabled = false;
-        showError('Could not sign in. Try again in a moment.');
-        return;
-      }
-    } else if (error) {
-      btn.textContent = 'Enter Aurabot →';
-      btn.disabled = false;
-      showError('Sign-in error: ' + error.message);
-      return;
-    }
-
-    // Signed in — store role and go to the character creator
     sessionStorage.setItem('aurabot_role', 'student');
-    sessionStorage.setItem('aurabot_student_code', code);
-    sessionStorage.setItem('aurabot_student_name', foundStudent.name);
     sessionStorage.setItem('aurabot_auth', 'true');
     window.location.href = 'index.html';
   }
@@ -479,19 +428,17 @@
   // ── HELPERS ──
   function showError(msg) {
     const el = document.getElementById('error-msg');
-    el.textContent = msg;
-    el.style.display = 'block';
+    el.textContent = msg; el.style.display = 'block';
   }
 
   function shake(el) {
-    el.classList.remove('shake');
-    void el.offsetWidth;
-    el.classList.add('shake');
+    el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
   }
 
   // Auto-select role from URL param
   const params = new URLSearchParams(window.location.search);
   if (params.get('role')) selectRole(params.get('role'));
+  else selectRole('student'); // default to student
 </script>
 </body>
 </html>
