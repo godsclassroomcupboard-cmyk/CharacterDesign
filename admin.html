@@ -597,6 +597,8 @@
   </div>
 </div>
 
+<div id="toast"></div>
+
 <!-- Delete confirm modal -->
 <div class="modal-overlay" id="delete-modal">
   <div class="modal">
@@ -831,46 +833,18 @@
     const d = loadData();
     if (d.teachers.find(t => t.email === email)) { toast('A teacher with that email already exists'); return; }
 
-    // Show loading state on button
-    const btn = document.querySelector('#section-teachers .btn-purple');
-    const originalText = btn.textContent;
-    btn.textContent = 'Creating account…';
-    btn.disabled = true;
+    // Save teacher locally — they sign in via portal.html with these credentials
+    // Supabase account is created the first time they log in through the portal
+    const teacherId = Date.now();
+    d.teachers.push({ id: teacherId, name, email, password: pw });
+    saveData(d);
 
-    try {
-      // Create Supabase account — sends confirmation email to teacher
-      const { error: signupError } = await _sb.auth.signUp({
-        email,
-        password: pw,
-        options: { data: { display_name: name, username: email.split('@')[0], role: 'teacher' } }
-      });
+    document.getElementById('t-name').value     = '';
+    document.getElementById('t-email').value    = '';
+    document.getElementById('t-password').value = '';
 
-      // "User already registered" is fine — we still save them locally
-      if (signupError && !signupError.message.toLowerCase().includes('already registered')) {
-        toast('⚠ Supabase error: ' + signupError.message);
-        return;
-      }
-
-      // Save to local admin data store
-      const teacherId = Date.now();
-      d.teachers.push({ id: teacherId, name, email, password: pw });
-      saveData(d);
-
-      // Clear form
-      document.getElementById('t-name').value     = '';
-      document.getElementById('t-email').value    = '';
-      document.getElementById('t-password').value = '';
-
-      renderTeachers();
-      toast('✓ Teacher added! They will receive a confirmation email to activate their account.');
-
-    } catch (err) {
-      console.error('[addTeacher]', err);
-      toast('⚠ Unexpected error: ' + (err.message || err));
-    } finally {
-      btn.textContent = originalText;
-      btn.disabled = false;
-    }
+    renderTeachers();
+    toast('✓ Teacher added! Share their email and password so they can log in.');
   }
 
   let deleteId = null;
@@ -1017,6 +991,7 @@
 
   function toast(msg) {
     const t = document.getElementById('toast');
+    if (!t) { console.warn('[toast]', msg); return; }
     t.textContent = msg; t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3000);
   }
