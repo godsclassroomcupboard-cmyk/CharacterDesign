@@ -329,9 +329,9 @@
 
   // ── ROLE PASSWORDS — change these to your preferred passwords ──
   const PASSWORDS = {
-  admin:   'LDBBaura1007~',
-  teacher: 'LDBBaura1007~'
-};
+    admin:   'aurabot-admin-2024',
+    teacher: 'aurabot-teacher-2024'
+  };
 
   let selectedRole = null;
 
@@ -427,7 +427,7 @@
     btn.textContent = 'Signing in…';
     btn.disabled = true;
 
-    const studentEmail    = code.toLowerCase() + '@aurabot.student';
+    const studentEmail    = code.toLowerCase() + '@student.aurabotapp.com';
     const studentPassword = code + '-' + (foundClass.id || 'aurabot');
 
     // Try sign in first; if that fails, create the account
