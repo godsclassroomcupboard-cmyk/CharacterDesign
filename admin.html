@@ -824,37 +824,53 @@
     const name  = document.getElementById('t-name').value.trim();
     const email = document.getElementById('t-email').value.trim().toLowerCase();
     const pw    = document.getElementById('t-password').value.trim();
+
     if (!name || !email || !pw) { toast('Please fill in all fields'); return; }
-    if (pw.length < 8) { toast('Password must be at least 8 characters'); return; }
+    if (pw.length < 8)          { toast('Password must be at least 8 characters'); return; }
+
     const d = loadData();
     if (d.teachers.find(t => t.email === email)) { toast('A teacher with that email already exists'); return; }
 
-    // Create Supabase account for the teacher
-    const { data, error } = await _sb.auth.admin
-      ? // service role not available from browser — use signUp instead
-        { data: null, error: { message: 'use-signup' } }
-      : { data: null, error: { message: 'use-signup' } };
+    // Show loading state on button
+    const btn = document.querySelector('#section-teachers .btn-purple');
+    const originalText = btn.textContent;
+    btn.textContent = 'Creating account…';
+    btn.disabled = true;
 
-    // We use signUp which sends a confirmation email — teacher clicks it to activate
-    const { error: signupError } = await _sb.auth.signUp({
-      email,
-      password: pw,
-      options: { data: { display_name: name, username: email.split('@')[0], role: 'teacher' } }
-    });
+    try {
+      // Create Supabase account — sends confirmation email to teacher
+      const { error: signupError } = await _sb.auth.signUp({
+        email,
+        password: pw,
+        options: { data: { display_name: name, username: email.split('@')[0], role: 'teacher' } }
+      });
 
-    if (signupError && !signupError.message.includes('already registered')) {
-      toast('Supabase error: ' + signupError.message);
-      return;
+      // "User already registered" is fine — we still save them locally
+      if (signupError && !signupError.message.toLowerCase().includes('already registered')) {
+        toast('⚠ Supabase error: ' + signupError.message);
+        return;
+      }
+
+      // Save to local admin data store
+      const teacherId = Date.now();
+      d.teachers.push({ id: teacherId, name, email, password: pw });
+      saveData(d);
+
+      // Clear form
+      document.getElementById('t-name').value     = '';
+      document.getElementById('t-email').value    = '';
+      document.getElementById('t-password').value = '';
+
+      renderTeachers();
+      toast('✓ Teacher added! They will receive a confirmation email to activate their account.');
+
+    } catch (err) {
+      console.error('[addTeacher]', err);
+      toast('⚠ Unexpected error: ' + (err.message || err));
+    } finally {
+      btn.textContent = originalText;
+      btn.disabled = false;
     }
-
-    const teacherId = Date.now();
-    d.teachers.push({ id: teacherId, name, email, password: pw });
-    saveData(d);
-    document.getElementById('t-name').value = '';
-    document.getElementById('t-email').value = '';
-    document.getElementById('t-password').value = '';
-    renderTeachers();
-    toast('Teacher account created — they will get a confirmation email ✓');
   }
 
   let deleteId = null;
