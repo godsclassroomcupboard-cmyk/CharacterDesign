@@ -516,10 +516,9 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
     </div>
     <!-- Right: user info on light purple -->
     <div class="topbar-right" style="background:linear-gradient(90deg,#E8E3FA,#E4DFFA);height:72px;padding:0 20px;border-bottom:1px solid #DDD8F5;position:relative;">
-      <!-- Signed-out state -->
+      <!-- Signed-out state (guard redirects before this is visible) -->
       <div id="topbar-signedout" style="display:flex;align-items:center;gap:10px;">
-        <button onclick="openAuthModal('signin')" class="btn-outline" style="padding:8px 18px;font-size:13px;">Sign in</button>
-        <button onclick="openAuthModal('signup')" class="btn-purple" style="padding:8px 18px;font-size:13px;">Join free</button>
+        <a href="portal.html" class="btn-outline" style="padding:8px 18px;font-size:13px;text-decoration:none;color:inherit;">← Portal</a>
       </div>
       <!-- Signed-in state (hidden until auth resolves) -->
       <div id="topbar-signedin" style="display:none;align-items:center;gap:10px;">
@@ -838,8 +837,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
     </div>
     <div class="topbar-right" style="background:linear-gradient(90deg,#E8E3FA,#E4DFFA);height:72px;padding:0 20px;border-bottom:1px solid #DDD8F5;position:relative;">
       <div id="topbar-signedout-map" style="display:flex;align-items:center;gap:10px;">
-        <button onclick="openAuthModal('signin')" class="btn-outline" style="padding:8px 18px;font-size:13px;">Sign in</button>
-        <button onclick="openAuthModal('signup')" class="btn-purple" style="padding:8px 18px;font-size:13px;">Join free</button>
+        <a href="portal.html" class="btn-outline" style="padding:8px 18px;font-size:13px;text-decoration:none;color:inherit;">← Portal</a>
       </div>
       <div id="topbar-signedin-map" style="display:none;align-items:center;gap:10px;">
         <div style="text-align:right;">
@@ -2422,6 +2420,17 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// ── PORTAL AUTH GUARD ─────────────────────────────────────────
+// Block direct access — must come through portal.html
+(function portalGuard() {
+  const role = sessionStorage.getItem('aurabot_role');
+  const auth = sessionStorage.getItem('aurabot_auth');
+  if (!auth || (role !== 'student' && role !== 'teacher' && role !== 'admin')) {
+    // Not authenticated via portal — redirect
+    window.location.replace('portal.html?role=student');
+  }
+})();
+
 // ── Auth state ───────────────────────────────────────────────
 let _currentUser    = null;
 let _currentProfile = null;
@@ -2537,8 +2546,8 @@ async function handleSignIn() {
 
 async function doSignOut() {
   await _sb.auth.signOut();
-  toggleProfileDropdown();
-  showToast('Signed out — see you soon!');
+  sessionStorage.clear();
+  window.location.href = 'portal.html';
 }
 
 function _showAuthError(el, msg) {

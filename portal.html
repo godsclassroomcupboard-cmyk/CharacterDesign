@@ -279,7 +279,7 @@
 
   <div class="portal-heading">Sign in as</div>
 
-  <div class="role-selector">
+  <div class="role-selector" style="grid-template-columns:1fr 1fr 1fr;">
     <div class="role-btn" id="role-admin" onclick="selectRole('admin')">
       <div class="role-icon">🛡️</div>
       <span class="role-label">Admin</span>
@@ -288,21 +288,45 @@
       <div class="role-icon">🎓</div>
       <span class="role-label">Teacher</span>
     </div>
+    <div class="role-btn" id="role-student" onclick="selectRole('student')">
+      <div class="role-icon">🎒</div>
+      <span class="role-label">Student</span>
+    </div>
   </div>
 
-  <div class="input-wrap">
-    <label for="password">Password</label>
-    <input type="password" id="password" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()"/>
+  <!-- Admin / Teacher: password field -->
+  <div id="staff-login">
+    <div class="input-wrap">
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
   </div>
 
-  <div class="error-msg" id="error-msg">Incorrect password. Please try again.</div>
+  <!-- Student: login code -->
+  <div id="student-login" style="display:none;">
+    <div class="input-wrap">
+      <label for="student-code">Your Login Code</label>
+      <input type="text" id="student-code" placeholder="e.g. AB3X7K" maxlength="6"
+        style="text-transform:uppercase;letter-spacing:4px;font-size:18px;font-weight:900;text-align:center;"
+        onkeydown="if(event.key==='Enter')doLogin()" oninput="this.value=this.value.toUpperCase()"/>
+    </div>
+    <p style="font-size:12px;font-weight:700;color:rgba(162,155,254,0.6);text-align:center;margin-top:-8px;margin-bottom:16px;">
+      Your teacher will give you this code
+    </p>
+  </div>
 
-  <button class="btn-login" onclick="doLogin()">Enter Portal →</button>
+  <div class="error-msg" id="error-msg"></div>
 
-  <a class="back-link" href="index.html">← Back to Aurabot</a>
+  <button class="btn-login" onclick="doLogin()" id="login-btn">Enter →</button>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  // ── SUPABASE (for student login) ──
+  const SUPABASE_URL      = 'https://nwhaliuajvovesnrdfrr.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53aGFsaXVhanZvdmVzbnJkZnJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDUyMzEsImV4cCI6MjA5NTQ4MTIzMX0.cGZ_yqeTyQYyyUAIc1CrV-M6iwN34CtSzjYBF_nG9xE';
+  const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
   // ── ROLE PASSWORDS — change these to your preferred passwords ──
   const PASSWORDS = {
     admin:   'aurabot-admin-2024',
@@ -315,43 +339,159 @@
     selectedRole = role;
     document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
     document.getElementById('role-' + role).classList.add('selected');
-    document.getElementById('password').focus();
+
+    // Show/hide the correct input
+    document.getElementById('staff-login').style.display  = role === 'student' ? 'none' : 'block';
+    document.getElementById('student-login').style.display = role === 'student' ? 'block' : 'none';
+    document.getElementById('error-msg').style.display = 'none';
+
+    // Focus the right field
+    if (role === 'student') {
+      document.getElementById('student-code').focus();
+    } else {
+      document.getElementById('password').focus();
+    }
+
+    // Update button label
+    document.getElementById('login-btn').textContent = role === 'student' ? 'Enter Aurabot →' : 'Enter Portal →';
   }
 
-  function doLogin() {
-    const pw = document.getElementById('password').value.trim();
+  async function doLogin() {
     const errEl = document.getElementById('error-msg');
-    const card = document.querySelector('.portal-card');
+    const card  = document.querySelector('.portal-card');
+    errEl.style.display = 'none';
 
     if (!selectedRole) {
-      errEl.textContent = 'Please select a role first.';
-      errEl.style.display = 'block';
+      showError('Please select a role first.');
       return;
     }
+
+    if (selectedRole === 'student') {
+      await doStudentLogin();
+    } else {
+      doStaffLogin();
+    }
+  }
+
+  // ── STAFF LOGIN (admin / teacher) ──
+  function doStaffLogin() {
+    const pw    = document.getElementById('password').value.trim();
+    const errEl = document.getElementById('error-msg');
+    const card  = document.querySelector('.portal-card');
 
     if (pw === PASSWORDS[selectedRole]) {
       sessionStorage.setItem('aurabot_role', selectedRole);
       sessionStorage.setItem('aurabot_auth', 'true');
-      errEl.style.display = 'none';
       if (selectedRole === 'admin') {
         window.location.href = 'admin.html';
       } else {
         window.location.href = 'teacher.html';
       }
     } else {
-      errEl.textContent = 'Incorrect password. Please try again.';
-      errEl.style.display = 'block';
+      showError('Incorrect password. Please try again.');
       document.getElementById('password').value = '';
-      card.classList.remove('shake');
-      void card.offsetWidth;
-      card.classList.add('shake');
+      shake(card);
     }
   }
 
-  // Auto-select teacher if coming from a teacher link
+  // ── STUDENT LOGIN (login code) ──
+  async function doStudentLogin() {
+    const code  = document.getElementById('student-code').value.trim().toUpperCase();
+    const card  = document.querySelector('.portal-card');
+    const btn   = document.getElementById('login-btn');
+
+    if (!code || code.length < 4) {
+      showError('Please enter your login code.');
+      return;
+    }
+
+    // Look up student in teacher's local class data
+    const teacherData = JSON.parse(localStorage.getItem('aurabot_teacher_data') || '{"classes":[]}');
+    let foundStudent = null;
+    let foundClass   = null;
+
+    teacherData.classes.forEach(cls => {
+      (cls.students || []).forEach(s => {
+        if (s.code === code) { foundStudent = s; foundClass = cls; }
+      });
+    });
+
+    if (!foundStudent) {
+      showError("Code not recognised. Check your code and try again.");
+      shake(card);
+      return;
+    }
+
+    // Student found — sign them into Supabase using code-based credentials
+    // Students sign in with: email = code@aurabot.app, password = code (simple, teacher-managed)
+    btn.textContent = 'Signing in…';
+    btn.disabled = true;
+
+    const studentEmail    = code.toLowerCase() + '@aurabot.student';
+    const studentPassword = code + '-' + (foundClass.id || 'aurabot');
+
+    // Try sign in first; if that fails, create the account
+    let { error } = await _sb.auth.signInWithPassword({ email: studentEmail, password: studentPassword });
+
+    if (error && error.message.includes('Invalid login credentials')) {
+      // First time — create Supabase account for this student
+      const { error: signupError } = await _sb.auth.signUp({
+        email: studentEmail,
+        password: studentPassword,
+        options: {
+          data: {
+            username: code,
+            display_name: foundStudent.name,
+            class_code: code
+          },
+          emailRedirectTo: null
+        }
+      });
+      if (signupError && !signupError.message.includes('already registered')) {
+        btn.textContent = 'Enter Aurabot →';
+        btn.disabled = false;
+        showError('Sign-in failed: ' + signupError.message);
+        return;
+      }
+      // Sign in after signup
+      const { error: signinError } = await _sb.auth.signInWithPassword({ email: studentEmail, password: studentPassword });
+      if (signinError) {
+        btn.textContent = 'Enter Aurabot →';
+        btn.disabled = false;
+        showError('Could not sign in. Try again in a moment.');
+        return;
+      }
+    } else if (error) {
+      btn.textContent = 'Enter Aurabot →';
+      btn.disabled = false;
+      showError('Sign-in error: ' + error.message);
+      return;
+    }
+
+    // Signed in — store role and go to the character creator
+    sessionStorage.setItem('aurabot_role', 'student');
+    sessionStorage.setItem('aurabot_student_code', code);
+    sessionStorage.setItem('aurabot_student_name', foundStudent.name);
+    sessionStorage.setItem('aurabot_auth', 'true');
+    window.location.href = 'index.html';
+  }
+
+  // ── HELPERS ──
+  function showError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function shake(el) {
+    el.classList.remove('shake');
+    void el.offsetWidth;
+    el.classList.add('shake');
+  }
+
+  // Auto-select role from URL param
   const params = new URLSearchParams(window.location.search);
-  if (params.get('role') === 'teacher') selectRole('teacher');
-  if (params.get('role') === 'admin') selectRole('admin');
+  if (params.get('role')) selectRole(params.get('role'));
 </script>
 </body>
 </html>
