@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Aurabot — Teacher Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #1A1D3A; --purple: #6C5CE7; --pink: #E84393;
+    --lavender: #A29BFE; --light-bg: #EAE7FC; --white: #fff;
+  }
+  body { font-family: 'Nunito', sans-serif; background: var(--light-bg); display: flex; height: 100vh; overflow: hidden; }
+
+  /* SIDEBAR */
+  .sidebar { width: 220px; background: var(--navy); display: flex; flex-direction: column; flex-shrink: 0; padding-bottom: 16px; }
+  .sidebar-logo { padding: 22px 18px 18px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(162,155,254,0.1); }
+  .logo-icon { width:38px;height:38px;background:linear-gradient(135deg,var(--purple),var(--pink));border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(108,92,231,0.4);flex-shrink:0; }
+  .logo-text .name { font-family:'Baloo 2',cursive;font-size:16px;font-weight:900;color:white; }
+  .logo-text .role { font-size:9px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:var(--lavender); }
+  .teacher-name { padding: 12px 18px 8px; font-size: 12px; font-weight: 800; color: rgba(255,255,255,0.4); letter-spacing: 0.5px; }
+  .sidebar-nav { flex:1;padding:4px 10px 12px;display:flex;flex-direction:column;gap:2px; }
+  .nav-item { display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;transition:all 0.18s;border:none;background:transparent;font-family:'Nunito',sans-serif;width:100%;text-align:left; }
+  .nav-item svg { width:17px;height:17px;flex-shrink:0; }
+  .nav-item:hover { background:rgba(162,155,254,0.1);color:rgba(255,255,255,0.8); }
+  .nav-item.active { background:rgba(108,92,231,0.25);color:white; }
+  .sidebar-bottom { padding:12px 10px;border-top:1px solid rgba(162,155,254,0.1); }
+  .btn-signout { display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;color:rgba(232,67,147,0.7);font-size:13px;font-weight:700;width:100%;background:transparent;border:none;font-family:'Nunito',sans-serif;transition:all 0.18s; }
+  .btn-signout:hover { background:rgba(232,67,147,0.1);color:var(--pink); }
+
+  /* MAIN */
+  .main { flex:1;display:flex;flex-direction:column;overflow:hidden; }
+  .topbar { background:white;border-bottom:1px solid #E5E0FA;padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0; }
+  .topbar-title { font-family:'Baloo 2',cursive;font-size:20px;font-weight:800;color:var(--navy); }
+  .topbar-badge { background:linear-gradient(135deg,#00B894,#00CEC9);color:white;font-size:11px;font-weight:800;padding:4px 12px;border-radius:99px;letter-spacing:0.5px; }
+  .content { flex:1;overflow-y:auto;padding:28px; }
+
+  /* SECTIONS */
+  .section { display:none; }
+  .section.active { display:block; }
+
+  /* PANELS */
+  .panel { background:white;border-radius:18px;padding:24px;box-shadow:0 2px 16px rgba(108,92,231,0.07);margin-bottom:20px; }
+  .panel-title { font-size:15px;font-weight:900;color:var(--navy);margin-bottom:18px;display:flex;align-items:center;gap:8px; }
+  .panel-title span { font-size:18px; }
+
+  /* STATS */
+  .stats-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px; }
+  .stat-card { background:white;border-radius:16px;padding:20px;box-shadow:0 2px 16px rgba(108,92,231,0.07);border-left:4px solid var(--purple); }
+  .stat-card.pink { border-left-color:var(--pink); }
+  .stat-card.green { border-left-color:#00B894; }
+  .stat-card.orange { border-left-color:#FDCB6E; }
+  .stat-num { font-family:'Baloo 2',cursive;font-size:32px;font-weight:900;color:var(--navy);line-height:1; }
+  .stat-label { font-size:12px;font-weight:700;color:#9E98C8;margin-top:4px; }
+
+  /* CLASS CARDS */
+  .classes-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px; }
+  .class-card {
+    background:white;border-radius:16px;padding:20px;box-shadow:0 2px 16px rgba(108,92,231,0.07);
+    border-top:4px solid var(--purple);cursor:pointer;transition:all 0.2s;
+  }
+  .class-card:hover { transform:translateY(-3px);box-shadow:0 8px 28px rgba(108,92,231,0.14); }
+  .class-card-name { font-size:16px;font-weight:900;color:var(--navy);margin-bottom:6px; }
+  .class-card-meta { font-size:12px;font-weight:700;color:#9E98C8; }
+  .class-card-stats { display:flex;gap:12px;margin-top:12px; }
+  .class-stat { background:#F8F5FF;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:800;color:var(--purple); }
+
+  /* TABLE */
+  .data-table { width:100%;border-collapse:collapse; }
+  .data-table th { text-align:left;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#9E98C8;padding:0 14px 12px; }
+  .data-table td { padding:12px 14px;font-size:13px;font-weight:700;color:var(--navy);border-top:1px solid #F0ECFC; }
+  .data-table tr:hover td { background:#F8F5FF; }
+
+  /* PILL */
+  .pill { display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:800; }
+  .pill-purple { background:#EDE9FF;color:var(--purple); }
+  .pill-pink { background:#FFE9F3;color:var(--pink); }
+  .pill-green { background:#E6FAF5;color:#00B894; }
+  .pill-grey { background:#F0ECFC;color:#9E98C8; }
+
+  /* FORMS */
+  .form-row { display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap; }
+  .form-group { flex:1;min-width:180px; }
+  .form-group label { display:block;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#9E98C8;margin-bottom:6px; }
+  .form-group input, .form-group select, .form-group textarea { width:100%;border:2px solid #E5E0FA;border-radius:10px;padding:10px 14px;font-size:13px;font-family:'Nunito',sans-serif;color:var(--navy);outline:none;transition:border-color 0.18s;background:white; }
+  .form-group input:focus, .form-group select:focus { border-color:var(--purple); }
+  .form-group textarea { resize:vertical;min-height:80px; }
+
+  .btn { padding:10px 20px;border-radius:10px;font-size:13px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;border:none;transition:all 0.18s; }
+  .btn-purple { background:linear-gradient(135deg,var(--purple),#9B59B6);color:white;box-shadow:0 3px 12px rgba(108,92,231,0.3); }
+  .btn-purple:hover { transform:translateY(-1px);box-shadow:0 5px 18px rgba(108,92,231,0.4); }
+  .btn-pink { background:linear-gradient(135deg,var(--pink),#FF6EB4);color:white;box-shadow:0 3px 12px rgba(232,67,147,0.3); }
+  .btn-red { background:#FFE9F3;color:var(--pink); }
+  .btn-red:hover { background:var(--pink);color:white; }
+  .btn-outline { background:white;color:var(--purple);border:2px solid #E5E0FA; }
+  .btn-outline:hover { border-color:var(--purple); }
+  .btn-sm { padding:6px 12px;font-size:12px; }
+
+  /* CONTENT VIEWER */
+  .content-card {
+    border:1px solid #E5E0FA;border-radius:14px;padding:16px;margin-bottom:12px;
+  }
+  .content-card-header { display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px; }
+  .content-card-title { font-size:14px;font-weight:900;color:var(--navy); }
+  .content-card-meta { font-size:11px;color:#9E98C8;font-weight:700;margin-top:3px; }
+  .content-card-body { font-size:13px;font-weight:600;color:#555;line-height:1.6;background:#F8F5FF;border-radius:10px;padding:12px; }
+  .feedback-area { margin-top:12px; }
+  .feedback-label { font-size:11px;font-weight:800;color:#9E98C8;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px; }
+  .feedback-input { width:100%;border:2px solid #E5E0FA;border-radius:10px;padding:9px 12px;font-size:13px;font-family:'Nunito',sans-serif;color:var(--navy);outline:none;transition:border-color 0.18s;resize:none;min-height:60px; }
+  .feedback-input:focus { border-color:var(--purple); }
+  .saved-feedback { background:#E6FAF5;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;color:#00B894;border-left:3px solid #00B894;margin-top:8px; }
+
+  /* STUDENT LOGIN CARD */
+  .login-card {
+    background:linear-gradient(135deg,var(--navy),#2D3068);
+    border-radius:14px;padding:16px 20px;
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .login-card-name { font-size:14px;font-weight:900;color:white; }
+  .login-card-code { font-family:monospace;font-size:18px;font-weight:900;color:var(--lavender);letter-spacing:3px; }
+  .login-card-label { font-size:10px;font-weight:800;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px; }
+
+  /* EMPTY STATE */
+  .empty-state { text-align:center;padding:40px 20px;color:#9E98C8; }
+  .empty-state .empty-icon { font-size:40px;margin-bottom:12px; }
+  .empty-state p { font-size:13px;font-weight:700; }
+
+  /* TABS */
+  .tab-bar { display:flex;gap:4px;background:#F0ECFC;border-radius:12px;padding:4px;margin-bottom:20px;width:fit-content; }
+  .tab-btn { padding:8px 16px;border-radius:9px;font-size:13px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;border:none;background:transparent;color:#9E98C8;transition:all 0.18s; }
+  .tab-btn.active { background:white;color:var(--purple);box-shadow:0 2px 8px rgba(108,92,231,0.12); }
+
+  /* MODAL */
+  .modal-overlay { display:none;position:fixed;inset:0;background:rgba(26,29,58,0.7);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:white;border-radius:20px;padding:28px;width:100%;max-width:440px;box-shadow:0 24px 60px rgba(0,0,0,0.2);max-height:80vh;overflow-y:auto; }
+  .modal-title { font-size:17px;font-weight:900;color:var(--navy);margin-bottom:20px; }
+  .modal-actions { display:flex;gap:10px;justify-content:flex-end;margin-top:20px; }
+
+  /* TOAST */
+  #toast { position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--navy);color:white;padding:12px 24px;border-radius:99px;font-size:13px;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,0.2);transition:transform 0.3s cubic-bezier(0.16,1,0.3,1);z-index:9999; }
+  #toast.show { transform:translateX(-50%) translateY(0); }
+
+  /* BACK BUTTON */
+  .back-btn { display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:var(--lavender);cursor:pointer;background:none;border:none;font-family:'Nunito',sans-serif;margin-bottom:20px;padding:8px 12px;border-radius:10px;transition:background 0.18s; }
+  .back-btn:hover { background:rgba(162,155,254,0.15); }
+
+  /* PRINT */
+  @media print {
+    .sidebar, .topbar, .back-btn, .btn, .tab-bar { display:none!important; }
+    .main { width:100%; }
+    .content { padding:0; }
+    .login-card { break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 32 32" fill="none" width="22" height="22">
+        <rect x="6" y="10" width="20" height="16" rx="5" fill="#fff" opacity="0.95"/>
+        <circle cx="12" cy="18" r="2.4" fill="#6C5CE7"/>
+        <circle cx="20" cy="18" r="2.4" fill="#6C5CE7"/>
+        <rect x="13" y="22" width="6" height="2" rx="1" fill="#E84393"/>
+        <rect x="14" y="5" width="4" height="6" rx="2" fill="#A29BFE"/>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <div class="name">Aurabot</div>
+      <div class="role">🎓 Teacher</div>
+    </div>
+  </div>
+  <div class="teacher-name" id="sidebar-teacher-name">Signed in</div>
+
+  <nav class="sidebar-nav">
+    <button class="nav-item active" onclick="showSection('overview', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Overview
+    </button>
+    <button class="nav-item" onclick="showSection('classes', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      Classes
+    </button>
+    <button class="nav-item" onclick="showSection('content', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      Student Content
+    </button>
+    <button class="nav-item" onclick="showSection('students', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+      Students
+    </button>
+    <button class="nav-item" onclick="showSection('stats', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Stats
+    </button>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <button class="btn-signout" onclick="signOut()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">Overview</div>
+    <div class="topbar-badge">🎓 Teacher Dashboard</div>
+  </div>
+
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div class="section active" id="section-overview">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-num" id="stat-classes">0</div><div class="stat-label">My Classes</div></div>
+        <div class="stat-card pink"><div class="stat-num" id="stat-students">0</div><div class="stat-label">Students</div></div>
+        <div class="stat-card green"><div class="stat-num" id="stat-characters">0</div><div class="stat-label">Characters Made</div></div>
+        <div class="stat-card orange"><div class="stat-num" id="stat-feedback">0</div><div class="stat-label">Feedback Given</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span>📚</span> My Classes</div>
+        <div id="overview-classes"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span>📢</span> Announcements from Admin</div>
+        <div id="overview-announcements"></div>
+      </div>
+    </div>
+
+    <!-- CLASSES -->
+    <div class="section" id="section-classes">
+      <div class="panel">
+        <div class="panel-title"><span>➕</span> Create New Class</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Class Name</label>
+            <input type="text" id="class-name" placeholder="e.g. Year 9 English — Period 2"/>
+          </div>
+          <div class="form-group" style="flex:0.5;">
+            <label>Year Level</label>
+            <select id="class-year">
+              <option>Year 7</option><option>Year 8</option><option>Year 9</option>
+              <option>Year 10</option><option>Year 11</option><option>Year 12</option><option>Year 13</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-purple" onclick="createClass()">Create Class</button>
+      </div>
+
+      <div id="classes-list"></div>
+    </div>
+
+    <!-- STUDENT CONTENT -->
+    <div class="section" id="section-content">
+      <div class="panel" style="padding-bottom:0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div class="panel-title" style="margin:0;"><span>🎨</span> Student Characters</div>
+          <select id="content-filter-class" onchange="renderContent()" style="border:2px solid #E5E0FA;border-radius:10px;padding:8px 12px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;outline:none;color:var(--navy);">
+            <option value="all">All Classes</option>
+          </select>
+        </div>
+      </div>
+      <div id="content-list"></div>
+    </div>
+
+    <!-- STUDENTS -->
+    <div class="section" id="section-students">
+      <div class="panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div class="panel-title" style="margin:0;"><span>🎒</span> All Students</div>
+          <div style="display:flex;gap:10px;">
+            <select id="students-filter-class" onchange="renderStudentsTable()" style="border:2px solid #E5E0FA;border-radius:10px;padding:8px 12px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;outline:none;color:var(--navy);">
+              <option value="all">All Classes</option>
+            </select>
+            <button class="btn btn-purple btn-sm" onclick="openAddStudentModal()">+ Add Student</button>
+          </div>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Class</th><th>Login Code</th><th>Characters</th><th>Actions</th></tr></thead>
+          <tbody id="students-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span>🖨️</span> Print Login Cards</div>
+        <p style="font-size:13px;font-weight:700;color:#9E98C8;margin-bottom:16px;">Print these cards and hand them to students so they can log in to Aurabot.</p>
+        <div style="display:flex;gap:10px;margin-bottom:16px;">
+          <select id="print-filter" style="border:2px solid #E5E0FA;border-radius:10px;padding:8px 12px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;outline:none;color:var(--navy);">
+            <option value="all">All Classes</option>
+          </select>
+          <button class="btn btn-outline" onclick="window.print()">🖨️ Print Cards</button>
+        </div>
+        <div id="login-cards"></div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="section" id="section-stats">
+      <div class="panel">
+        <div class="panel-title"><span>📊</span> Usage Overview</div>
+        <div class="stats-grid" style="margin-bottom:0;">
+          <div class="stat-card"><div class="stat-num" id="stats-classes">0</div><div class="stat-label">Classes</div></div>
+          <div class="stat-card pink"><div class="stat-num" id="stats-students">0</div><div class="stat-label">Students</div></div>
+          <div class="stat-card green"><div class="stat-num" id="stats-characters">0</div><div class="stat-label">Characters</div></div>
+          <div class="stat-card orange"><div class="stat-num" id="stats-feedback">0</div><div class="stat-label">Feedback</div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span>🏆</span> Most Active Students</div>
+        <table class="data-table">
+          <thead><tr><th>Student</th><th>Class</th><th>Characters</th><th>Activity</th></tr></thead>
+          <tbody id="stats-students-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span>📚</span> Class Breakdown</div>
+        <table class="data-table">
+          <thead><tr><th>Class</th><th>Students</th><th>Characters</th><th>Feedback Given</th></tr></thead>
+          <tbody id="stats-classes-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+</div><!-- end main -->
+
+<div id="toast"></div>
+
+<!-- ADD STUDENT MODAL -->
+<div class="modal-overlay" id="add-student-modal">
+  <div class="modal">
+    <div class="modal-title">Add Student</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Student Name</label>
+        <input type="text" id="s-name" placeholder="e.g. Emma T."/>
+      </div>
+      <div class="form-group">
+        <label>Class</label>
+        <select id="s-class"></select>
+      </div>
+    </div>
+    <p style="font-size:12px;font-weight:700;color:#9E98C8;">A login code will be auto-generated for the student.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('add-student-modal')">Cancel</button>
+      <button class="btn btn-purple" onclick="addStudent()">Add Student</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLASS DETAIL MODAL -->
+<div class="modal-overlay" id="class-detail-modal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-title" id="class-detail-title">Class Details</div>
+    <div id="class-detail-body"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('class-detail-modal')">Close</button>
+      <button class="btn btn-purple" onclick="openAddStudentToClass()">+ Add Student</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── AUTH GUARD ──
+  if (sessionStorage.getItem('aurabot_role') !== 'teacher') {
+    window.location.href = 'portal.html';
+  }
+
+  // ── TEACHER IDENTITY ──
+  // In single-password mode, teacher name is generic. 
+  // Admins can set up named accounts; if so, that data lives in admin data.
+  let _teacherId = sessionStorage.getItem('aurabot_teacher_id');
+  let _teacherName = sessionStorage.getItem('aurabot_teacher_name') || 'Teacher';
+
+  // Try to match to an admin-created account
+  (function resolveTeacher() {
+    const adminData = JSON.parse(localStorage.getItem('aurabot_admin_data') || '{"teachers":[]}');
+    if (adminData.teachers.length && !_teacherId) {
+      // If only one teacher account exists, auto-assign
+      if (adminData.teachers.length === 1) {
+        _teacherId = String(adminData.teachers[0].id);
+        _teacherName = adminData.teachers[0].name;
+        sessionStorage.setItem('aurabot_teacher_id', _teacherId);
+        sessionStorage.setItem('aurabot_teacher_name', _teacherName);
+      }
+    }
+    document.getElementById('sidebar-teacher-name').textContent = _teacherName;
+  })();
+
+  // ── DATA ──
+  function loadData() {
+    return JSON.parse(localStorage.getItem('aurabot_teacher_data') || JSON.stringify({ classes: [] }));
+  }
+  function saveData(d) { localStorage.setItem('aurabot_teacher_data', JSON.stringify(d)); }
+
+  function loadAdminData() {
+    return JSON.parse(localStorage.getItem('aurabot_admin_data') || '{"teachers":[],"announcements":[]}');
+  }
+
+  function myClasses() {
+    const d = loadData();
+    // If teacher has an ID, filter to their classes; otherwise show all
+    if (_teacherId) {
+      return d.classes.filter(c => String(c.teacherId) === _teacherId);
+    }
+    return d.classes;
+  }
+
+  // ── NAV ──
+  function showSection(name, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    if (btn) btn.classList.add('active');
+    const titles = { overview:'Overview', classes:'Classes', content:'Student Content', students:'Students', stats:'Stats' };
+    document.getElementById('topbar-title').textContent = titles[name];
+    if (name === 'overview') renderOverview();
+    if (name === 'classes') renderClasses();
+    if (name === 'content') { populateContentFilter(); renderContent(); }
+    if (name === 'students') { populateStudentFilters(); renderStudentsTable(); renderLoginCards(); }
+    if (name === 'stats') renderStats();
+  }
+
+  // ── CLASSES ──
+  function createClass() {
+    const name = document.getElementById('class-name').value.trim();
+    const year = document.getElementById('class-year').value;
+    if (!name) { toast('Please enter a class name'); return; }
+    const d = loadData();
+    d.classes.push({
+      id: Date.now(),
+      teacherId: _teacherId ? parseInt(_teacherId) : null,
+      name, year, students: [], createdAt: new Date().toLocaleDateString('en-NZ')
+    });
+    saveData(d);
+    document.getElementById('class-name').value = '';
+    renderClasses();
+    toast('Class created ✓');
+  }
+
+  function deleteClass(id) {
+    if (!confirm('Delete this class and all its students?')) return;
+    const d = loadData();
+    d.classes = d.classes.filter(c => c.id !== id);
+    saveData(d);
+    renderClasses();
+    toast('Class deleted');
+  }
+
+  let _activeClassId = null;
+  function openClassDetail(id) {
+    _activeClassId = id;
+    const d = loadData();
+    const cls = d.classes.find(c => c.id === id);
+    document.getElementById('class-detail-title').textContent = `📚 ${cls.name}`;
+    const students = cls.students || [];
+    document.getElementById('class-detail-body').innerHTML = `
+      <p style="font-size:12px;font-weight:700;color:#9E98C8;margin-bottom:16px;">Year ${cls.year} · ${students.length} students · Created ${cls.createdAt}</p>
+      ${students.length ? `
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Code</th><th>Characters</th></tr></thead>
+          <tbody>${students.map(s => `<tr>
+            <td>${s.name}</td>
+            <td><code style="background:#F0ECFC;padding:2px 8px;border-radius:6px;">${s.code}</code></td>
+            <td>${s.characters||0}</td>
+          </tr>`).join('')}</tbody>
+        </table>` : '<div class="empty-state"><div class="empty-icon">👤</div><p>No students in this class yet</p></div>'}
+    `;
+    document.getElementById('class-detail-modal').classList.add('open');
+  }
+
+  function openAddStudentToClass() {
+    closeModal('class-detail-modal');
+    openAddStudentModal(_activeClassId);
+  }
+
+  function renderClasses() {
+    const classes = myClasses();
+    const el = document.getElementById('classes-list');
+    if (!classes.length) {
+      el.innerHTML = '<div class="panel"><div class="empty-state"><div class="empty-icon">📚</div><p>No classes yet — create one above</p></div></div>';
+      return;
+    }
+    el.innerHTML = classes.map(c => `
+      <div class="panel" style="margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div>
+            <div style="font-size:16px;font-weight:900;color:var(--navy);">${c.name}</div>
+            <div style="font-size:12px;font-weight:700;color:#9E98C8;margin-top:3px;">${c.year} · ${(c.students||[]).length} students · Created ${c.createdAt}</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-outline btn-sm" onclick="openClassDetail(${c.id})">View</button>
+            <button class="btn btn-purple btn-sm" onclick="openAddStudentModal(${c.id})">+ Student</button>
+            <button class="btn btn-red btn-sm" onclick="deleteClass(${c.id})">Delete</button>
+          </div>
+        </div>
+        ${(c.students||[]).length ? `
+          <table class="data-table">
+            <thead><tr><th>Student</th><th>Login Code</th><th>Characters</th></tr></thead>
+            <tbody>${(c.students||[]).map(s => `<tr>
+              <td>${s.name}</td>
+              <td><code style="background:#F0ECFC;padding:2px 8px;border-radius:6px;">${s.code}</code></td>
+              <td>${s.characters||0}</td>
+            </tr>`).join('')}</tbody>
+          </table>` : `<div style="text-align:center;padding:20px;color:#9E98C8;font-size:13px;font-weight:700;">No students yet</div>`}
+      </div>`).join('');
+    updateOverviewStats();
+  }
+
+  // ── STUDENTS ──
+  function generateCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+  }
+
+  function openAddStudentModal(classId) {
+    const classes = myClasses();
+    const sel = document.getElementById('s-class');
+    sel.innerHTML = classes.map(c => `<option value="${c.id}" ${c.id === classId ? 'selected' : ''}>${c.name}</option>`).join('');
+    document.getElementById('s-name').value = '';
+    document.getElementById('add-student-modal').classList.add('open');
+  }
+
+  function addStudent() {
+    const name = document.getElementById('s-name').value.trim();
+    const classId = parseInt(document.getElementById('s-class').value);
+    if (!name) { toast('Please enter student name'); return; }
+    const d = loadData();
+    const cls = d.classes.find(c => c.id === classId);
+    if (!cls) return;
+    if (!cls.students) cls.students = [];
+    const code = generateCode();
+    cls.students.push({ id: Date.now(), name, code, characters: 0, feedback: [] });
+    saveData(d);
+    closeModal('add-student-modal');
+    renderStudentsTable();
+    renderLoginCards();
+    updateOverviewStats();
+    toast(`${name} added · Code: ${code} ✓`);
+  }
+
+  function removeStudent(classId, studentId) {
+    if (!confirm('Remove this student?')) return;
+    const d = loadData();
+    const cls = d.classes.find(c => c.id === classId);
+    if (cls) cls.students = (cls.students||[]).filter(s => s.id !== studentId);
+    saveData(d);
+    renderStudentsTable();
+    renderLoginCards();
+    toast('Student removed');
+  }
+
+  function renderStudentsTable() {
+    const filterVal = document.getElementById('students-filter-class')?.value || 'all';
+    const classes = myClasses().filter(c => filterVal === 'all' || String(c.id) === filterVal);
+    const tbody = document.getElementById('students-tbody');
+    const rows = [];
+    classes.forEach(c => {
+      (c.students||[]).forEach(s => {
+        rows.push(`<tr>
+          <td><strong>${s.name}</strong></td>
+          <td><span class="pill pill-purple">${c.name}</span></td>
+          <td><code style="background:#F0ECFC;padding:2px 8px;border-radius:6px;font-size:12px;letter-spacing:2px;">${s.code}</code></td>
+          <td>${s.characters||0}</td>
+          <td><button class="btn btn-red btn-sm" onclick="removeStudent(${c.id},${s.id})">Remove</button></td>
+        </tr>`);
+      });
+    });
+    tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">🎒</div><p>No students yet</p></div></td></tr>';
+  }
+
+  function renderLoginCards() {
+    const classes = myClasses();
+    const el = document.getElementById('login-cards');
+    const cards = [];
+    classes.forEach(c => {
+      (c.students||[]).forEach(s => {
+        cards.push(`
+          <div class="login-card">
+            <div>
+              <div class="login-card-label">Student</div>
+              <div class="login-card-name">${s.name}</div>
+              <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);margin-top:2px;">${c.name}</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="login-card-label">Login Code</div>
+              <div class="login-card-code">${s.code}</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:2px;">aurabotcharacter.netlify.app</div>
+            </div>
+          </div>`);
+      });
+    });
+    el.innerHTML = cards.length ? cards.join('') : '<div class="empty-state"><div class="empty-icon">🖨️</div><p>Add students to generate login cards</p></div>';
+  }
+
+  function populateStudentFilters() {
+    const classes = myClasses();
+    const opts = '<option value="all">All Classes</option>' + classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    document.getElementById('students-filter-class').innerHTML = opts;
+    document.getElementById('print-filter').innerHTML = opts;
+  }
+
+  // ── CONTENT ──
+  // Simulated student characters — in production these come from Supabase
+  function getSimulatedContent() {
+    const classes = myClasses();
+    const content = [];
+    classes.forEach(c => {
+      (c.students||[]).forEach(s => {
+        for (let i = 0; i < (s.characters||0); i++) {
+          content.push({
+            id: `${s.id}-${i}`,
+            studentName: s.name,
+            className: c.name,
+            classId: c.id,
+            characterName: `Character ${i+1}`,
+            description: 'Character created in Aurabot — view full details in the student app.',
+            createdAt: new Date().toLocaleDateString('en-NZ'),
+            feedback: (s.feedback||[])[i] || ''
+          });
+        }
+      });
+    });
+    return content;
+  }
+
+  function populateContentFilter() {
+    const classes = myClasses();
+    const sel = document.getElementById('content-filter-class');
+    sel.innerHTML = '<option value="all">All Classes</option>' + classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  }
+
+  function renderContent() {
+    const filterVal = document.getElementById('content-filter-class')?.value || 'all';
+    const content = getSimulatedContent().filter(c => filterVal === 'all' || String(c.classId) === filterVal);
+    const el = document.getElementById('content-list');
+    if (!content.length) {
+      el.innerHTML = '<div class="panel"><div class="empty-state"><div class="empty-icon">🎨</div><p>No student characters yet — students need to save their work in Aurabot</p></div></div>';
+      return;
+    }
+    el.innerHTML = content.map(item => `
+      <div class="content-card">
+        <div class="content-card-header">
+          <div>
+            <div class="content-card-title">🎭 ${item.characterName}</div>
+            <div class="content-card-meta">By ${item.studentName} · ${item.className} · ${item.createdAt}</div>
+          </div>
+        </div>
+        <div class="content-card-body">${item.description}</div>
+        <div class="feedback-area">
+          <div class="feedback-label">Your Feedback</div>
+          ${item.feedback ? `<div class="saved-feedback">✓ ${item.feedback}</div>` : ''}
+          <textarea class="feedback-input" id="fb-${item.id}" placeholder="Leave feedback for this student…">${item.feedback||''}</textarea>
+          <button class="btn btn-purple btn-sm" style="margin-top:8px;" onclick="saveFeedback('${item.id}')">Save Feedback</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function saveFeedback(itemId) {
+    const text = document.getElementById('fb-' + itemId)?.value?.trim();
+    if (!text) { toast('Please type feedback first'); return; }
+    // Parse itemId to find student
+    const [studentId] = itemId.split('-');
+    const d = loadData();
+    d.classes.forEach(c => {
+      const student = (c.students||[]).find(s => String(s.id) === studentId);
+      if (student) {
+        if (!student.feedback) student.feedback = [];
+        student.feedback[0] = text;
+      }
+    });
+    saveData(d);
+    // Update stat
+    updateOverviewStats();
+    toast('Feedback saved ✓');
+  }
+
+  // ── STATS ──
+  function renderStats() {
+    const classes = myClasses();
+    const totalStudents = classes.reduce((a,c) => a + (c.students||[]).length, 0);
+    const totalChars = classes.reduce((a,c) => a + (c.students||[]).reduce((b,s) => b + (s.characters||0), 0), 0);
+    const totalFeedback = classes.reduce((a,c) => a + (c.students||[]).reduce((b,s) => b + (s.feedback||[]).filter(Boolean).length, 0), 0);
+
+    document.getElementById('stats-classes').textContent = classes.length;
+    document.getElementById('stats-students').textContent = totalStudents;
+    document.getElementById('stats-characters').textContent = totalChars;
+    document.getElementById('stats-feedback').textContent = totalFeedback;
+
+    // Top students
+    const allStudents = [];
+    classes.forEach(c => (c.students||[]).forEach(s => allStudents.push({ ...s, className: c.name })));
+    allStudents.sort((a,b) => (b.characters||0) - (a.characters||0));
+    const tbody = document.getElementById('stats-students-tbody');
+    tbody.innerHTML = allStudents.slice(0,10).map((s,i) => `<tr>
+      <td><strong>${s.name}</strong></td>
+      <td><span class="pill pill-purple">${s.className}</span></td>
+      <td>${s.characters||0}</td>
+      <td>${['🏆','🥈','🥉'][i] || '⭐'} ${i < 3 ? ['Top','Runner up','Third'][i] : 'Active'}</td>
+    </tr>`).join('') || '<tr><td colspan="4"><div class="empty-state"><div class="empty-icon">📊</div><p>No data yet</p></div></td></tr>';
+
+    // Class breakdown
+    const classTbody = document.getElementById('stats-classes-tbody');
+    classTbody.innerHTML = classes.map(c => `<tr>
+      <td><strong>${c.name}</strong></td>
+      <td>${(c.students||[]).length}</td>
+      <td>${(c.students||[]).reduce((a,s) => a + (s.characters||0), 0)}</td>
+      <td>${(c.students||[]).reduce((a,s) => a + (s.feedback||[]).filter(Boolean).length, 0)}</td>
+    </tr>`).join('') || '<tr><td colspan="4"><div class="empty-state"><p>No classes yet</p></div></td></tr>';
+  }
+
+  // ── OVERVIEW ──
+  function renderOverview() {
+    updateOverviewStats();
+    renderOverviewClasses();
+    renderOverviewAnnouncements();
+  }
+
+  function updateOverviewStats() {
+    const classes = myClasses();
+    const students = classes.reduce((a,c) => a + (c.students||[]).length, 0);
+    const chars = classes.reduce((a,c) => a + (c.students||[]).reduce((b,s) => b + (s.characters||0), 0), 0);
+    const feedback = classes.reduce((a,c) => a + (c.students||[]).reduce((b,s) => b + (s.feedback||[]).filter(Boolean).length, 0), 0);
+    document.getElementById('stat-classes').textContent = classes.length;
+    document.getElementById('stat-students').textContent = students;
+    document.getElementById('stat-characters').textContent = chars;
+    document.getElementById('stat-feedback').textContent = feedback;
+  }
+
+  function renderOverviewClasses() {
+    const classes = myClasses();
+    const el = document.getElementById('overview-classes');
+    if (!classes.length) {
+      el.innerHTML = '<div class="empty-state"><div class="empty-icon">📚</div><p>No classes yet — go to Classes to create one</p></div>';
+      return;
+    }
+    el.innerHTML = `<div class="classes-grid">${classes.map(c => `
+      <div class="class-card" onclick="showSection('classes', document.querySelector('[onclick*=classes]'))">
+        <div class="class-card-name">${c.name}</div>
+        <div class="class-card-meta">${c.year}</div>
+        <div class="class-card-stats">
+          <div class="class-stat">👤 ${(c.students||[]).length} students</div>
+          <div class="class-stat">🎭 ${(c.students||[]).reduce((a,s)=>a+(s.characters||0),0)} characters</div>
+        </div>
+      </div>`).join('')}</div>`;
+  }
+
+  function renderOverviewAnnouncements() {
+    const d = loadAdminData();
+    const el = document.getElementById('overview-announcements');
+    const relevant = (d.announcements||[]).filter(a => a.audience === 'all' || a.audience === 'teachers').slice(0,3);
+    if (!relevant.length) {
+      el.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>No announcements from admin</p></div>';
+      return;
+    }
+    el.innerHTML = relevant.map(a => `
+      <div style="border:1px solid #E5E0FA;border-radius:12px;padding:14px 16px;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:700;color:var(--navy);line-height:1.5;">${a.text}</div>
+        <div style="font-size:11px;color:#9E98C8;font-weight:600;margin-top:4px;">📅 ${a.date}</div>
+      </div>`).join('');
+  }
+
+  // ── HELPERS ──
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function signOut() {
+    sessionStorage.clear();
+    window.location.href = 'portal.html';
+  }
+
+  // ── INIT ──
+  renderOverview();
+</script>
+</body>
+</html>

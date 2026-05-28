@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Aurabot — Staff Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #1A1D3A;
+    --purple: #6C5CE7;
+    --pink: #E84393;
+    --lavender: #A29BFE;
+    --light-bg: #EAE7FC;
+    --white: #ffffff;
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--navy);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Animated background blobs */
+  .bg-blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    animation: float 8s ease-in-out infinite;
+  }
+  .bg-blob-1 { width: 500px; height: 500px; background: var(--purple); top: -100px; left: -100px; animation-delay: 0s; }
+  .bg-blob-2 { width: 400px; height: 400px; background: var(--pink); bottom: -80px; right: -80px; animation-delay: 3s; }
+  .bg-blob-3 { width: 300px; height: 300px; background: var(--lavender); top: 50%; left: 50%; transform: translate(-50%,-50%); animation-delay: 1.5s; }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+  }
+  .bg-blob-3 { animation-name: float3; }
+  @keyframes float3 {
+    0%, 100% { transform: translate(-50%,-50%) scale(1); }
+    50% { transform: translate(-50%,-50%) scale(1.08); }
+  }
+
+  /* Star dots */
+  .star { position: fixed; border-radius: 50%; background: white; animation: twinkle 3s ease-in-out infinite; }
+  @keyframes twinkle { 0%,100%{opacity:0.2;} 50%{opacity:0.8;} }
+
+  .portal-card {
+    position: relative;
+    z-index: 10;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(162,155,254,0.2);
+    backdrop-filter: blur(20px);
+    border-radius: 28px;
+    padding: 48px 44px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(162,155,254,0.1);
+    animation: slideUp 0.6s cubic-bezier(0.16,1,0.3,1);
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .logo-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 36px;
+  }
+
+  .logo-icon {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 24px rgba(108,92,231,0.5);
+    margin-bottom: 4px;
+  }
+
+  .logo-title {
+    font-family: 'Baloo 2', cursive;
+    font-size: 28px;
+    font-weight: 900;
+    color: white;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--lavender);
+  }
+
+  .portal-heading {
+    font-size: 13px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+
+  /* Role selector */
+  .role-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .role-btn {
+    background: rgba(255,255,255,0.05);
+    border: 2px solid rgba(162,155,254,0.15);
+    border-radius: 14px;
+    padding: 14px 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    color: rgba(255,255,255,0.5);
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .role-btn:hover {
+    border-color: rgba(162,155,254,0.4);
+    background: rgba(162,155,254,0.08);
+    color: rgba(255,255,255,0.8);
+  }
+
+  .role-btn.selected {
+    border-color: var(--purple);
+    background: rgba(108,92,231,0.2);
+    color: white;
+    box-shadow: 0 0 0 3px rgba(108,92,231,0.2);
+  }
+
+  .role-icon { font-size: 24px; margin-bottom: 6px; }
+  .role-label { font-size: 13px; font-weight: 800; display: block; }
+
+  .input-wrap {
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  .input-wrap label {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--lavender);
+    margin-bottom: 8px;
+  }
+
+  .input-wrap input {
+    width: 100%;
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(162,155,254,0.2);
+    border-radius: 12px;
+    padding: 13px 16px;
+    font-size: 15px;
+    font-family: 'Nunito', sans-serif;
+    color: white;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  .input-wrap input:focus {
+    border-color: var(--purple);
+    background: rgba(108,92,231,0.1);
+  }
+
+  .input-wrap input::placeholder { color: rgba(255,255,255,0.25); }
+
+  .btn-login {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, var(--purple), #9B59B6);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 800;
+    font-family: 'Nunito', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(108,92,231,0.4);
+    letter-spacing: 0.3px;
+  }
+
+  .btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(108,92,231,0.5);
+  }
+
+  .btn-login:active { transform: translateY(0); }
+
+  .error-msg {
+    display: none;
+    background: rgba(232,67,147,0.15);
+    border: 1px solid rgba(232,67,147,0.3);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #FF8AC5;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .back-link {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(162,155,254,0.6);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .back-link:hover { color: var(--lavender); }
+
+  .shake { animation: shake 0.4s ease; }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)}
+    25%{transform:translateX(-8px)}
+    75%{transform:translateX(8px)}
+  }
+</style>
+</head>
+<body>
+
+<!-- Background blobs -->
+<div class="bg-blob bg-blob-1"></div>
+<div class="bg-blob bg-blob-2"></div>
+<div class="bg-blob bg-blob-3"></div>
+
+<!-- Twinkling stars -->
+<script>
+  for (let i = 0; i < 30; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 3 + 1;
+    s.style.cssText = `width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;animation-delay:${Math.random()*4}s;animation-duration:${2+Math.random()*3}s;`;
+    document.body.appendChild(s);
+  }
+</script>
+
+<div class="portal-card">
+  <div class="logo-area">
+    <div class="logo-icon">
+      <svg viewBox="0 0 32 32" fill="none" width="28" height="28">
+        <rect x="6" y="10" width="20" height="16" rx="5" fill="#fff" opacity="0.95"/>
+        <circle cx="12" cy="18" r="2.4" fill="#6C5CE7"/>
+        <circle cx="20" cy="18" r="2.4" fill="#6C5CE7"/>
+        <rect x="13" y="22" width="6" height="2" rx="1" fill="#E84393"/>
+        <rect x="14" y="5" width="4" height="6" rx="2" fill="#A29BFE"/>
+        <circle cx="16" cy="5" r="1.4" fill="#6C5CE7"/>
+      </svg>
+    </div>
+    <div class="logo-title">Aurabot</div>
+    <div class="logo-sub">Staff Portal</div>
+  </div>
+
+  <div class="portal-heading">Sign in as</div>
+
+  <div class="role-selector">
+    <div class="role-btn" id="role-admin" onclick="selectRole('admin')">
+      <div class="role-icon">🛡️</div>
+      <span class="role-label">Admin</span>
+    </div>
+    <div class="role-btn" id="role-teacher" onclick="selectRole('teacher')">
+      <div class="role-icon">🎓</div>
+      <span class="role-label">Teacher</span>
+    </div>
+  </div>
+
+  <div class="input-wrap">
+    <label for="password">Password</label>
+    <input type="password" id="password" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()"/>
+  </div>
+
+  <div class="error-msg" id="error-msg">Incorrect password. Please try again.</div>
+
+  <button class="btn-login" onclick="doLogin()">Enter Portal →</button>
+
+  <a class="back-link" href="index.html">← Back to Aurabot</a>
+</div>
+
+<script>
+  // ── ROLE PASSWORDS — change these to your preferred passwords ──
+  const PASSWORDS = {
+    admin:   'aurabot-admin-2024',
+    teacher: 'aurabot-teacher-2024'
+  };
+
+  let selectedRole = null;
+
+  function selectRole(role) {
+    selectedRole = role;
+    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('role-' + role).classList.add('selected');
+    document.getElementById('password').focus();
+  }
+
+  function doLogin() {
+    const pw = document.getElementById('password').value.trim();
+    const errEl = document.getElementById('error-msg');
+    const card = document.querySelector('.portal-card');
+
+    if (!selectedRole) {
+      errEl.textContent = 'Please select a role first.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    if (pw === PASSWORDS[selectedRole]) {
+      sessionStorage.setItem('aurabot_role', selectedRole);
+      sessionStorage.setItem('aurabot_auth', 'true');
+      errEl.style.display = 'none';
+      if (selectedRole === 'admin') {
+        window.location.href = 'admin.html';
+      } else {
+        window.location.href = 'teacher.html';
+      }
+    } else {
+      errEl.textContent = 'Incorrect password. Please try again.';
+      errEl.style.display = 'block';
+      document.getElementById('password').value = '';
+      card.classList.remove('shake');
+      void card.offsetWidth;
+      card.classList.add('shake');
+    }
+  }
+
+  // Auto-select teacher if coming from a teacher link
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('role') === 'teacher') selectRole('teacher');
+  if (params.get('role') === 'admin') selectRole('admin');
+</script>
+</body>
+</html>

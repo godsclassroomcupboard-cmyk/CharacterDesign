@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Aurabot — Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #1A1D3A; --purple: #6C5CE7; --pink: #E84393;
+    --lavender: #A29BFE; --light-bg: #EAE7FC; --white: #fff;
+    --sidebar-w: 220px;
+  }
+  body { font-family: 'Nunito', sans-serif; background: var(--light-bg); display: flex; height: 100vh; overflow: hidden; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar-w); background: var(--navy); display: flex; flex-direction: column;
+    flex-shrink: 0; padding-bottom: 16px;
+  }
+  .sidebar-logo {
+    padding: 22px 18px 18px; display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid rgba(162,155,254,0.1);
+  }
+  .logo-icon {
+    width: 38px; height: 38px; background: linear-gradient(135deg,var(--purple),var(--pink));
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(108,92,231,0.4); flex-shrink: 0;
+  }
+  .logo-text { line-height: 1.2; }
+  .logo-text .name { font-family:'Baloo 2',cursive; font-size:16px; font-weight:900; color:white; }
+  .logo-text .role { font-size:9px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; color:var(--lavender); }
+
+  .sidebar-nav { flex: 1; padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border-radius: 10px; cursor: pointer; color: rgba(255,255,255,0.5);
+    font-size: 13px; font-weight: 700; transition: all 0.18s; border: none;
+    background: transparent; font-family: 'Nunito', sans-serif; width: 100%; text-align: left;
+  }
+  .nav-item svg { width: 17px; height: 17px; flex-shrink: 0; }
+  .nav-item:hover { background: rgba(162,155,254,0.1); color: rgba(255,255,255,0.8); }
+  .nav-item.active { background: rgba(108,92,231,0.25); color: white; }
+  .nav-item.active svg { color: var(--pink); }
+
+  .sidebar-bottom { padding: 12px 10px; border-top: 1px solid rgba(162,155,254,0.1); }
+  .btn-signout {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border-radius: 10px; cursor: pointer; color: rgba(232,67,147,0.7);
+    font-size: 13px; font-weight: 700; width: 100%; background: transparent;
+    border: none; font-family: 'Nunito', sans-serif; transition: all 0.18s;
+  }
+  .btn-signout:hover { background: rgba(232,67,147,0.1); color: var(--pink); }
+
+  /* ── MAIN ── */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar {
+    background: white; border-bottom: 1px solid #E5E0FA;
+    padding: 0 28px; height: 64px; display: flex; align-items: center;
+    justify-content: space-between; flex-shrink: 0;
+  }
+  .topbar-title { font-family:'Baloo 2',cursive; font-size:20px; font-weight:800; color:var(--navy); }
+  .topbar-badge {
+    background: linear-gradient(135deg,var(--purple),var(--pink));
+    color: white; font-size:11px; font-weight:800; padding: 4px 12px;
+    border-radius: 99px; letter-spacing: 0.5px;
+  }
+
+  .content { flex: 1; overflow-y: auto; padding: 28px; }
+
+  /* ── SECTIONS ── */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── CARDS / PANELS ── */
+  .panel {
+    background: white; border-radius: 18px; padding: 24px;
+    box-shadow: 0 2px 16px rgba(108,92,231,0.07); margin-bottom: 20px;
+  }
+  .panel-title {
+    font-size: 15px; font-weight: 900; color: var(--navy);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
+  }
+  .panel-title span { font-size: 18px; }
+
+  /* Stats row */
+  .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 20px; }
+  .stat-card {
+    background: white; border-radius: 16px; padding: 20px;
+    box-shadow: 0 2px 16px rgba(108,92,231,0.07);
+    border-left: 4px solid var(--purple);
+  }
+  .stat-card.pink { border-left-color: var(--pink); }
+  .stat-card.green { border-left-color: #00B894; }
+  .stat-card.orange { border-left-color: #FDCB6E; }
+  .stat-num { font-family:'Baloo 2',cursive; font-size:32px; font-weight:900; color:var(--navy); line-height:1; }
+  .stat-label { font-size:12px; font-weight:700; color:#9E98C8; margin-top:4px; }
+
+  /* Table */
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th {
+    text-align: left; font-size: 11px; font-weight: 800; letter-spacing: 1px;
+    text-transform: uppercase; color: #9E98C8; padding: 0 14px 12px;
+  }
+  .data-table td { padding: 12px 14px; font-size:13px; font-weight:700; color:var(--navy); border-top:1px solid #F0ECFC; }
+  .data-table tr:hover td { background: #F8F5FF; }
+
+  /* Pill badge */
+  .pill {
+    display: inline-block; padding: 3px 10px; border-radius: 99px;
+    font-size: 11px; font-weight: 800;
+  }
+  .pill-purple { background:#EDE9FF; color:var(--purple); }
+  .pill-pink { background:#FFE9F3; color:var(--pink); }
+  .pill-green { background:#E6FAF5; color:#00B894; }
+
+  /* Forms */
+  .form-row { display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .form-group { flex: 1; min-width: 180px; }
+  .form-group label { display:block; font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:#9E98C8; margin-bottom:6px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width:100%; border:2px solid #E5E0FA; border-radius:10px; padding:10px 14px;
+    font-size:13px; font-family:'Nunito',sans-serif; color:var(--navy); outline:none;
+    transition:border-color 0.18s; background:white;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--purple); }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+
+  .btn { padding:10px 20px; border-radius:10px; font-size:13px; font-weight:800; font-family:'Nunito',sans-serif; cursor:pointer; border:none; transition:all 0.18s; }
+  .btn-purple { background:linear-gradient(135deg,var(--purple),#9B59B6); color:white; box-shadow:0 3px 12px rgba(108,92,231,0.3); }
+  .btn-purple:hover { transform:translateY(-1px); box-shadow:0 5px 18px rgba(108,92,231,0.4); }
+  .btn-red { background:#FFE9F3; color:var(--pink); }
+  .btn-red:hover { background:var(--pink); color:white; }
+  .btn-outline { background:white; color:var(--purple); border:2px solid #E5E0FA; }
+  .btn-outline:hover { border-color:var(--purple); }
+
+  /* Password visibility toggle */
+  .pw-wrap { position:relative; }
+  .pw-wrap input { padding-right: 44px; }
+  .pw-toggle { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:#9E98C8; font-size:16px; }
+
+  /* Announcement */
+  .announcement-item {
+    border:1px solid #E5E0FA; border-radius:12px; padding:14px 16px; margin-bottom:10px;
+    display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+  }
+  .announcement-text { font-size:13px; font-weight:700; color:var(--navy); flex:1; line-height:1.5; }
+  .announcement-meta { font-size:11px; color:#9E98C8; font-weight:600; margin-top:4px; }
+
+  /* Empty state */
+  .empty-state { text-align:center; padding:40px 20px; color:#9E98C8; }
+  .empty-state .empty-icon { font-size:40px; margin-bottom:12px; }
+  .empty-state p { font-size:13px; font-weight:700; }
+
+  /* Toast */
+  #toast {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px);
+    background:var(--navy); color:white; padding:12px 24px; border-radius:99px;
+    font-size:13px; font-weight:800; box-shadow:0 8px 24px rgba(0,0,0,0.2);
+    transition:transform 0.3s cubic-bezier(0.16,1,0.3,1); z-index:9999;
+  }
+  #toast.show { transform:translateX(-50%) translateY(0); }
+
+  /* Modal */
+  .modal-overlay {
+    display:none; position:fixed; inset:0; background:rgba(26,29,58,0.7);
+    backdrop-filter:blur(4px); z-index:1000; align-items:center; justify-content:center;
+  }
+  .modal-overlay.open { display:flex; }
+  .modal { background:white; border-radius:20px; padding:28px; width:100%; max-width:420px; box-shadow:0 24px 60px rgba(0,0,0,0.2); }
+  .modal-title { font-size:17px; font-weight:900; color:var(--navy); margin-bottom:20px; }
+  .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 32 32" fill="none" width="22" height="22">
+        <rect x="6" y="10" width="20" height="16" rx="5" fill="#fff" opacity="0.95"/>
+        <circle cx="12" cy="18" r="2.4" fill="#6C5CE7"/>
+        <circle cx="20" cy="18" r="2.4" fill="#6C5CE7"/>
+        <rect x="13" y="22" width="6" height="2" rx="1" fill="#E84393"/>
+        <rect x="14" y="5" width="4" height="6" rx="2" fill="#A29BFE"/>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <div class="name">Aurabot</div>
+      <div class="role">🛡️ Admin</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <button class="nav-item active" onclick="showSection('overview')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Overview
+    </button>
+    <button class="nav-item" onclick="showSection('teachers')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Teachers
+    </button>
+    <button class="nav-item" onclick="showSection('announcements')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Announcements
+    </button>
+    <button class="nav-item" onclick="showSection('passwords')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Passwords
+    </button>
+    <button class="nav-item" onclick="showSection('students')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+      All Students
+    </button>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <button class="btn-signout" onclick="signOut()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">Overview</div>
+    <div class="topbar-badge">🛡️ Admin Dashboard</div>
+  </div>
+
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div class="section active" id="section-overview">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-teachers">0</div>
+          <div class="stat-label">Teachers</div>
+        </div>
+        <div class="stat-card pink">
+          <div class="stat-num" id="stat-classes">0</div>
+          <div class="stat-label">Classes</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-num" id="stat-students">0</div>
+          <div class="stat-label">Students</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-num" id="stat-announcements">0</div>
+          <div class="stat-label">Announcements</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span>🎓</span> Teacher Accounts</div>
+        <div id="overview-teachers-list">
+          <div class="empty-state"><div class="empty-icon">👤</div><p>No teachers yet — add them in the Teachers tab</p></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span>📢</span> Recent Announcements</div>
+        <div id="overview-announcements-list">
+          <div class="empty-state"><div class="empty-icon">📭</div><p>No announcements yet</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEACHERS -->
+    <div class="section" id="section-teachers">
+      <div class="panel">
+        <div class="panel-title"><span>➕</span> Add Teacher Account</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="t-name" placeholder="e.g. Ms Johnson"/>
+          </div>
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="t-username" placeholder="e.g. ms.johnson"/>
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <div class="pw-wrap">
+              <input type="password" id="t-password" placeholder="Set a password"/>
+              <button class="pw-toggle" onclick="togglePw('t-password',this)">👁</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-purple" onclick="addTeacher()">Add Teacher</button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span>🎓</span> Teacher Accounts</div>
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Username</th><th>Classes</th><th>Students</th><th>Actions</th></tr></thead>
+          <tbody id="teachers-tbody">
+            <tr><td colspan="5"><div class="empty-state"><div class="empty-icon">👤</div><p>No teachers added yet</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ANNOUNCEMENTS -->
+    <div class="section" id="section-announcements">
+      <div class="panel">
+        <div class="panel-title"><span>📝</span> Post Announcement</div>
+        <div class="form-row">
+          <div class="form-group" style="flex:2;">
+            <label>Message</label>
+            <textarea id="ann-text" placeholder="Type your announcement for all teachers and students…"></textarea>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Audience</label>
+            <select id="ann-audience">
+              <option value="all">Everyone</option>
+              <option value="teachers">Teachers only</option>
+              <option value="students">Students only</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-purple" onclick="postAnnouncement()">Post Announcement</button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span>📢</span> Posted Announcements</div>
+        <div id="announcements-list">
+          <div class="empty-state"><div class="empty-icon">📭</div><p>No announcements yet</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASSWORDS -->
+    <div class="section" id="section-passwords">
+      <div class="panel">
+        <div class="panel-title"><span>🔐</span> Change Role Passwords</div>
+        <p style="font-size:13px;color:#9E98C8;font-weight:700;margin-bottom:20px;line-height:1.6;">
+          These passwords are stored in <code style="background:#F0ECFC;padding:2px 6px;border-radius:4px;">portal.html</code>. 
+          After changing them here you'll need to update the matching values in that file and re-upload to GitHub.
+          Copy the values shown below.
+        </p>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Admin Password</label>
+            <div class="pw-wrap">
+              <input type="password" id="new-admin-pw" placeholder="New admin password"/>
+              <button class="pw-toggle" onclick="togglePw('new-admin-pw',this)">👁</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Teacher Password</label>
+            <div class="pw-wrap">
+              <input type="password" id="new-teacher-pw" placeholder="New teacher password"/>
+              <button class="pw-toggle" onclick="togglePw('new-teacher-pw',this)">👁</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-purple" onclick="showPasswordInstructions()">Generate Update Instructions</button>
+        <div id="pw-instructions" style="display:none;margin-top:20px;background:#F8F5FF;border-radius:12px;padding:16px;">
+          <p style="font-size:13px;font-weight:800;color:var(--navy);margin-bottom:8px;">Copy this into portal.html (around line 120):</p>
+          <pre id="pw-code" style="font-size:12px;background:#1A1D3A;color:#A29BFE;padding:14px;border-radius:10px;overflow-x:auto;"></pre>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span>ℹ️</span> Current Passwords (this session)</div>
+        <p style="font-size:13px;color:#9E98C8;font-weight:700;margin-bottom:16px;">These are the passwords currently set in portal.html</p>
+        <div style="display:flex;gap:16px;">
+          <div style="background:#F0ECFC;border-radius:12px;padding:14px 18px;flex:1;">
+            <div style="font-size:11px;font-weight:800;color:#9E98C8;margin-bottom:4px;">ADMIN PASSWORD</div>
+            <div id="current-admin-pw" style="font-size:14px;font-weight:800;color:var(--navy);">aurabot-admin-2024</div>
+          </div>
+          <div style="background:#F0ECFC;border-radius:12px;padding:14px 18px;flex:1;">
+            <div style="font-size:11px;font-weight:800;color:#9E98C8;margin-bottom:4px;">TEACHER PASSWORD</div>
+            <div id="current-teacher-pw" style="font-size:14px;font-weight:800;color:var(--navy);">aurabot-teacher-2024</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALL STUDENTS -->
+    <div class="section" id="section-students">
+      <div class="panel">
+        <div class="panel-title"><span>🎒</span> All Students</div>
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Class</th><th>Teacher</th><th>Login Code</th><th>Characters</th></tr></thead>
+          <tbody id="students-tbody">
+            <tr><td colspan="5"><div class="empty-state"><div class="empty-icon">🎒</div><p>No students yet — teachers add students in their dashboard</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+</div><!-- end main -->
+
+<div id="toast"></div>
+
+<!-- Delete confirm modal -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal">
+    <div class="modal-title">Delete Teacher Account?</div>
+    <p style="font-size:13px;font-weight:700;color:#9E98C8;">This will remove the teacher and all their class data. This cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-red" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── AUTH GUARD ──
+  if (sessionStorage.getItem('aurabot_role') !== 'admin') {
+    window.location.href = 'portal.html';
+  }
+
+  // ── DATA ── (stored in localStorage for persistence)
+  function loadData() {
+    return JSON.parse(localStorage.getItem('aurabot_admin_data') || JSON.stringify({
+      teachers: [], announcements: []
+    }));
+  }
+  function saveData(d) { localStorage.setItem('aurabot_admin_data', JSON.stringify(d)); }
+
+  // Shared student data written by teacher dashboard
+  function loadStudentData() {
+    return JSON.parse(localStorage.getItem('aurabot_teacher_data') || JSON.stringify({ classes: [] }));
+  }
+
+  // ── NAV ──
+  function showSection(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    event.currentTarget.classList.add('active');
+    const titles = { overview:'Overview', teachers:'Teachers', announcements:'Announcements', passwords:'Passwords', students:'All Students' };
+    document.getElementById('topbar-title').textContent = titles[name];
+    if (name === 'overview') renderOverview();
+    if (name === 'teachers') renderTeachers();
+    if (name === 'announcements') renderAnnouncements();
+    if (name === 'students') renderAllStudents();
+  }
+
+  // ── TEACHERS ──
+  function addTeacher() {
+    const name = document.getElementById('t-name').value.trim();
+    const user = document.getElementById('t-username').value.trim();
+    const pw   = document.getElementById('t-password').value.trim();
+    if (!name || !user || !pw) { toast('Please fill in all fields'); return; }
+    const d = loadData();
+    if (d.teachers.find(t => t.username === user)) { toast('Username already exists'); return; }
+    d.teachers.push({ id: Date.now(), name, username: user, password: pw });
+    saveData(d);
+    document.getElementById('t-name').value = '';
+    document.getElementById('t-username').value = '';
+    document.getElementById('t-password').value = '';
+    renderTeachers();
+    toast('Teacher account created ✓');
+  }
+
+  let deleteId = null;
+  function deleteTeacher(id) {
+    deleteId = id;
+    document.getElementById('delete-modal').classList.add('open');
+  }
+  function confirmDelete() {
+    const d = loadData();
+    d.teachers = d.teachers.filter(t => t.id !== deleteId);
+    saveData(d);
+    closeModal();
+    renderTeachers();
+    toast('Teacher removed');
+  }
+  function closeModal() { document.getElementById('delete-modal').classList.remove('open'); }
+
+  function renderTeachers() {
+    const d = loadData();
+    const sd = loadStudentData();
+    const tbody = document.getElementById('teachers-tbody');
+    if (!d.teachers.length) {
+      tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">👤</div><p>No teachers added yet</p></div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = d.teachers.map(t => {
+      const classes = sd.classes.filter(c => c.teacherId === t.id);
+      const students = classes.reduce((a, c) => a + (c.students||[]).length, 0);
+      return `<tr>
+        <td><strong>${t.name}</strong></td>
+        <td><span class="pill pill-purple">${t.username}</span></td>
+        <td>${classes.length}</td>
+        <td>${students}</td>
+        <td><button class="btn btn-red" style="padding:6px 12px;font-size:12px;" onclick="deleteTeacher(${t.id})">Remove</button></td>
+      </tr>`;
+    }).join('');
+    updateStats();
+  }
+
+  // ── ANNOUNCEMENTS ──
+  function postAnnouncement() {
+    const text = document.getElementById('ann-text').value.trim();
+    const audience = document.getElementById('ann-audience').value;
+    if (!text) { toast('Please type an announcement'); return; }
+    const d = loadData();
+    d.announcements.unshift({ id: Date.now(), text, audience, date: new Date().toLocaleDateString('en-NZ') });
+    saveData(d);
+    document.getElementById('ann-text').value = '';
+    renderAnnouncements();
+    toast('Announcement posted ✓');
+  }
+
+  function deleteAnnouncement(id) {
+    const d = loadData();
+    d.announcements = d.announcements.filter(a => a.id !== id);
+    saveData(d);
+    renderAnnouncements();
+    toast('Announcement deleted');
+  }
+
+  function renderAnnouncements() {
+    const d = loadData();
+    const el = document.getElementById('announcements-list');
+    const ov = document.getElementById('overview-announcements-list');
+    if (!d.announcements.length) {
+      const empty = '<div class="empty-state"><div class="empty-icon">📭</div><p>No announcements yet</p></div>';
+      el.innerHTML = empty; if (ov) ov.innerHTML = empty; return;
+    }
+    const audienceLabel = { all:'Everyone', teachers:'Teachers only', students:'Students only' };
+    const html = d.announcements.map(a => `
+      <div class="announcement-item">
+        <div>
+          <div class="announcement-text">${a.text}</div>
+          <div class="announcement-meta">📅 ${a.date} · 👥 ${audienceLabel[a.audience]}</div>
+        </div>
+        <button class="btn btn-red" style="padding:6px 12px;font-size:12px;flex-shrink:0;" onclick="deleteAnnouncement(${a.id})">Delete</button>
+      </div>`).join('');
+    el.innerHTML = html;
+    if (ov) ov.innerHTML = d.announcements.slice(0,3).map(a => `
+      <div class="announcement-item">
+        <div>
+          <div class="announcement-text">${a.text}</div>
+          <div class="announcement-meta">📅 ${a.date} · 👥 ${audienceLabel[a.audience]}</div>
+        </div>
+      </div>`).join('');
+    updateStats();
+  }
+
+  // ── ALL STUDENTS ──
+  function renderAllStudents() {
+    const d = loadData();
+    const sd = loadStudentData();
+    const tbody = document.getElementById('students-tbody');
+    const rows = [];
+    sd.classes.forEach(c => {
+      const teacher = d.teachers.find(t => t.id === c.teacherId);
+      (c.students||[]).forEach(s => {
+        rows.push(`<tr>
+          <td><strong>${s.name}</strong></td>
+          <td><span class="pill pill-purple">${c.name}</span></td>
+          <td>${teacher ? teacher.name : '<span style="color:#9E98C8">Unknown</span>'}</td>
+          <td><code style="background:#F0ECFC;padding:2px 8px;border-radius:6px;font-size:12px;">${s.code}</code></td>
+          <td>${s.characters || 0}</td>
+        </tr>`);
+      });
+    });
+    tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">🎒</div><p>No students yet</p></div></td></tr>';
+  }
+
+  // ── OVERVIEW ──
+  function renderOverview() {
+    renderTeachers();
+    renderAnnouncements();
+    updateStats();
+  }
+
+  function updateStats() {
+    const d = loadData();
+    const sd = loadStudentData();
+    const totalStudents = sd.classes.reduce((a, c) => a + (c.students||[]).length, 0);
+    document.getElementById('stat-teachers').textContent = d.teachers.length;
+    document.getElementById('stat-classes').textContent = sd.classes.length;
+    document.getElementById('stat-students').textContent = totalStudents;
+    document.getElementById('stat-announcements').textContent = d.announcements.length;
+  }
+
+  // ── PASSWORDS ──
+  function showPasswordInstructions() {
+    const ap = document.getElementById('new-admin-pw').value.trim();
+    const tp = document.getElementById('new-teacher-pw').value.trim();
+    if (!ap || !tp) { toast('Please enter both passwords'); return; }
+    const code = `const PASSWORDS = {\n  admin:   '${ap}',\n  teacher: '${tp}'\n};`;
+    document.getElementById('pw-code').textContent = code;
+    document.getElementById('pw-instructions').style.display = 'block';
+    toast('Copy the code above into portal.html');
+  }
+
+  // ── HELPERS ──
+  function togglePw(id, btn) {
+    const input = document.getElementById(id);
+    input.type = input.type === 'password' ? 'text' : 'password';
+    btn.textContent = input.type === 'password' ? '👁' : '🙈';
+  }
+
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function signOut() {
+    sessionStorage.clear();
+    window.location.href = 'portal.html';
+  }
+
+  // ── INIT ──
+  renderOverview();
+</script>
+</body>
+</html>
