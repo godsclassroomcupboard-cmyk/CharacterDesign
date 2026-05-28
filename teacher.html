@@ -372,15 +372,19 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  // ── SUPABASE ──
+  const SUPABASE_URL      = 'https://nwhaliuajvovesnrdfrr.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53aGFsaXVhanZvdmVzbnJkZnJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDUyMzEsImV4cCI6MjA5NTQ4MTIzMX0.cGZ_yqeTyQYyyUAIc1CrV-M6iwN34CtSzjYBF_nG9xE';
+  const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
   // ── AUTH GUARD ──
   if (sessionStorage.getItem('aurabot_role') !== 'teacher') {
     window.location.href = 'portal.html';
   }
 
   // ── TEACHER IDENTITY ──
-  // In single-password mode, teacher name is generic. 
-  // Admins can set up named accounts; if so, that data lives in admin data.
   let _teacherId = sessionStorage.getItem('aurabot_teacher_id');
   let _teacherName = sessionStorage.getItem('aurabot_teacher_name') || 'Teacher';
 
@@ -614,28 +618,49 @@
     document.getElementById('print-filter').innerHTML = opts;
   }
 
-  // ── CONTENT ──
-  // Simulated student characters — in production these come from Supabase
-  function getSimulatedContent() {
-    const classes = myClasses();
-    const content = [];
-    classes.forEach(c => {
-      (c.students||[]).forEach(s => {
-        for (let i = 0; i < (s.characters||0); i++) {
-          content.push({
-            id: `${s.id}-${i}`,
-            studentName: s.name,
-            className: c.name,
-            classId: c.id,
-            characterName: `Character ${i+1}`,
-            description: 'Character created in Aurabot — view full details in the student app.',
-            createdAt: new Date().toLocaleDateString('en-NZ'),
-            feedback: (s.feedback||[])[i] || ''
-          });
-        }
-      });
+  // ── CONTENT (Supabase) ──
+  let _cachedCharacters = []; // cache fetched characters for the session
+
+  // Build a map: code → class info, from teacher's local class data
+  function codeToClassMap() {
+    const map = {};
+    myClasses().forEach(c => {
+      (c.students||[]).forEach(s => { map[s.code] = { className: c.name, classId: c.id, studentName: s.name }; });
     });
-    return content;
+    return map;
+  }
+
+  // Get all class codes across this teacher's classes
+  function allClassCodes() {
+    const codes = [];
+    myClasses().forEach(c => (c.students||[]).forEach(s => codes.push(s.code)));
+    return codes;
+  }
+
+  async function fetchCharactersFromSupabase() {
+    const codes = allClassCodes();
+    if (!codes.length) return [];
+    try {
+      const { data, error } = await _sb.rpc('get_class_characters', { codes });
+      if (error) throw error;
+      return data || [];
+    } catch (err) {
+      console.error('Supabase fetch error:', err);
+      return [];
+    }
+  }
+
+  async function fetchStatsFromSupabase() {
+    const codes = allClassCodes();
+    if (!codes.length) return [];
+    try {
+      const { data, error } = await _sb.rpc('get_class_stats', { codes });
+      if (error) throw error;
+      return data || [];
+    } catch (err) {
+      console.error('Supabase stats error:', err);
+      return [];
+    }
   }
 
   function populateContentFilter() {
@@ -644,83 +669,150 @@
     sel.innerHTML = '<option value="all">All Classes</option>' + classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   }
 
-  function renderContent() {
-    const filterVal = document.getElementById('content-filter-class')?.value || 'all';
-    const content = getSimulatedContent().filter(c => filterVal === 'all' || String(c.classId) === filterVal);
+  async function renderContent() {
     const el = document.getElementById('content-list');
-    if (!content.length) {
-      el.innerHTML = '<div class="panel"><div class="empty-state"><div class="empty-icon">🎨</div><p>No student characters yet — students need to save their work in Aurabot</p></div></div>';
+    el.innerHTML = '<div class="panel"><div class="empty-state"><div class="empty-icon" style="animation:spin 1s linear infinite;display:inline-block;">⏳</div><p>Loading characters from Supabase…</p></div></div>';
+
+    const filterVal = document.getElementById('content-filter-class')?.value || 'all';
+    const codeMap = codeToClassMap();
+    const characters = await fetchCharactersFromSupabase();
+    _cachedCharacters = characters;
+
+    // Enrich with class info and optionally filter
+    const enriched = characters
+      .map(ch => ({ ...ch, ...(codeMap[ch.class_code] || { className: 'Unknown Class', classId: null, studentName: ch.student_display_name || ch.student_username }) }))
+      .filter(ch => filterVal === 'all' || String(ch.classId) === filterVal);
+
+    if (!enriched.length) {
+      el.innerHTML = `<div class="panel"><div class="empty-state">
+        <div class="empty-icon">🎨</div>
+        <p>No characters found yet.</p>
+        <p style="margin-top:8px;font-size:12px;">Students need to sign up in Aurabot using their login code as their username, then save a character.</p>
+      </div></div>`;
       return;
     }
-    el.innerHTML = content.map(item => `
-      <div class="content-card">
+
+    el.innerHTML = enriched.map(ch => {
+      const artStyle = ch.art_style ? `<span class="pill pill-purple" style="margin-left:8px;">${ch.art_style}</span>` : '';
+      const image = ch.ai_art_url
+        ? `<img src="${ch.ai_art_url}" style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;margin-bottom:10px;" onerror="this.style.display='none'"/>`
+        : ch.sketch_url
+        ? `<img src="${ch.sketch_url}" style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;margin-bottom:10px;" onerror="this.style.display='none'"/>`
+        : '';
+
+      const details = [
+        ch.appearance && `<div><strong>Appearance:</strong> ${ch.appearance}</div>`,
+        ch.personality && `<div><strong>Personality:</strong> ${ch.personality}</div>`,
+        ch.strengths && `<div><strong>Strengths:</strong> ${ch.strengths}</div>`,
+        ch.fears && `<div><strong>Fears:</strong> ${ch.fears}</div>`,
+        ch.interests && `<div><strong>Interests:</strong> ${ch.interests}</div>`,
+      ].filter(Boolean).join('');
+
+      const existingFeedback = ch.teacher_note || '';
+      const feedbackId = ch.feedback_id || '';
+
+      return `<div class="content-card">
         <div class="content-card-header">
-          <div>
-            <div class="content-card-title">🎭 ${item.characterName}</div>
-            <div class="content-card-meta">By ${item.studentName} · ${item.className} · ${item.createdAt}</div>
+          <div style="flex:1;">
+            <div class="content-card-title">🎭 ${ch.character_name || 'Unnamed Character'}${artStyle}</div>
+            <div class="content-card-meta">By ${ch.studentName} · ${ch.className} · ${new Date(ch.created_at).toLocaleDateString('en-NZ')}</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <span class="pill ${ch.is_public ? 'pill-green' : 'pill-grey'}">${ch.is_public ? '🌍 Public' : '🔒 Private'}</span>
+            <span class="pill pill-purple">⭐ ${ch.star_count}</span>
           </div>
         </div>
-        <div class="content-card-body">${item.description}</div>
+        ${image}
+        ${details ? `<div class="content-card-body" style="display:flex;flex-direction:column;gap:6px;font-size:12px;">${details}</div>` : ''}
         <div class="feedback-area">
           <div class="feedback-label">Your Feedback</div>
-          ${item.feedback ? `<div class="saved-feedback">✓ ${item.feedback}</div>` : ''}
-          <textarea class="feedback-input" id="fb-${item.id}" placeholder="Leave feedback for this student…">${item.feedback||''}</textarea>
-          <button class="btn btn-purple btn-sm" style="margin-top:8px;" onclick="saveFeedback('${item.id}')">Save Feedback</button>
+          ${existingFeedback ? `<div class="saved-feedback" id="saved-fb-${ch.id}">✓ ${existingFeedback}</div>` : `<div id="saved-fb-${ch.id}" style="display:none;"></div>`}
+          <textarea class="feedback-input" id="fb-${ch.id}" placeholder="Leave feedback for this student…">${existingFeedback}</textarea>
+          <button class="btn btn-purple btn-sm" style="margin-top:8px;" onclick="saveFeedback('${ch.id}','${feedbackId}')">Save Feedback</button>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 
-  function saveFeedback(itemId) {
-    const text = document.getElementById('fb-' + itemId)?.value?.trim();
+  async function saveFeedback(characterId, existingFeedbackId) {
+    const text = document.getElementById('fb-' + characterId)?.value?.trim();
     if (!text) { toast('Please type feedback first'); return; }
-    // Parse itemId to find student
-    const [studentId] = itemId.split('-');
-    const d = loadData();
-    d.classes.forEach(c => {
-      const student = (c.students||[]).find(s => String(s.id) === studentId);
-      if (student) {
-        if (!student.feedback) student.feedback = [];
-        student.feedback[0] = text;
+
+    try {
+      let result;
+      if (existingFeedbackId) {
+        // Update existing feedback
+        result = await _sb.from('teacher_feedback').update({ teacher_note: text }).eq('id', existingFeedbackId);
+      } else {
+        // Insert new feedback
+        result = await _sb.from('teacher_feedback').insert({ character_id: characterId, teacher_note: text });
       }
-    });
-    saveData(d);
-    // Update stat
-    updateOverviewStats();
-    toast('Feedback saved ✓');
+      if (result.error) throw result.error;
+
+      // Update displayed saved feedback
+      const savedEl = document.getElementById('saved-fb-' + characterId);
+      if (savedEl) { savedEl.textContent = '✓ ' + text; savedEl.style.display = ''; savedEl.className = 'saved-feedback'; }
+
+      // Update local stats count
+      updateOverviewStats();
+      toast('Feedback saved ✓');
+    } catch (err) {
+      console.error('Feedback save error:', err);
+      toast('Error saving feedback — check console');
+    }
   }
 
-  // ── STATS ──
-  function renderStats() {
+  // ── STATS (Supabase) ──
+  async function renderStats() {
     const classes = myClasses();
     const totalStudents = classes.reduce((a,c) => a + (c.students||[]).length, 0);
-    const totalChars = classes.reduce((a,c) => a + (c.students||[]).reduce((b,s) => b + (s.characters||0), 0), 0);
-    const totalFeedback = classes.reduce((a,c) => a + (c.students||[]).reduce((b,s) => b + (s.feedback||[]).filter(Boolean).length, 0), 0);
 
     document.getElementById('stats-classes').textContent = classes.length;
     document.getElementById('stats-students').textContent = totalStudents;
+    document.getElementById('stats-characters').textContent = '…';
+    document.getElementById('stats-feedback').textContent = '…';
+
+    const codeMap = codeToClassMap();
+    const statsData = await fetchStatsFromSupabase();
+
+    const totalChars = statsData.reduce((a, s) => a + Number(s.character_count), 0);
+    const totalFeedback = _cachedCharacters.filter(c => c.teacher_note).length;
+
     document.getElementById('stats-characters').textContent = totalChars;
     document.getElementById('stats-feedback').textContent = totalFeedback;
 
-    // Top students
-    const allStudents = [];
-    classes.forEach(c => (c.students||[]).forEach(s => allStudents.push({ ...s, className: c.name })));
-    allStudents.sort((a,b) => (b.characters||0) - (a.characters||0));
+    // Top students table
     const tbody = document.getElementById('stats-students-tbody');
-    tbody.innerHTML = allStudents.slice(0,10).map((s,i) => `<tr>
-      <td><strong>${s.name}</strong></td>
-      <td><span class="pill pill-purple">${s.className}</span></td>
-      <td>${s.characters||0}</td>
-      <td>${['🏆','🥈','🥉'][i] || '⭐'} ${i < 3 ? ['Top','Runner up','Third'][i] : 'Active'}</td>
-    </tr>`).join('') || '<tr><td colspan="4"><div class="empty-state"><div class="empty-icon">📊</div><p>No data yet</p></div></td></tr>';
+    if (!statsData.length) {
+      tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state"><div class="empty-icon">📊</div><p>No data yet — students need to log in and create characters</p></div></td></tr>';
+    } else {
+      tbody.innerHTML = statsData.slice(0,10).map((s, i) => {
+        const info = codeMap[s.class_code] || {};
+        return `<tr>
+          <td><strong>${info.studentName || s.student_name || s.student_username}</strong></td>
+          <td><span class="pill pill-purple">${info.className || s.class_code}</span></td>
+          <td>${s.character_count}</td>
+          <td>${['🏆','🥈','🥉'][i] || '⭐'} ${i < 3 ? ['Top creator','Runner up','Third'][i] : 'Active'}</td>
+        </tr>`;
+      }).join('');
+    }
 
-    // Class breakdown
+    // Class breakdown — merge Supabase stats with local class data
     const classTbody = document.getElementById('stats-classes-tbody');
-    classTbody.innerHTML = classes.map(c => `<tr>
-      <td><strong>${c.name}</strong></td>
-      <td>${(c.students||[]).length}</td>
-      <td>${(c.students||[]).reduce((a,s) => a + (s.characters||0), 0)}</td>
-      <td>${(c.students||[]).reduce((a,s) => a + (s.feedback||[]).filter(Boolean).length, 0)}</td>
-    </tr>`).join('') || '<tr><td colspan="4"><div class="empty-state"><p>No classes yet</p></div></td></tr>';
+    classTbody.innerHTML = classes.map(c => {
+      const classStats = statsData.filter(s => (c.students||[]).some(st => st.code === s.class_code));
+      const chars = classStats.reduce((a,s) => a + Number(s.character_count), 0);
+      const feedbackCount = (_cachedCharacters||[]).filter(ch => {
+        const info = codeMap[ch.class_code];
+        return info && info.classId === c.id && ch.teacher_note;
+      }).length;
+      return `<tr>
+        <td><strong>${c.name}</strong></td>
+        <td>${(c.students||[]).length}</td>
+        <td>${chars}</td>
+        <td>${feedbackCount}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="4"><div class="empty-state"><p>No classes yet</p></div></td></tr>';
   }
 
   // ── OVERVIEW ──
@@ -730,15 +822,22 @@
     renderOverviewAnnouncements();
   }
 
-  function updateOverviewStats() {
+  async function updateOverviewStats() {
     const classes = myClasses();
     const students = classes.reduce((a,c) => a + (c.students||[]).length, 0);
-    const chars = classes.reduce((a,c) => a + (c.students||[]).reduce((b,s) => b + (s.characters||0), 0), 0);
-    const feedback = classes.reduce((a,c) => a + (c.students||[]).reduce((b,s) => b + (s.feedback||[]).filter(Boolean).length, 0), 0);
     document.getElementById('stat-classes').textContent = classes.length;
     document.getElementById('stat-students').textContent = students;
-    document.getElementById('stat-characters').textContent = chars;
-    document.getElementById('stat-feedback').textContent = feedback;
+    // Fetch live counts from Supabase
+    try {
+      const statsData = await fetchStatsFromSupabase();
+      const totalChars = statsData.reduce((a,s) => a + Number(s.character_count), 0);
+      const feedbackCount = _cachedCharacters.filter(c => c.teacher_note).length;
+      document.getElementById('stat-characters').textContent = totalChars;
+      document.getElementById('stat-feedback').textContent = feedbackCount;
+    } catch(e) {
+      document.getElementById('stat-characters').textContent = '—';
+      document.getElementById('stat-feedback').textContent = '—';
+    }
   }
 
   function renderOverviewClasses() {
