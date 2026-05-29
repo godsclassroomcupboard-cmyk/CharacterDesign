@@ -9,6 +9,7 @@
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet" />
+<script src="site-theme.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Nunito', sans-serif; background: #EAE7FC; min-height: 100vh; overflow: hidden; }
@@ -685,7 +686,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 
       <div style="padding:14px 20px;border-top:1px solid #F0ECFC;display:flex;gap:10px;flex-shrink:0;">
         <button class="btn-outline" style="padding:11px 24px;font-size:13px;">Cancel</button>
-        <button id="save-to-profile-btn" onclick="handleSaveToProfile()" class="btn-purple" style="flex:1;padding:12px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;">
+        <button class="btn-purple" style="flex:1;padding:12px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;" id="save-to-profile-btn" onclick="handleSaveToProfile()">
           <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="17 5 7 15 3 11"/></svg>
           Save to My Bank
         </button>
@@ -1436,7 +1437,7 @@ function applyCrop() {
     </div>`;
 
   // Scroll description into view softly
-  setTimeout(() => { const el = document.getElementById('ai-desc-area'); if (el) el.scrollIntoView({behavior:'smooth', block:'nearest'}); }, 200);
+  setTimeout(() => document.getElementById('ai-desc-area')?.scrollIntoView({behavior:'smooth', block:'nearest'}), 200);
 }
 
 // ── Section switcher ──
@@ -2564,30 +2565,33 @@ document.addEventListener('click', e => {
 
 // ── Save character to profile ────────────────────────────────
 async function handleSaveToProfile() {
-  if (!_currentUser) { openAuthModal('signup'); return; }
+  console.log('[Save] _currentUser:', _currentUser);
+
+  // Recover session if _currentUser not set yet
+  if (!_currentUser) {
+    const { data: { session } } = await _sb.auth.getSession();
+    if (session?.user) await _onSignIn(session.user);
+    else { showToast('⚠ Please log out and back in to save.'); return; }
+  }
 
   const btn = document.getElementById('save-to-profile-btn');
-  btn.textContent = 'Saving…'; btn.disabled = true;
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
 
   try {
     const { fields } = getCharacterDetails();
     const isPublic   = document.getElementById('make-public-toggle')?.checked ?? false;
-
-    // Get images
     const sketchDataUrl = uploadedSketchDataUrl || null;
     const aiArtDataUrl  = lastGeneratedDataUrl  || null;
-
     const charId = crypto.randomUUID();
 
-    // Upload images to storage
     async function uploadImg(dataUrl, type) {
-      if (!dataUrl || !dataUrl.startsWith('data:')) return dataUrl;
+      if (!dataUrl || !dataUrl.startsWith('data:')) return dataUrl || null;
       const res  = await fetch(dataUrl);
       const blob = await res.blob();
       const ext  = blob.type === 'image/png' ? 'png' : 'jpg';
       const path = `${_currentUser.id}/${charId}/${type}.${ext}`;
-      const { error } = await _sb.storage.from('character-images').upload(path, blob, { upsert:true, contentType: blob.type });
-      if (error) throw error;
+      const { error } = await _sb.storage.from('character-images').upload(path, blob, { upsert: true, contentType: blob.type });
+      if (error) throw new Error(`Image upload failed: ${error.message}`);
       return _sb.storage.from('character-images').getPublicUrl(path).data.publicUrl;
     }
 
@@ -2596,33 +2600,34 @@ async function handleSaveToProfile() {
       uploadImg(aiArtDataUrl,  'ai_art'),
     ]);
 
-    // Insert character row
     const { error } = await _sb.from('characters').insert({
       id:                 charId,
       user_id:            _currentUser.id,
-      name:               fields.name       || null,
-      appearance:         fields.appearance || null,
-      height:             fields.height     || null,
-      build:              fields.build      || null,
-      personality:        fields.character  || null,
-      strengths:          fields.strengths  || null,
-      fears:              fields.fears      || null,
-      interests:          fields.interests  || null,
-      features:           fields.features   || null,
-      art_style:          selectedStyle,
+      name:               fields.name        || null,
+      appearance:         fields.appearance  || null,
+      height:             fields.height      || null,
+      build:              fields.build       || null,
+      personality:        fields.character   || null,
+      strengths:          fields.strengths   || null,
+      fears:              fields.fears       || null,
+      interests:          fields.interests   || null,
+      features:           fields.features    || null,
+      art_style:          selectedStyle      || null,
       sketch_description: document.getElementById('sketch-description')?.value?.trim() || null,
       sketch_url:         sketchUrl,
       ai_art_url:         aiArtUrl,
       is_public:          isPublic,
     });
 
-    if (error) throw error;
-    showToast(isPublic ? '🌟 Saved & shared with the community!' : '✅ Saved to your profile!');
-  } catch(err) {
-    console.error('[Save]', err);
+    if (error) throw new Error(`${error.message} (code: ${error.code})`);
+
+    showToast(isPublic ? '🌟 Saved & shared with the community!' : '✅ Saved to your Character Bank!');
+
+  } catch (err) {
+    console.error('[Save] error:', err);
     showToast('⚠ Save failed: ' + err.message);
   } finally {
-    btn.textContent = 'Save to My Profile'; btn.disabled = false;
+    if (btn) { btn.textContent = 'Save to My Bank'; btn.disabled = false; }
   }
 }
 
