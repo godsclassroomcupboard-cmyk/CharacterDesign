@@ -9,7 +9,6 @@
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet" />
-<script src="site-theme.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Nunito', sans-serif; background: #EAE7FC; min-height: 100vh; overflow: hidden; }
@@ -686,7 +685,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 
       <div style="padding:14px 20px;border-top:1px solid #F0ECFC;display:flex;gap:10px;flex-shrink:0;">
         <button class="btn-outline" style="padding:11px 24px;font-size:13px;">Cancel</button>
-        <button class="btn-purple" style="flex:1;padding:12px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;">
+        <button id="save-to-profile-btn" onclick="handleSaveToProfile()" class="btn-purple" style="flex:1;padding:12px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;">
           <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="17 5 7 15 3 11"/></svg>
           Save to My Bank
         </button>
@@ -1437,7 +1436,7 @@ function applyCrop() {
     </div>`;
 
   // Scroll description into view softly
-  setTimeout(() => document.getElementById('ai-desc-area').scrollIntoView({behavior:'smooth', block:'nearest'}), 200);
+  setTimeout(() => { const el = document.getElementById('ai-desc-area'); if (el) el.scrollIntoView({behavior:'smooth', block:'nearest'}); }, 200);
 }
 
 // ── Section switcher ──
