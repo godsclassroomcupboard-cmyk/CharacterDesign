@@ -235,6 +235,46 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; background: var(--
 .modal-star-btn:hover { background: #FFD700; color: #5a3a00; }
 .modal-star-btn.starred { background: #FFD700; color: #5a3a00; }
 
+.type-pill {
+  background: rgba(255,255,255,0.18);
+  border: 1.5px solid rgba(255,255,255,0.35);
+  color: #fff;
+  border-radius: 99px;
+  padding: 9px 22px;
+  font-size: 14px; font-weight: 800;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  transition: all 0.18s;
+}
+.type-pill:hover  { background: rgba(255,255,255,0.28); }
+.type-pill.active { background: #fff; color: var(--purple); border-color: #fff; }
+
+/* ── Setting card ── */
+.setting-card {
+  background: var(--card-bg);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 3px 16px rgba(108,92,231,0.09);
+  cursor: pointer;
+  transition: transform 0.18s, box-shadow 0.18s;
+  border: 1.5px solid transparent;
+}
+.setting-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 32px rgba(108,92,231,0.18);
+  border-color: var(--border);
+}
+.setting-card-img {
+  height: 120px;
+  background: linear-gradient(135deg, #EDE0FF, #D8CBFF);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; position: relative;
+}
+.setting-card-img img { width: 100%; height: 100%; object-fit: cover; }
+.setting-card-body { padding: 12px 14px 14px; }
+.setting-locs { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
+.setting-loc-tag { background: #F0ECFC; color: var(--purple); border-radius: 99px; font-size: 10px; font-weight: 800; padding: 2px 8px; }
+
 /* ── Sign-in prompt ── */
 .signin-bar {
   background: linear-gradient(90deg, #6C5CE7, #9B59B6);
@@ -300,7 +340,13 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; background: var(--
     <div class="hero-stars" id="hero-stars"></div>
     <div class="hero-content">
       <h1>Character Community Bank</h1>
-      <p>Explore characters created by everyone in your class — star your favourites!</p>
+      <p>Explore characters and settings created by everyone in your class — star your favourites!</p>
+
+      <!-- Type toggle -->
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <button class="type-pill active" id="type-characters" onclick="setType('characters')">🎭 Characters</button>
+        <button class="type-pill" id="type-settings" onclick="setType('settings')">📍 Settings</button>
+      </div>
 
       <!-- Class selector -->
       <div class="class-selector" id="class-selector">
@@ -367,6 +413,9 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ── State ──
+var _type        = 'characters'; // 'characters' | 'settings'
+var _allSettings = [];
+var _filteredSettings = [];
 var _user        = null;
 var _profile     = null;
 var _allChars    = [];       // full fetched set
@@ -398,6 +447,7 @@ async function onSignIn(user) {
   const { data } = await _sb.from('profiles').select('*').eq('id', user.id).single();
   _profile = data;
   _starredIds = await getMyStars();
+  _starredSettingIds = await getMySettingStars();
   updateTopbar();
   document.getElementById('signin-bar').style.display = 'none';
 }
@@ -440,7 +490,8 @@ function selectClass(classId, btn) {
   _classId = classId;
   document.querySelectorAll('.class-pill').forEach(function(p){ p.classList.remove('active'); });
   btn.classList.add('active');
-  applyFilters();
+  if (_type === 'settings') loadSettings();
+  else applyFilters();
 }
 
 // ── Load characters ──
@@ -473,6 +524,167 @@ async function loadCharacters() {
   applyFilters();
 }
 
+// ── Type toggle ──
+function setType(type) {
+  _type = type;
+  document.getElementById('type-characters').className = 'type-pill' + (type === 'characters' ? ' active' : '');
+  document.getElementById('type-settings').className   = 'type-pill' + (type === 'settings'   ? ' active' : '');
+  // Update sort buttons for settings (no A-Z for now)
+  document.getElementById('sort-az').style.display = type === 'settings' ? 'none' : '';
+  if (type === 'settings') loadSettings();
+  else applyFilters();
+}
+
+// ── Load settings ──
+async function loadSettings() {
+  showLoading();
+  var query = _sb
+    .from('settings')
+    .select('id, name, locations, star_count, is_public, created_at, user_id, profiles(username, display_name)')
+    .eq('is_public', true);
+
+  if (_classId !== 'all' && _classes.length > 0) {
+    var { data: members } = await _sb.from('class_members').select('user_id').eq('class_id', _classId);
+    var memberIds = (members || []).map(function(m){ return m.user_id; });
+    if (memberIds.length === 0) { _allSettings = []; renderSettings([]); return; }
+    query = query.in('user_id', memberIds);
+  }
+
+  var { data, error } = await query;
+  if (error) { showError(error.message); return; }
+  _allSettings = data || [];
+  applySettingFilters();
+}
+
+function applySettingFilters() {
+  var search = document.getElementById('search-input').value.toLowerCase().trim();
+  _filteredSettings = _allSettings.filter(function(s) {
+    if (!search) return true;
+    var name   = (s.name || '').toLowerCase();
+    var author = ((s.profiles && (s.profiles.display_name || s.profiles.username)) || '').toLowerCase();
+    return name.includes(search) || author.includes(search);
+  });
+  if (_sortBy === 'stars')  _filteredSettings.sort(function(a,b){ return (b.star_count||0)-(a.star_count||0); });
+  if (_sortBy === 'newest') _filteredSettings.sort(function(a,b){ return new Date(b.created_at)-new Date(a.created_at); });
+  renderSettings(_filteredSettings);
+  var count = document.getElementById('results-count');
+  count.textContent = _filteredSettings.length + ' setting' + (_filteredSettings.length === 1 ? '' : 's');
+}
+
+function renderSettings(settings) {
+  var grid = document.getElementById('char-grid');
+  if (settings.length === 0) {
+    grid.innerHTML = '<div class="state-box">'
+      + '<svg viewBox="0 0 64 64" fill="none" stroke="#C0BADA" stroke-width="1.5" width="56" height="56" style="display:block;margin:0 auto;"><rect x="8" y="10" width="48" height="44" rx="6"/><path d="M8 22h48"/><circle cx="22" cy="36" r="5"/><path d="M30 36h16"/></svg>'
+      + '<h3>No settings yet</h3><p>Be the first to create and share a setting!</p></div>';
+    return;
+  }
+  window._renderedSettings = settings;
+  var settingGrads = [
+    'linear-gradient(135deg,#EDE0FF,#C8BCFF)',
+    'linear-gradient(135deg,#FFE0C8,#FFBCA0)',
+    'linear-gradient(135deg,#C8F0E0,#A0E0C8)',
+    'linear-gradient(135deg,#FFE0F0,#FFBCD8)',
+    'linear-gradient(135deg,#C8E4FF,#A0C8FF)',
+  ];
+  grid.innerHTML = settings.map(function(s, i) {
+    var author   = s.profiles ? (s.profiles.display_name || s.profiles.username || 'Unknown') : 'Unknown';
+    var locs     = Array.isArray(s.locations) ? s.locations : [];
+    var firstImg = locs.length > 0 && locs[0].imageDataUrl ? locs[0].imageDataUrl : null;
+    var bg       = settingGrads[i % settingGrads.length];
+    var locTags  = locs.slice(0,3).map(function(l){ return '<span class="setting-loc-tag">📍 ' + escHtml(l.name||'') + '</span>'; }).join('');
+    var starred  = _starredSettingIds && _starredSettingIds.has(s.id);
+    return '<div class="setting-card" onclick="openSettingModal(' + i + ')">'
+      + '<div class="setting-card-img" style="background:' + bg + ';">'
+      + (firstImg ? '<img src="' + escHtml(firstImg) + '" />' : '<span style="font-size:36px;">📍</span>')
+      + '<div class="char-card-stars">⭐ ' + (s.star_count||0) + '</div>'
+      + '</div>'
+      + '<div class="setting-card-body">'
+      + '<div class="char-card-name">' + escHtml(s.name||'Untitled') + '</div>'
+      + '<div class="char-card-by">By ' + escHtml(author) + ' · ' + locs.length + ' location' + (locs.length===1?'':'s') + '</div>'
+      + (locTags ? '<div class="setting-locs">' + locTags + '</div>' : '')
+      + '<button class="star-btn' + (starred?' starred':'') + '" onclick="event.stopPropagation();toggleSettingStar(\'' + s.id + '\',this)">'
+      + (starred ? '⭐ Starred' : '☆ Star')
+      + '</button>'
+      + '</div></div>';
+  }).join('');
+}
+
+// ── Setting modal ──
+var _activeSetting = null;
+function openSettingModal(idx) {
+  var s = window._renderedSettings[idx];
+  _activeSetting = s;
+  var author = s.profiles ? (s.profiles.display_name || s.profiles.username || 'Unknown') : 'Unknown';
+  var locs   = Array.isArray(s.locations) ? s.locations : [];
+  var firstImg = locs.length > 0 && locs[0].imageDataUrl ? locs[0].imageDataUrl : null;
+  var starred  = _starredSettingIds && _starredSettingIds.has(s.id);
+
+  document.getElementById('m-name').textContent = s.name || 'Untitled Setting';
+  document.getElementById('m-by').textContent   = 'By ' + author + ' · ' + locs.length + ' location' + (locs.length===1?'':'s') + ' · ' + (s.star_count||0) + ' stars';
+
+  var wrap = document.getElementById('m-img-wrap');
+  var img  = document.getElementById('m-img');
+  if (firstImg) { img.src = firstImg; wrap.style.display = 'block'; }
+  else { wrap.style.display = 'none'; }
+
+  var senseLabels = { see:'👁 See', hear:'👂 Hear', feelEmotion:'💜 Feel', touch:'✋ Touch', smell:'👃 Smell' };
+  var locsHtml = locs.map(function(loc) {
+    var senses = Object.entries(senseLabels).filter(function(e){ return loc[e[0]]; }).map(function(e){
+      return '<div class="modal-field"><div class="modal-field-label">' + e[1] + '</div><div class="modal-field-value">' + escHtml(loc[e[0]]) + '</div></div>';
+    }).join('');
+    var locImg = loc.imageDataUrl ? '<img src="' + escHtml(loc.imageDataUrl) + '" style="width:100%;max-height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px;" />' : '';
+    return '<div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #E5E0FA;">'
+      + '<div style="font-family:Baloo 2,cursive;font-weight:800;font-size:14px;color:#6C5CE7;margin-bottom:6px;">📍 ' + escHtml(loc.name||'Location') + '</div>'
+      + (loc.borrowedFrom ? '<div style="font-size:10px;color:#9E98C8;font-style:italic;margin-bottom:4px;">Borrowed from ' + escHtml(loc.borrowedFrom) + '</div>' : '')
+      + locImg + senses + '</div>';
+  }).join('');
+
+  document.getElementById('m-fields').innerHTML = locsHtml || '<div style="color:#C0BADA;font-style:italic;font-size:13px;padding:8px 0;">No locations added yet.</div>';
+
+  var starBtn   = document.getElementById('m-star-btn');
+  var starLabel = document.getElementById('m-star-label');
+  starBtn.className = 'modal-star-btn' + (starred ? ' starred' : '');
+  starLabel.textContent = starred ? 'Starred!' : 'Star this setting';
+  starBtn.onclick = toggleStarSettingModal;
+
+  document.getElementById('char-modal').classList.add('open');
+}
+
+// ── Setting stars ──
+var _starredSettingIds = new Set();
+
+async function getMySettingStars() {
+  if (!_user) return new Set();
+  var { data } = await _sb.from('setting_stars').select('setting_id').eq('user_id', _user.id);
+  return new Set((data||[]).map(function(s){ return s.setting_id; }));
+}
+
+async function toggleSettingStar(settingId, btn) {
+  if (!_user) { showToast('Sign in to star settings!'); return; }
+  var isStarred = _starredSettingIds.has(settingId);
+  if (isStarred) {
+    _starredSettingIds.delete(settingId);
+    btn.className = 'star-btn'; btn.textContent = '☆ Star';
+    await _sb.from('setting_stars').delete().eq('user_id', _user.id).eq('setting_id', settingId);
+    showToast('Star removed');
+  } else {
+    _starredSettingIds.add(settingId);
+    btn.className = 'star-btn starred'; btn.textContent = '⭐ Starred';
+    await _sb.from('setting_stars').insert({ user_id: _user.id, setting_id: settingId });
+    showToast('⭐ Starred!');
+  }
+}
+
+async function toggleStarSettingModal() {
+  if (!_activeSetting) return;
+  var btn = document.getElementById('m-star-btn');
+  await toggleSettingStar(_activeSetting.id, btn);
+  var starred = _starredSettingIds.has(_activeSetting.id);
+  btn.className = 'modal-star-btn' + (starred ? ' starred' : '');
+  document.getElementById('m-star-label').textContent = starred ? 'Starred!' : 'Star this setting';
+}
+
 // ── Filter + sort + search ──
 function applyFilters() {
   var search = document.getElementById('search-input').value.toLowerCase().trim();
@@ -493,13 +705,17 @@ function applyFilters() {
   count.textContent = _filtered.length + ' character' + (_filtered.length === 1 ? '' : 's');
 }
 
-function onSearch() { applyFilters(); }
+function onSearch() {
+  if (_type === 'settings') applySettingFilters();
+  else applyFilters();
+}
 
 function setSort(s) {
   _sortBy = s;
   document.querySelectorAll('.sort-btn').forEach(function(b){ b.classList.remove('active'); });
   document.getElementById('sort-' + (s === 'newest' ? 'new' : s === 'az' ? 'az' : 'stars')).classList.add('active');
-  applyFilters();
+  if (_type === 'settings') applySettingFilters();
+  else applyFilters();
 }
 
 // ── Render grid ──
