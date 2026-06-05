@@ -1172,7 +1172,8 @@ function initMascot() {
 
 
 let selectedStyle = 'upload';
-let lastGeneratedDataUrl = null;  // stores the cropped character image
+let lastGeneratedDataUrl    = null;  // stores the cropped/generated character image
+let uploadedSketchDataUrl   = null;  // stores the raw uploaded image data URL
 
 // ── Crop state ──
 let cropImg = null;
@@ -1279,7 +1280,10 @@ function handleImageUpload(e) {
 
 function loadImageFile(file) {
   const reader = new FileReader();
-  reader.onload = (ev) => openCropUI(ev.target.result);
+  reader.onload = (ev) => {
+    uploadedSketchDataUrl = ev.target.result; // store raw upload
+    openCropUI(ev.target.result);
+  };
   reader.readAsDataURL(file);
 }
 
@@ -2595,7 +2599,7 @@ async function handleSaveToProfile() {
   try {
     const { fields } = getCharacterDetails();
     const isPublic   = true; // always share to community
-    const sketchDataUrl = uploadedSketchDataUrl || null;
+    const sketchDataUrl = uploadedSketchDataUrl || lastGeneratedDataUrl || null;
     const aiArtDataUrl  = lastGeneratedDataUrl  || null;
     const charId = crypto.randomUUID();
 
