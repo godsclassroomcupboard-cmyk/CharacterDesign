@@ -456,7 +456,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       </span>
       <span>Story Lab</span>
     </div>
-    <a href="community.html" target="_blank" class="nav-tab" id="nav-community" style="text-decoration:none;color:inherit;">
+    <a href="community.html" class="nav-tab" id="nav-community" style="text-decoration:none;color:#5C618A;">
       <span class="nav-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       </span>
@@ -541,7 +541,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="10" cy="7" r="4"/><path d="M3 18c0-4 3-7 7-7s7 3 7 7"/></svg>
             My Profile
           </div>
-          <a href="community.html" target="_blank" class="profile-menu-item" style="text-decoration:none;color:inherit;display:flex;" onclick="toggleProfileDropdown()">
+          <a href="community.html" class="profile-menu-item" style="text-decoration:none;color:inherit;display:flex;" onclick="toggleProfileDropdown()">
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M13 17v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1"/><circle cx="8" cy="8" r="3"/><path d="M18 17v-1a4 4 0 0 0-3-3.87M15 5.13a4 4 0 0 1 0 5.74"/></svg>
             Community
           </a>
@@ -792,7 +792,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
               </div>
             </div>
           </div>
-          <a href="community.html" target="_blank" class="btn-pink" style="width:100%;padding:11px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;border-radius:999px;text-decoration:none;">
+          <a href="community.html" class="btn-pink" style="width:100%;padding:11px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;border-radius:999px;text-decoration:none;">
             Explore Community Bank
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="3" y1="8" x2="13" y2="8"/><polyline points="9,4 13,8 9,12"/></svg>
           </a>
@@ -2450,13 +2450,26 @@ window._sb = _sb; // expose for settingBank
 
 // ── PORTAL AUTH GUARD ─────────────────────────────────────────
 // Block direct access — must come through portal.html
-(function portalGuard() {
+(async function portalGuard() {
   const role = sessionStorage.getItem('aurabot_role');
   const auth = sessionStorage.getItem('aurabot_auth');
-  if (!auth || (role !== 'student' && role !== 'teacher' && role !== 'admin')) {
-    // Not authenticated via portal — redirect
-    window.location.replace('portal.html?role=student');
-  }
+  if (auth && (role === 'student' || role === 'teacher' || role === 'admin')) return;
+  // sessionStorage missing — check if Supabase still has a live session
+  // (happens when navigating back from community.html in same tab)
+  try {
+    const sbCheck = supabase.createClient(
+      'https://nwhaliuajvovesnrdfrr.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53aGFsaXVhanZvdmVzbnJkZnJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDUyMzEsImV4cCI6MjA5NTQ4MTIzMX0.cGZ_yqeTyQYyyUAIc1CrV-M6iwN34CtSzjYBF_nG9xE'
+    );
+    const { data: { session } } = await sbCheck.auth.getSession();
+    if (session?.user) {
+      // Valid Supabase session — restore sessionStorage and continue
+      sessionStorage.setItem('aurabot_auth', 'true');
+      sessionStorage.setItem('aurabot_role', sessionStorage.getItem('aurabot_role') || 'student');
+      return;
+    }
+  } catch(e) {}
+  window.location.replace('portal.html?role=student');
 })();
 
 // ── Auth state ───────────────────────────────────────────────

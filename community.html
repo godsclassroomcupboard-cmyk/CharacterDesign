@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Character Community Bank — Aurabot</title>
+<title>Community Bank — Aurabot</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800;900&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
@@ -311,11 +311,11 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; background: var(--
 
   <!-- Top bar -->
   <header class="topbar">
-    <a href="index.html" class="topbar-back">
+    <button onclick="history.back()" class="topbar-back" style="border:none;cursor:pointer;">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="13" y1="8" x2="3" y2="8"/><polyline points="7,4 3,8 7,12"/></svg>
       Back
-    </a>
-    <div class="topbar-title">🎭 Character Community Bank</div>
+    </button>
+    <div class="topbar-title">🌟 Community Bank</div>
     <div class="topbar-right">
       <div id="tb-signedout" style="display:flex;align-items:center;gap:8px;">
         <span style="font-size:12px;color:var(--text-muted);font-weight:700;">Not signed in</span>
@@ -339,13 +339,19 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; background: var(--
   <div class="hero">
     <div class="hero-stars" id="hero-stars"></div>
     <div class="hero-content">
-      <h1>Character Community Bank</h1>
+      <h1>Community Bank</h1>
       <p>Explore characters and settings created by everyone in your class — star your favourites!</p>
 
-      <!-- Type toggle -->
-      <div style="display:flex;gap:10px;margin-bottom:16px;">
-        <button class="type-pill active" id="type-characters" onclick="setType('characters')">🎭 Characters</button>
-        <button class="type-pill" id="type-settings" onclick="setType('settings')">📍 Settings</button>
+      <!-- Type toggle — prominent switcher -->
+      <div style="display:inline-flex;background:rgba(0,0,0,0.2);border-radius:99px;padding:4px;gap:4px;margin-bottom:18px;">
+        <button id="type-characters" onclick="setType('characters')"
+          style="background:#fff;color:#6C5CE7;border:none;border-radius:99px;padding:10px 24px;font-size:14px;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;transition:all 0.18s;">
+          🎭 Characters
+        </button>
+        <button id="type-settings" onclick="setType('settings')"
+          style="background:transparent;color:rgba(255,255,255,0.8);border:none;border-radius:99px;padding:10px 24px;font-size:14px;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;transition:all 0.18s;">
+          📍 Settings
+        </button>
       </div>
 
       <!-- Class selector -->
@@ -362,7 +368,7 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; background: var(--
   <div class="controls">
     <div class="search-wrap">
       <svg viewBox="0 0 18 18" fill="none" stroke="#9E98C8" stroke-width="2" width="16" height="16"><circle cx="7.5" cy="7.5" r="5"/><line x1="11.5" y1="11.5" x2="16" y2="16"/></svg>
-      <input class="search-input" id="search-input" type="text" placeholder="Search characters by name…" oninput="onSearch()" />
+      <input class="search-input" id="search-input" type="text" placeholder="Search by name or author…" oninput="onSearch()" />
     </div>
     <button class="sort-btn active" id="sort-stars" onclick="setSort('stars')">⭐ Most Starred</button>
     <button class="sort-btn" id="sort-new"   onclick="setSort('newest')">🕐 Newest</button>
@@ -499,7 +505,7 @@ async function loadCharacters() {
   showLoading();
   var query = _sb
     .from('characters')
-    .select('id, name, appearance, height, build, personality, strengths, fears, interests, features, sketch_url, ai_art_url, star_count, is_public, created_at, user_id, profiles(username, display_name)')
+    .select('id, name, appearance, height, build, personality, strengths, fears, interests, features, sketch_url, ai_art_url, star_count, is_public, created_at, user_id')
     .eq('is_public', true);
 
   // Filter by class if selected (join via class_members)
@@ -518,18 +524,38 @@ async function loadCharacters() {
     query = query.in('user_id', memberIds);
   }
 
-  const { data, error } = await query;
-  if (error) { showError(error.message); return; }
-  _allChars = data || [];
+  const { data, error } = await query.order('created_at', { ascending: false });
+  if (error) { showError('Characters error: ' + error.message); return; }
+  if (!data || data.length === 0) { _allChars = []; applyFilters(); return; }
+
+  // Fetch author names separately — avoids FK join requirement
+  var userIds2 = [...new Set(data.map(function(c){ return c.user_id; }))];
+  var { data: profiles2 } = await _sb.from('profiles').select('id, username, display_name').in('id', userIds2);
+  var profileMap2 = {};
+  (profiles2 || []).forEach(function(p){ profileMap2[p.id] = p; });
+  _allChars = data.map(function(c) {
+    c.profiles = profileMap2[c.user_id] || null;
+    return c;
+  });
   applyFilters();
 }
 
 // ── Type toggle ──
 function setType(type) {
   _type = type;
-  document.getElementById('type-characters').className = 'type-pill' + (type === 'characters' ? ' active' : '');
-  document.getElementById('type-settings').className   = 'type-pill' + (type === 'settings'   ? ' active' : '');
-  // Update sort buttons for settings (no A-Z for now)
+  var charBtn = document.getElementById('type-characters');
+  var setBtn  = document.getElementById('type-settings');
+  if (type === 'characters') {
+    charBtn.style.background = '#fff';
+    charBtn.style.color = '#6C5CE7';
+    setBtn.style.background = 'transparent';
+    setBtn.style.color = 'rgba(255,255,255,0.8)';
+  } else {
+    setBtn.style.background = '#fff';
+    setBtn.style.color = '#6C5CE7';
+    charBtn.style.background = 'transparent';
+    charBtn.style.color = 'rgba(255,255,255,0.8)';
+  }
   document.getElementById('sort-az').style.display = type === 'settings' ? 'none' : '';
   if (type === 'settings') loadSettings();
   else applyFilters();
@@ -540,7 +566,7 @@ async function loadSettings() {
   showLoading();
   var query = _sb
     .from('settings')
-    .select('id, name, locations, star_count, is_public, created_at, user_id, profiles(username, display_name)')
+    .select('id, name, locations, star_count, is_public, created_at, user_id')
     .eq('is_public', true);
 
   if (_classId !== 'all' && _classes.length > 0) {
@@ -550,9 +576,25 @@ async function loadSettings() {
     query = query.in('user_id', memberIds);
   }
 
-  var { data, error } = await query;
-  if (error) { showError(error.message); return; }
-  _allSettings = data || [];
+  var { data, error } = await query.order('created_at', { ascending: false });
+  console.log('[loadSettings] data:', data, 'error:', error);
+  if (error) { showError('Settings error: ' + error.message); console.error(error); return; }
+  if (!data || data.length === 0) { _allSettings = []; renderSettings([]); return; }
+
+  // Fetch author names separately to avoid FK join requirement
+  var userIds = [...new Set(data.map(function(s){ return s.user_id; }))];
+  var { data: profiles } = await _sb
+    .from('profiles')
+    .select('id, username, display_name')
+    .in('id', userIds);
+  var profileMap = {};
+  (profiles || []).forEach(function(p){ profileMap[p.id] = p; });
+
+  // Merge profiles into settings
+  _allSettings = data.map(function(s) {
+    s.profiles = profileMap[s.user_id] || null;
+    return s;
+  });
   applySettingFilters();
 }
 
