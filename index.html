@@ -3528,23 +3528,31 @@ const settingBank = (() => {
 
   // ── Supabase: save setting ──
   async function saveToSupabase(setting) {
-    const user = currentUser();
     const sdb = db();
-    if (!user || !sdb) return;
+    if (!sdb) { console.warn('[SettingBank] no _sb client'); return; }
+    // Get user directly from Supabase session — don't rely on window._currentUser
+    let userId = currentUser()?.id;
+    if (!userId) {
+      const { data: { session } } = await sdb.auth.getSession();
+      userId = session?.user?.id;
+    }
+    if (!userId) { console.warn('[SettingBank] saveToSupabase: no user session'); return; }
     const payload = {
-      user_id: user.id,
+      user_id: userId,
       name: setting.name,
       locations: setting.locations,
-      is_public: true, // always share to community
+      is_public: true,
       star_count: setting.star_count || 0,
     };
+    console.log('[SettingBank] saving payload:', payload);
     if (setting.supabase_id) {
       const { error: updErr } = await sdb.from('settings').update(payload).eq('id', setting.supabase_id);
       if (updErr) console.error('[SettingBank] update error:', updErr);
+      else console.log('[SettingBank] updated OK');
     } else {
       const { data, error: insErr } = await sdb.from('settings').insert(payload).select().single();
       if (insErr) console.error('[SettingBank] insert error:', insErr);
-      if (data) setting.supabase_id = data.id;
+      else { setting.supabase_id = data?.id; console.log('[SettingBank] inserted OK, id:', data?.id); }
     }
   }
 
@@ -3564,9 +3572,14 @@ const settingBank = (() => {
 
   // ── Supabase: star a setting ──
   async function starSetting(settingId) {
-    const user = currentUser();
     const sdb = db();
-    if (!user || !sdb) { toast('Sign in to star settings!', 'error'); return; }
+    if (!sdb) return;
+    let user = currentUser();
+    if (!user) {
+      const { data: { session } } = await sdb.auth.getSession();
+      user = session?.user;
+    }
+    if (!user) { toast('Sign in to star settings!', 'error'); return; }
     // Check if already starred
     const { data: existing } = await sdb.from('setting_stars').select('id').eq('user_id', user.id).eq('setting_id', settingId).single();
     if (existing) {
@@ -3652,8 +3665,13 @@ const settingBank = (() => {
     if (idx >= 0) { mySettings[idx] = activeSetting; }
     else { mySettings.push(activeSetting); }
     persist();
-    await saveToSupabase(activeSetting);
-    toast('✓ Setting saved!');
+    try {
+      await saveToSupabase(activeSetting);
+      toast('✓ Setting saved to your bank & community!');
+    } catch(e) {
+      console.error('[SettingBank] saveSetting error:', e);
+      toast('Saved locally — cloud sync failed', 'error');
+    }
     renderMiniList();
     showDetail(activeSetting);
   }
