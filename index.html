@@ -594,6 +594,10 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
             <div style="font-size:11px;font-weight:700;">No characters yet</div>
           </div>
         </div>
+        <button class="btn-pink" style="width:100%;padding:12px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;" onclick="clearCharForm()">
+          <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15"><circle cx="9" cy="9" r="8"/><line x1="9" y1="5" x2="9" y2="13"/><line x1="5" y1="9" x2="13" y2="9"/></svg>
+          Create New Character
+        </button>
       </div>
     </div>
 
@@ -786,10 +790,10 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
               </div>
             </div>
           </div>
-          <button class="btn-pink" style="width:100%;padding:11px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;border-radius:999px;">
+          <a href="community.html" target="_blank" class="btn-pink" style="width:100%;padding:11px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;border-radius:999px;text-decoration:none;">
             Explore Community Bank
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="3" y1="8" x2="13" y2="8"/><polyline points="9,4 13,8 9,12"/></svg>
-          </button>
+          </a>
         </div>
       </div>
     </div><!-- end right column -->
@@ -1216,6 +1220,8 @@ function renderMyCharMiniGrid(chars) {
     'linear-gradient(135deg,#E0F0FF,#B8D8FF)',
     'linear-gradient(135deg,#F0E0FF,#D8B8FF)',
   ];
+  // Store chars array on window so onclick can reference by index
+  window._myCharsList = chars;
   grid.innerHTML = chars.map(function(c, i) {
     var imgUrl = c.ai_art_url || c.sketch_url || null;
     var bg = gradients[i % gradients.length];
@@ -1225,7 +1231,7 @@ function renderMyCharMiniGrid(chars) {
     var imgHtml = imgUrl
       ? '<img src="' + imgUrl + '" style="width:100%;height:100%;object-fit:cover;" />'
       : '<div style="font-family:Baloo 2,cursive;font-size:22px;font-weight:900;color:rgba(108,92,231,0.5);">' + initial + '</div>';
-    return '<div class="char-card" style="cursor:pointer;" title="' + charName + '">'
+    return '<div class="char-card" style="cursor:pointer;" title="' + charName + '" onclick="openCharDetail(window._myCharsList[' + i + '])">'
       + '<div style="background:' + bg + ';height:72px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:10px 10px 0 0;">'
       + imgHtml
       + '</div>'
@@ -3026,6 +3032,76 @@ window.addEventListener('load', () => {
 </div><!-- end outer flex -->
 
 <!-- ══════════════════════════════════════════
+     CHARACTER DETAIL / EDIT / DELETE MODAL
+══════════════════════════════════════════ -->
+<div id="char-detail-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(26,29,58,0.6);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:22px;width:480px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:0 16px 60px rgba(108,92,231,0.28);">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#EEE9FC,#E8E3FA);padding:18px 20px 14px;border-radius:22px 22px 0 0;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <h3 id="cdm-name" style="font-family:'Baloo 2',cursive;font-size:20px;font-weight:900;color:#1E1B4B;"></h3>
+        <div id="cdm-meta" style="font-size:11px;color:#9E98C8;font-weight:600;margin-top:2px;"></div>
+      </div>
+      <button onclick="closeCharModal()" style="background:none;border:none;cursor:pointer;color:#9E98C8;font-size:24px;line-height:1;padding:4px;">×</button>
+    </div>
+
+    <!-- Image -->
+    <div id="cdm-img-wrap" style="display:none;background:#F0ECFC;">
+      <img id="cdm-img" style="width:100%;max-height:200px;object-fit:cover;display:block;" />
+    </div>
+
+    <!-- Fields -->
+    <div id="cdm-view-mode" style="padding:16px 20px;">
+      <div id="cdm-fields" style="display:flex;flex-direction:column;gap:0;"></div>
+      <!-- Action buttons -->
+      <div style="display:flex;gap:10px;margin-top:20px;">
+        <button onclick="openCharEdit()" style="flex:1;padding:11px;font-size:13px;font-weight:800;border:none;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;background:linear-gradient(90deg,#6C5CE7,#9B59B6);color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;">
+          ✏️ Edit Character
+        </button>
+        <button onclick="confirmDeleteChar()" style="padding:11px 18px;font-size:13px;font-weight:800;border:2px solid #E84393;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;background:#fff;color:#E84393;display:flex;align-items:center;justify-content:center;gap:6px;">
+          🗑 Delete
+        </button>
+      </div>
+    </div>
+
+    <!-- Edit mode (hidden by default) -->
+    <div id="cdm-edit-mode" style="display:none;padding:16px 20px;">
+      <h4 style="font-family:'Baloo 2',cursive;font-size:15px;font-weight:800;color:#6C5CE7;margin-bottom:12px;">Edit Character</h4>
+      <div class="field-row"><div class="field-label">Name</div><input type="text" id="cdm-edit-name" /></div>
+      <div class="field-row"><div class="field-label">Stand Out Features</div><input type="text" id="cdm-edit-features" /></div>
+      <div class="field-row"><div class="field-label">Height</div><input type="text" id="cdm-edit-height" /></div>
+      <div class="field-row"><div class="field-label">Build</div><input type="text" id="cdm-edit-build" /></div>
+      <div class="field-row"><div class="field-label">Character</div><input type="text" id="cdm-edit-character" /></div>
+      <div class="field-row"><div class="field-label">Fears</div><input type="text" id="cdm-edit-fears" /></div>
+      <div class="field-row"><div class="field-label">Strengths</div><input type="text" id="cdm-edit-strengths" /></div>
+      <div class="field-row"><div class="field-label">Interests</div><input type="text" id="cdm-edit-interests" /></div>
+      <div class="field-row" style="border-bottom:none;"><div class="field-label">Appearance</div><input type="text" id="cdm-edit-appearance" /></div>
+      <div style="display:flex;gap:10px;margin-top:18px;">
+        <button onclick="closeCharEdit()" style="padding:11px 20px;font-size:13px;font-weight:800;border:2px solid #E5E0FA;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;background:#fff;color:#6C5CE7;">Cancel</button>
+        <button onclick="saveCharEdit()" style="flex:1;padding:12px;font-size:13px;font-weight:800;border:none;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;background:linear-gradient(90deg,#6C5CE7,#9B59B6);color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;">
+          <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="17 5 7 15 3 11"/></svg>
+          Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Warning Modal -->
+<div id="char-delete-modal" style="display:none;position:fixed;inset:0;z-index:1010;background:rgba(26,29,58,0.7);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;width:360px;max-width:94vw;padding:28px 24px;box-shadow:0 16px 60px rgba(232,67,147,0.25);text-align:center;">
+    <div style="font-size:40px;margin-bottom:10px;">⚠️</div>
+    <h3 style="font-family:'Baloo 2',cursive;font-size:20px;font-weight:900;color:#1E1B4B;margin-bottom:8px;">Delete Character?</h3>
+    <p id="cdm-delete-name" style="font-size:14px;font-weight:700;color:#6C5CE7;margin-bottom:10px;"></p>
+    <p style="font-size:13px;color:#7C74B8;margin-bottom:20px;line-height:1.5;">This will permanently remove this character from your bank and the community. <strong>This cannot be undone.</strong></p>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeDeleteModal()" style="flex:1;padding:12px;font-size:13px;font-weight:800;border:2px solid #E5E0FA;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;background:#fff;color:#6C5CE7;">Cancel</button>
+      <button onclick="executeDeleteChar()" style="flex:1;padding:12px;font-size:13px;font-weight:800;border:none;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;background:linear-gradient(90deg,#E84393,#C0392B);color:#fff;">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
      SETTING BANK — Add Location Modal Overlay
 ══════════════════════════════════════════ -->
 <div id="sb-loc-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(26,29,58,0.55);align-items:center;justify-content:center;">
@@ -3092,6 +3168,169 @@ window.addEventListener('load', () => {
 </div>
 
 <script>
+// ══════════════════════════════════════════
+// CHARACTER DETAIL MODAL
+// ══════════════════════════════════════════
+var _activeCharData = null;
+
+function clearCharForm() {
+  ['f-name','f-features','f-height','f-build','f-character','f-fears','f-strengths','f-interests','f-appearance'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  // Reset image preview
+  var inner = document.getElementById('ai-generated-output');
+  var placeholder = document.getElementById('placeholder-char');
+  var loading = document.getElementById('ai-loading');
+  if (inner) { inner.style.display = 'none'; inner.innerHTML = ''; }
+  if (placeholder) placeholder.style.display = '';
+  if (loading) loading.style.display = 'none';
+  lastGeneratedDataUrl = null;
+  uploadedSketchDataUrl = null;
+  // Scroll form into view
+  var form = document.getElementById('char-form');
+  if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  showToast('Ready for a new character!');
+}
+
+function openCharDetail(char) {
+  _activeCharData = char;
+  // Populate view mode
+  document.getElementById('cdm-name').textContent = char.name || 'Unnamed Character';
+  document.getElementById('cdm-meta').textContent = char.created_at
+    ? 'Created ' + new Date(char.created_at).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })
+    : '';
+
+  // Image
+  var imgUrl = char.ai_art_url || char.sketch_url || null;
+  var imgWrap = document.getElementById('cdm-img-wrap');
+  var imgEl   = document.getElementById('cdm-img');
+  if (imgUrl) {
+    imgEl.src = imgUrl;
+    imgWrap.style.display = 'block';
+  } else {
+    imgWrap.style.display = 'none';
+  }
+
+  // Fields
+  var fieldDefs = [
+    ['Stand Out Features', char.features],
+    ['Height',             char.height],
+    ['Build',              char.build],
+    ['Character',          char.personality],
+    ['Fears',              char.fears],
+    ['Strengths',          char.strengths],
+    ['Interests',          char.interests],
+    ['Appearance',         char.appearance],
+  ];
+  var fieldsHtml = fieldDefs.filter(function(f){ return f[1]; }).map(function(f) {
+    return '<div class="field-row" style="padding:8px 0;">'
+      + '<div class="field-label" style="font-size:11px;">' + f[0] + '</div>'
+      + '<div style="font-size:13px;color:#2A1A08;font-weight:600;padding:4px 0;">' + f[1] + '</div>'
+      + '</div>';
+  }).join('');
+  document.getElementById('cdm-fields').innerHTML = fieldsHtml || '<div style="color:#C0BADA;font-style:italic;font-size:13px;padding:8px 0;">No details filled in yet.</div>';
+
+  // Show view mode, hide edit mode
+  document.getElementById('cdm-view-mode').style.display = 'block';
+  document.getElementById('cdm-edit-mode').style.display = 'none';
+
+  document.getElementById('char-detail-modal').style.display = 'flex';
+}
+
+function closeCharModal() {
+  document.getElementById('char-detail-modal').style.display = 'none';
+  _activeCharData = null;
+}
+
+function openCharEdit() {
+  if (!_activeCharData) return;
+  var c = _activeCharData;
+  document.getElementById('cdm-edit-name').value        = c.name        || '';
+  document.getElementById('cdm-edit-features').value    = c.features    || '';
+  document.getElementById('cdm-edit-height').value      = c.height      || '';
+  document.getElementById('cdm-edit-build').value       = c.build       || '';
+  document.getElementById('cdm-edit-character').value   = c.personality || '';
+  document.getElementById('cdm-edit-fears').value       = c.fears       || '';
+  document.getElementById('cdm-edit-strengths').value   = c.strengths   || '';
+  document.getElementById('cdm-edit-interests').value   = c.interests   || '';
+  document.getElementById('cdm-edit-appearance').value  = c.appearance  || '';
+  document.getElementById('cdm-view-mode').style.display = 'none';
+  document.getElementById('cdm-edit-mode').style.display = 'block';
+}
+
+function closeCharEdit() {
+  document.getElementById('cdm-view-mode').style.display = 'block';
+  document.getElementById('cdm-edit-mode').style.display = 'none';
+}
+
+async function saveCharEdit() {
+  if (!_activeCharData || !_currentUser) return;
+  var updates = {
+    name:        document.getElementById('cdm-edit-name').value.trim(),
+    features:    document.getElementById('cdm-edit-features').value.trim(),
+    height:      document.getElementById('cdm-edit-height').value.trim(),
+    build:       document.getElementById('cdm-edit-build').value.trim(),
+    personality: document.getElementById('cdm-edit-character').value.trim(),
+    fears:       document.getElementById('cdm-edit-fears').value.trim(),
+    strengths:   document.getElementById('cdm-edit-strengths').value.trim(),
+    interests:   document.getElementById('cdm-edit-interests').value.trim(),
+    appearance:  document.getElementById('cdm-edit-appearance').value.trim(),
+  };
+  var btn = document.querySelector('#cdm-edit-mode button:last-child');
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+  try {
+    var result = await _sb.from('characters').update(updates).eq('id', _activeCharData.id).eq('user_id', _currentUser.id);
+    if (result.error) throw new Error(result.error.message);
+    // Merge updates into active data
+    Object.assign(_activeCharData, updates);
+    showToast('✓ Character updated!');
+    closeCharEdit();
+    // Refresh the view mode fields
+    openCharDetail(_activeCharData);
+    loadMyCharacters();
+    loadCommunity(_communitySortBy || 'stars');
+  } catch(err) {
+    showToast('⚠ Update failed: ' + err.message);
+  } finally {
+    if (btn) { btn.textContent = 'Save Changes'; btn.disabled = false; }
+  }
+}
+
+function confirmDeleteChar() {
+  if (!_activeCharData) return;
+  document.getElementById('cdm-delete-name').textContent = '"' + (_activeCharData.name || 'Unnamed') + '"';
+  document.getElementById('char-delete-modal').style.display = 'flex';
+}
+
+function closeDeleteModal() {
+  document.getElementById('char-delete-modal').style.display = 'none';
+}
+
+async function executeDeleteChar() {
+  if (!_activeCharData || !_currentUser) return;
+  var btn = document.querySelector('#char-delete-modal button:last-child');
+  if (btn) { btn.textContent = 'Deleting…'; btn.disabled = true; }
+  try {
+    var result = await _sb.from('characters').delete().eq('id', _activeCharData.id).eq('user_id', _currentUser.id);
+    if (result.error) throw new Error(result.error.message);
+    closeDeleteModal();
+    closeCharModal();
+    showToast('Character deleted.');
+    loadMyCharacters();
+    loadCommunity(_communitySortBy || 'stars');
+  } catch(err) {
+    showToast('⚠ Delete failed: ' + err.message);
+    if (btn) { btn.textContent = 'Yes, Delete'; btn.disabled = false; }
+  }
+}
+
+// Close modals on background click
+document.addEventListener('click', function(e) {
+  if (e.target.id === 'char-detail-modal') closeCharModal();
+  if (e.target.id === 'char-delete-modal') closeDeleteModal();
+});
+
 // ══════════════════════════════════════════
 // SETTING BANK — full controller
 // ══════════════════════════════════════════

@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Character Community Bank — Aurabot</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+/* ── Reset & base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --purple:     #6C5CE7;
+  --purple-lt:  #A29BFE;
+  --pink:       #E84393;
+  --bg:         #EAE7FC;
+  --card-bg:    #ffffff;
+  --text:       #1E1B4B;
+  --text-muted: #9E98C8;
+  --border:     #E5E0FA;
+}
+html, body { height: 100%; font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); }
+
+/* ── Layout ── */
+.page { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ── Top bar ── */
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 12px rgba(108,92,231,0.07);
+  position: sticky; top: 0; z-index: 100;
+}
+.topbar-back {
+  display: flex; align-items: center; gap: 6px;
+  text-decoration: none; color: var(--purple);
+  font-weight: 800; font-size: 13px;
+  background: #F0ECFC; border-radius: 99px;
+  padding: 7px 14px;
+  transition: background 0.15s;
+}
+.topbar-back:hover { background: #E5E0FA; }
+.topbar-title { font-family: 'Baloo 2', cursive; font-size: 22px; font-weight: 900; color: var(--text); flex: 1; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+
+/* ── Hero banner ── */
+.hero {
+  background: linear-gradient(135deg, #3B2EA8 0%, #6C5CE7 55%, #9A60D0 100%);
+  padding: 40px 32px 36px;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 70% 30%, rgba(255,255,255,0.1) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hero-stars { position: absolute; inset: 0; pointer-events: none; }
+.hero-star { position: absolute; border-radius: 50%; background: #fff; animation: twinkle 2.5s ease-in-out infinite alternate; }
+@keyframes twinkle { from { opacity: 0.15; transform: scale(0.5); } to { opacity: 0.9; transform: scale(1.2); } }
+.hero-content { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; }
+.hero h1 { font-family: 'Baloo 2', cursive; font-size: 34px; font-weight: 900; color: #fff; margin-bottom: 6px; }
+.hero p  { font-size: 15px; color: rgba(255,255,255,0.8); font-weight: 600; margin-bottom: 24px; }
+
+/* ── Class selector ── */
+.class-selector {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.class-pill {
+  background: rgba(255,255,255,0.18);
+  border: 1.5px solid rgba(255,255,255,0.35);
+  color: #fff;
+  border-radius: 99px;
+  padding: 8px 18px;
+  font-size: 13px; font-weight: 800;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  transition: all 0.18s;
+}
+.class-pill:hover    { background: rgba(255,255,255,0.28); }
+.class-pill.active   { background: #fff; color: var(--purple); border-color: #fff; }
+.class-pill-label    { font-size: 12px; color: rgba(255,255,255,0.65); font-weight:700; margin-right: 4px; }
+
+/* ── Controls bar ── */
+.controls {
+  max-width: 1200px; margin: 0 auto;
+  padding: 20px 24px 0;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.search-wrap {
+  flex: 1; min-width: 200px; position: relative;
+}
+.search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+.search-input {
+  width: 100%; padding: 10px 14px 10px 38px;
+  border: 2px solid var(--border); border-radius: 99px;
+  font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+  color: var(--text); outline: none; transition: border-color 0.18s;
+  background: #fff;
+}
+.search-input:focus { border-color: var(--purple); }
+.sort-btn {
+  padding: 9px 18px; border-radius: 99px; border: 2px solid var(--border);
+  font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800;
+  cursor: pointer; transition: all 0.15s; background: #fff; color: var(--purple);
+}
+.sort-btn.active { background: var(--purple); color: #fff; border-color: var(--purple); }
+.results-count { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-left: auto; }
+
+/* ── Grid ── */
+.grid-wrap { max-width: 1200px; margin: 0 auto; padding: 20px 24px 40px; }
+.char-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+/* ── Character card ── */
+.char-card {
+  background: var(--card-bg);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 3px 16px rgba(108,92,231,0.09);
+  cursor: pointer;
+  transition: transform 0.18s, box-shadow 0.18s;
+  border: 1.5px solid transparent;
+}
+.char-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 32px rgba(108,92,231,0.18);
+  border-color: var(--border);
+}
+.char-card-img {
+  height: 160px;
+  background: linear-gradient(135deg, #EDE0FF, #D8CBFF);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; position: relative;
+}
+.char-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.char-card-initial {
+  font-family: 'Baloo 2', cursive;
+  font-size: 52px; font-weight: 900;
+  color: rgba(108,92,231,0.3);
+}
+.char-card-stars {
+  position: absolute; bottom: 8px; right: 8px;
+  background: rgba(26,29,58,0.75);
+  color: #fff; border-radius: 99px;
+  font-size: 11px; font-weight: 800;
+  padding: 3px 9px;
+  display: flex; align-items: center; gap: 4px;
+}
+.char-card-body { padding: 12px 14px 14px; }
+.char-card-name { font-family: 'Baloo 2', cursive; font-size: 15px; font-weight: 900; color: var(--text); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.char-card-by   { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; }
+.char-card-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.char-tag {
+  background: #F0ECFC; color: var(--purple);
+  border-radius: 99px; font-size: 10px; font-weight: 800;
+  padding: 2px 8px;
+}
+.star-btn {
+  margin-top: 10px; width: 100%;
+  padding: 8px; border-radius: 99px;
+  border: 1.5px solid var(--border);
+  background: #fff; color: var(--text-muted);
+  font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800;
+  cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.star-btn:hover { border-color: #FFD700; color: #B8860B; background: #FFFDF0; }
+.star-btn.starred { background: #FFFBE6; border-color: #FFD700; color: #B8860B; }
+
+/* ── Empty / loading states ── */
+.state-box {
+  grid-column: 1 / -1;
+  text-align: center; padding: 60px 20px;
+  color: var(--text-muted);
+}
+.state-box h3 { font-family: 'Baloo 2', cursive; font-size: 20px; font-weight: 800; color: #9E98C8; margin: 14px 0 6px; }
+.state-box p  { font-size: 13px; }
+.spinner {
+  width: 36px; height: 36px; border: 3px solid #E5E0FA;
+  border-top-color: var(--purple); border-radius: 50%;
+  animation: spin 0.7s linear infinite; margin: 0 auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Character detail modal ── */
+.modal-bg {
+  display: none; position: fixed; inset: 0; z-index: 500;
+  background: rgba(26,29,58,0.6);
+  align-items: center; justify-content: center;
+}
+.modal-bg.open { display: flex; }
+.modal-box {
+  background: #fff; border-radius: 24px;
+  width: 520px; max-width: 96vw; max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 64px rgba(108,92,231,0.28);
+  animation: popIn 0.2s ease;
+}
+@keyframes popIn { from { opacity:0; transform:scale(0.94) translateY(10px); } to { opacity:1; transform:none; } }
+.modal-header {
+  background: linear-gradient(135deg, #EEE9FC, #E8E3FA);
+  padding: 20px 22px 16px;
+  border-radius: 24px 24px 0 0;
+  display: flex; align-items: flex-start; justify-content: space-between;
+}
+.modal-close {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); font-size: 26px; line-height: 1; padding: 2px 6px;
+}
+.modal-img { width: 100%; max-height: 220px; object-fit: cover; display: block; }
+.modal-body { padding: 18px 22px 22px; }
+.modal-field { padding: 8px 0; border-bottom: 1px solid var(--border); display: flex; gap: 10px; }
+.modal-field:last-of-type { border-bottom: none; }
+.modal-field-label { font-size: 11px; font-weight: 800; color: var(--text-muted); width: 110px; flex-shrink: 0; padding-top: 2px; }
+.modal-field-value { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; line-height: 1.5; }
+.modal-star-btn {
+  margin-top: 18px; width: 100%;
+  padding: 13px; border-radius: 99px;
+  border: 2px solid #FFD700;
+  background: #FFFBE6; color: #B8860B;
+  font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 800;
+  cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+}
+.modal-star-btn:hover { background: #FFD700; color: #5a3a00; }
+.modal-star-btn.starred { background: #FFD700; color: #5a3a00; }
+
+/* ── Sign-in prompt ── */
+.signin-bar {
+  background: linear-gradient(90deg, #6C5CE7, #9B59B6);
+  color: #fff; text-align: center;
+  padding: 10px 20px; font-size: 13px; font-weight: 700;
+  display: none;
+}
+.signin-bar a { color: #fff; text-decoration: underline; cursor: pointer; }
+
+/* ── Toast ── */
+.toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(60px);
+  background: #1E1B4B; color: #fff; border-radius: 99px;
+  padding: 11px 24px; font-size: 13px; font-weight: 800;
+  box-shadow: 0 6px 24px rgba(26,29,58,0.35);
+  opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; z-index: 9999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── Responsiveness ── */
+@media (max-width: 600px) {
+  .hero h1 { font-size: 24px; }
+  .char-grid { grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Sign-in bar (shown if not logged in) -->
+  <div class="signin-bar" id="signin-bar">
+    Sign in to star characters! <a onclick="openSignIn()">Sign in →</a>
+  </div>
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <a href="index.html" class="topbar-back">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="13" y1="8" x2="3" y2="8"/><polyline points="7,4 3,8 7,12"/></svg>
+      Back
+    </a>
+    <div class="topbar-title">🎭 Character Community Bank</div>
+    <div class="topbar-right">
+      <div id="tb-signedout" style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:12px;color:var(--text-muted);font-weight:700;">Not signed in</span>
+      </div>
+      <div id="tb-signedin" style="display:none;align-items:center;gap:10px;">
+        <div style="text-align:right;">
+          <div style="font-size:10px;color:var(--text-muted);font-weight:700;">Welcome,</div>
+          <div id="tb-name" style="font-size:14px;font-weight:900;color:var(--text);"></div>
+        </div>
+        <div style="width:36px;height:36px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 10px rgba(108,92,231,0.2);background:#C4A8DC;display:flex;align-items:center;justify-content:center;">
+          <svg viewBox="0 0 40 40" fill="none" width="36" height="36"><circle cx="20" cy="20" r="20" fill="#D4B8E0"/><circle cx="20" cy="15" r="7" fill="#A87CC8"/><ellipse cx="20" cy="34" rx="11" ry="9" fill="#C4A0DC"/></svg>
+        </div>
+        <div style="background:#fff;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:5px;box-shadow:0 2px 10px rgba(108,92,231,0.1);font-weight:800;font-size:13px;color:var(--text);">
+          <span>⭐</span><span id="tb-stars">0</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-stars" id="hero-stars"></div>
+    <div class="hero-content">
+      <h1>Character Community Bank</h1>
+      <p>Explore characters created by everyone in your class — star your favourites!</p>
+
+      <!-- Class selector -->
+      <div class="class-selector" id="class-selector">
+        <span class="class-pill-label">Class:</span>
+        <div id="class-pills" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="class-pill active" data-class-id="all" onclick="selectClass('all', this)">All Classes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="search-wrap">
+      <svg viewBox="0 0 18 18" fill="none" stroke="#9E98C8" stroke-width="2" width="16" height="16"><circle cx="7.5" cy="7.5" r="5"/><line x1="11.5" y1="11.5" x2="16" y2="16"/></svg>
+      <input class="search-input" id="search-input" type="text" placeholder="Search characters by name…" oninput="onSearch()" />
+    </div>
+    <button class="sort-btn active" id="sort-stars" onclick="setSort('stars')">⭐ Most Starred</button>
+    <button class="sort-btn" id="sort-new"   onclick="setSort('newest')">🕐 Newest</button>
+    <button class="sort-btn" id="sort-az"    onclick="setSort('az')">A–Z</button>
+    <div class="results-count" id="results-count"></div>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid-wrap">
+    <div class="char-grid" id="char-grid">
+      <div class="state-box">
+        <div class="spinner"></div>
+        <h3>Loading characters…</h3>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end page -->
+
+<!-- Character Detail Modal -->
+<div class="modal-bg" id="char-modal" onclick="handleModalBgClick(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div id="m-name" style="font-family:'Baloo 2',cursive;font-size:22px;font-weight:900;color:var(--text);"></div>
+        <div id="m-by"   style="font-size:12px;color:var(--text-muted);font-weight:700;margin-top:3px;"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div id="m-img-wrap" style="display:none;">
+      <img id="m-img" class="modal-img" />
+    </div>
+    <div class="modal-body">
+      <div id="m-fields"></div>
+      <button class="modal-star-btn" id="m-star-btn" onclick="toggleStarModal()">
+        ⭐ <span id="m-star-label">Star this character</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL      = 'https://nwhaliuajvovesnrdfrr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53aGFsaXVhanZvdmVzbnJkZnJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDUyMzEsImV4cCI6MjA5NTQ4MTIzMX0.cGZ_yqeTyQYyyUAIc1CrV-M6iwN34CtSzjYBF_nG9xE';
+const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── State ──
+var _user        = null;
+var _profile     = null;
+var _allChars    = [];       // full fetched set
+var _filtered    = [];       // after search/class filter
+var _starredIds  = new Set();
+var _sortBy      = 'stars';
+var _classId     = 'all';
+var _activeChar  = null;
+var _classes     = [];
+
+// ── Init ──
+async function init() {
+  spawnStars();
+  const { data: { session } } = await _sb.auth.getSession();
+  if (session?.user) await onSignIn(session.user);
+  else document.getElementById('signin-bar').style.display = 'block';
+
+  _sb.auth.onAuthStateChange(async (ev, session) => {
+    if (ev === 'SIGNED_IN' && session?.user) await onSignIn(session.user);
+    if (ev === 'SIGNED_OUT') { _user = null; _profile = null; updateTopbar(); }
+  });
+
+  await loadClasses();
+  await loadCharacters();
+}
+
+async function onSignIn(user) {
+  _user    = user;
+  const { data } = await _sb.from('profiles').select('*').eq('id', user.id).single();
+  _profile = data;
+  _starredIds = await getMyStars();
+  updateTopbar();
+  document.getElementById('signin-bar').style.display = 'none';
+}
+
+function updateTopbar() {
+  var out = document.getElementById('tb-signedout');
+  var inn = document.getElementById('tb-signedin');
+  if (_profile) {
+    out.style.display = 'none';
+    inn.style.display = 'flex';
+    document.getElementById('tb-name').textContent  = _profile.display_name || _profile.username;
+    document.getElementById('tb-stars').textContent = _profile.star_points ?? 0;
+  } else {
+    out.style.display = 'flex';
+    inn.style.display = 'none';
+  }
+}
+
+async function getMyStars() {
+  if (!_user) return new Set();
+  const { data } = await _sb.from('stars').select('character_id').eq('user_id', _user.id);
+  return new Set((data || []).map(function(s){ return s.character_id; }));
+}
+
+// ── Load classes ──
+async function loadClasses() {
+  // Fetch all classes; if no classes table yet, just show "All"
+  const { data, error } = await _sb.from('classes').select('id, name').order('name');
+  if (error || !data || data.length === 0) return;
+  _classes = data;
+  var pills = document.getElementById('class-pills');
+  var allBtn = '<button class="class-pill active" data-class-id="all" onclick="selectClass(\'all\', this)">All Classes</button>';
+  var classBtns = data.map(function(c) {
+    return '<button class="class-pill" data-class-id="' + c.id + '" onclick="selectClass(\'' + c.id + '\', this)">' + escHtml(c.name) + '</button>';
+  }).join('');
+  pills.innerHTML = allBtn + classBtns;
+}
+
+function selectClass(classId, btn) {
+  _classId = classId;
+  document.querySelectorAll('.class-pill').forEach(function(p){ p.classList.remove('active'); });
+  btn.classList.add('active');
+  applyFilters();
+}
+
+// ── Load characters ──
+async function loadCharacters() {
+  showLoading();
+  var query = _sb
+    .from('characters')
+    .select('id, name, appearance, height, build, personality, strengths, fears, interests, features, sketch_url, ai_art_url, star_count, is_public, created_at, user_id, profiles(username, display_name)')
+    .eq('is_public', true);
+
+  // Filter by class if selected (join via class_members)
+  if (_classId !== 'all' && _classes.length > 0) {
+    // Get user_ids in that class
+    const { data: members } = await _sb
+      .from('class_members')
+      .select('user_id')
+      .eq('class_id', _classId);
+    var memberIds = (members || []).map(function(m){ return m.user_id; });
+    if (memberIds.length === 0) {
+      _allChars = [];
+      applyFilters();
+      return;
+    }
+    query = query.in('user_id', memberIds);
+  }
+
+  const { data, error } = await query;
+  if (error) { showError(error.message); return; }
+  _allChars = data || [];
+  applyFilters();
+}
+
+// ── Filter + sort + search ──
+function applyFilters() {
+  var search = document.getElementById('search-input').value.toLowerCase().trim();
+  _filtered = _allChars.filter(function(c) {
+    if (!search) return true;
+    var name = (c.name || '').toLowerCase();
+    var author = ((c.profiles && (c.profiles.display_name || c.profiles.username)) || '').toLowerCase();
+    return name.includes(search) || author.includes(search);
+  });
+
+  // Sort
+  if (_sortBy === 'stars')  _filtered.sort(function(a,b){ return (b.star_count||0) - (a.star_count||0); });
+  if (_sortBy === 'newest') _filtered.sort(function(a,b){ return new Date(b.created_at) - new Date(a.created_at); });
+  if (_sortBy === 'az')     _filtered.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
+
+  renderGrid(_filtered);
+  var count = document.getElementById('results-count');
+  count.textContent = _filtered.length + ' character' + (_filtered.length === 1 ? '' : 's');
+}
+
+function onSearch() { applyFilters(); }
+
+function setSort(s) {
+  _sortBy = s;
+  document.querySelectorAll('.sort-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('sort-' + (s === 'newest' ? 'new' : s === 'az' ? 'az' : 'stars')).classList.add('active');
+  applyFilters();
+}
+
+// ── Render grid ──
+var _gradients = [
+  'linear-gradient(135deg,#EDE0FF,#D8CBFF)',
+  'linear-gradient(135deg,#FFF0DC,#FFD89B)',
+  'linear-gradient(135deg,#DFF5E8,#B8EAC5)',
+  'linear-gradient(135deg,#FFE0EF,#FFBAD7)',
+  'linear-gradient(135deg,#E0F0FF,#B8D8FF)',
+  'linear-gradient(135deg,#FCE8FF,#E8C8FF)',
+];
+
+function renderGrid(chars) {
+  var grid = document.getElementById('char-grid');
+  if (chars.length === 0) {
+    grid.innerHTML = '<div class="state-box">'
+      + '<svg viewBox="0 0 64 64" fill="none" stroke="#C0BADA" stroke-width="1.5" width="56" height="56" style="display:block;margin:0 auto;"><circle cx="32" cy="22" r="14"/><path d="M8 56c0-13 9-20 24-20s24 7 24 20"/></svg>'
+      + '<h3>No characters yet</h3>'
+      + '<p>Be the first to create and share a character!</p>'
+      + '</div>';
+    return;
+  }
+
+  // Store for modal reference
+  window._renderedChars = chars;
+
+  grid.innerHTML = chars.map(function(c, i) {
+    var imgUrl  = c.ai_art_url || c.sketch_url || null;
+    var author  = c.profiles ? (c.profiles.display_name || c.profiles.username || 'Unknown') : 'Unknown';
+    var starred = _starredIds.has(c.id);
+    var bg      = _gradients[i % _gradients.length];
+    var initial = (c.name || '?')[0].toUpperCase();
+    var tags    = [];
+    if (c.personality) tags.push(c.personality.split(',')[0].trim());
+    if (c.features)    tags.push(c.features.split(',')[0].trim());
+
+    return '<div class="char-card" onclick="openModal(' + i + ')">'
+      + '<div class="char-card-img" style="background:' + bg + ';">'
+      + (imgUrl
+          ? '<img src="' + escHtml(imgUrl) + '" alt="' + escHtml(c.name || '') + '" />'
+          : '<div class="char-card-initial">' + initial + '</div>')
+      + '<div class="char-card-stars">⭐ ' + (c.star_count || 0) + '</div>'
+      + '</div>'
+      + '<div class="char-card-body">'
+      + '<div class="char-card-name">' + escHtml(c.name || 'Unnamed') + '</div>'
+      + '<div class="char-card-by">By ' + escHtml(author) + '</div>'
+      + (tags.length ? '<div class="char-card-tags">' + tags.slice(0,2).map(function(t){ return '<span class="char-tag">' + escHtml(t) + '</span>'; }).join('') + '</div>' : '')
+      + '<button class="star-btn' + (starred ? ' starred' : '') + '" onclick="event.stopPropagation();toggleStar(\'' + c.id + '\', this)">'
+      + (starred ? '⭐ Starred' : '☆ Star')
+      + '</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+// ── Modal ──
+function openModal(idx) {
+  var c = window._renderedChars[idx];
+  _activeChar = c;
+  var author  = c.profiles ? (c.profiles.display_name || c.profiles.username || 'Unknown') : 'Unknown';
+  var imgUrl  = c.ai_art_url || c.sketch_url || null;
+  var starred = _starredIds.has(c.id);
+
+  document.getElementById('m-name').textContent = c.name || 'Unnamed Character';
+  document.getElementById('m-by').textContent   = 'By ' + author + ' · ' + (c.star_count || 0) + ' stars';
+
+  var wrap = document.getElementById('m-img-wrap');
+  var img  = document.getElementById('m-img');
+  if (imgUrl) { img.src = imgUrl; wrap.style.display = 'block'; }
+  else         { wrap.style.display = 'none'; }
+
+  var fieldDefs = [
+    ['Stand Out Features', c.features],
+    ['Height',             c.height],
+    ['Build',              c.build],
+    ['Character',          c.personality],
+    ['Fears',              c.fears],
+    ['Strengths',          c.strengths],
+    ['Interests',          c.interests],
+    ['Appearance',         c.appearance],
+  ];
+  var fieldsHtml = fieldDefs.filter(function(f){ return f[1]; }).map(function(f) {
+    return '<div class="modal-field">'
+      + '<div class="modal-field-label">' + f[0] + '</div>'
+      + '<div class="modal-field-value">' + escHtml(f[1]) + '</div>'
+      + '</div>';
+  }).join('');
+  document.getElementById('m-fields').innerHTML = fieldsHtml || '<div style="color:#C0BADA;font-style:italic;font-size:13px;padding:8px 0;">No details filled in yet.</div>';
+
+  var starBtn = document.getElementById('m-star-btn');
+  var starLabel = document.getElementById('m-star-label');
+  starBtn.className = 'modal-star-btn' + (starred ? ' starred' : '');
+  starLabel.textContent = starred ? 'Starred!' : 'Star this character';
+
+  document.getElementById('char-modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('char-modal').classList.remove('open');
+  _activeChar = null;
+}
+
+function handleModalBgClick(e) {
+  if (e.target.id === 'char-modal') closeModal();
+}
+
+// ── Starring ──
+async function toggleStar(charId, btn) {
+  if (!_user) { showToast('Sign in to star characters!'); return; }
+  var isStarred = _starredIds.has(charId);
+  // Optimistic UI
+  if (isStarred) {
+    _starredIds.delete(charId);
+    btn.className = 'star-btn';
+    btn.textContent = '☆ Star';
+  } else {
+    _starredIds.add(charId);
+    btn.className = 'star-btn starred';
+    btn.textContent = '⭐ Starred';
+  }
+  // Update count on the card
+  var card = btn.closest('.char-card');
+  var starDisplay = card ? card.querySelector('.char-card-stars') : null;
+
+  try {
+    if (isStarred) {
+      await _sb.from('stars').delete().eq('user_id', _user.id).eq('character_id', charId);
+      if (starDisplay) {
+        var c = _allChars.find(function(x){ return x.id === charId; });
+        if (c) { c.star_count = Math.max(0, (c.star_count||0) - 1); starDisplay.textContent = '⭐ ' + c.star_count; }
+      }
+      showToast('Star removed');
+    } else {
+      await _sb.from('stars').insert({ user_id: _user.id, character_id: charId });
+      if (starDisplay) {
+        var c2 = _allChars.find(function(x){ return x.id === charId; });
+        if (c2) { c2.star_count = (c2.star_count||0) + 1; starDisplay.textContent = '⭐ ' + c2.star_count; }
+      }
+      showToast('⭐ Starred!');
+    }
+    // Refresh profile star count
+    if (_profile) {
+      var { data: p2 } = await _sb.from('profiles').select('star_points').eq('id', _user.id).single();
+      if (p2) { _profile.star_points = p2.star_points; document.getElementById('tb-stars').textContent = p2.star_points; }
+    }
+  } catch(err) {
+    showToast('⚠ ' + err.message);
+  }
+}
+
+async function toggleStarModal() {
+  if (!_activeChar) return;
+  var btn = document.getElementById('m-star-btn');
+  // Find card star btn
+  var cardIdx = window._renderedChars ? window._renderedChars.findIndex(function(c){ return c.id === _activeChar.id; }) : -1;
+  var cardStarBtn = cardIdx >= 0 ? document.querySelectorAll('.star-btn')[cardIdx] : null;
+  await toggleStar(_activeChar.id, cardStarBtn || btn);
+  // Sync modal star button
+  var starred = _starredIds.has(_activeChar.id);
+  btn.className = 'modal-star-btn' + (starred ? ' starred' : '');
+  document.getElementById('m-star-label').textContent = starred ? 'Starred!' : 'Star this character';
+}
+
+// ── Loading / error states ──
+function showLoading() {
+  document.getElementById('char-grid').innerHTML =
+    '<div class="state-box"><div class="spinner"></div><h3>Loading characters…</h3></div>';
+}
+function showError(msg) {
+  document.getElementById('char-grid').innerHTML =
+    '<div class="state-box"><h3>Something went wrong</h3><p>' + escHtml(msg) + '</p></div>';
+}
+
+// ── Toast ──
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2600);
+}
+
+// ── Decorative hero stars ──
+function spawnStars() {
+  var container = document.getElementById('hero-stars');
+  var positions = [
+    [10,15,5,0],[20,60,4,0.4],[35,25,3,0.8],[50,70,6,0.2],[65,20,4,1.0],
+    [75,55,3,0.6],[85,30,5,0.3],[90,80,4,0.9],[15,85,3,1.2],[45,45,4,0.5],
+    [60,10,5,0.7],[30,75,3,1.4],[80,65,4,0.1],[55,35,3,0.9],[25,50,5,0.3],
+  ];
+  positions.forEach(function(p) {
+    var s = document.createElement('div');
+    s.className = 'hero-star';
+    s.style.cssText = 'left:' + p[0] + '%;top:' + p[1] + '%;width:' + p[2] + 'px;height:' + p[2] + 'px;animation-delay:' + p[3] + 's;';
+    container.appendChild(s);
+  });
+}
+
+// ── Util ──
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Keyboard: close modal on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ── Boot ──
+init();
+</script>
+</body>
+</html>
