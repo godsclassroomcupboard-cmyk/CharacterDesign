@@ -456,8 +456,10 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       </span>
       <span>Story Lab</span>
     </div>
-    <a href="community.html" target="_blank" class="nav-tab" style="text-decoration:none;color:inherit;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <a href="community.html" target="_blank" class="nav-tab" id="nav-community" style="text-decoration:none;color:inherit;">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </span>
       <span>Community</span>
     </a>
     <div class="nav-tab">
@@ -2444,6 +2446,7 @@ const SUPABASE_URL      = 'https://nwhaliuajvovesnrdfrr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53aGFsaXVhanZvdmVzbnJkZnJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDUyMzEsImV4cCI6MjA5NTQ4MTIzMX0.cGZ_yqeTyQYyyUAIc1CrV-M6iwN34CtSzjYBF_nG9xE';
 
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window._sb = _sb; // expose for settingBank
 
 // ── PORTAL AUTH GUARD ─────────────────────────────────────────
 // Block direct access — must come through portal.html
@@ -2476,7 +2479,7 @@ let _communitySortBy = 'stars';
 })();
 
 async function _onSignIn(user) {
-  _currentUser = user;
+  _currentUser = user; window._currentUser = user; // expose for settingBank
   const { data } = await _sb.from('profiles').select('*').eq('id', user.id).single();
   _currentProfile = data;
   _myStarredIds   = await _getMyStarredIds();
@@ -2486,7 +2489,7 @@ async function _onSignIn(user) {
 }
 
 function _onSignOut() {
-  _currentUser = null; _currentProfile = null; _myStarredIds = new Set();
+  _currentUser = null; window._currentUser = null; _currentProfile = null; _myStarredIds = new Set();
   _updateTopbar();
   _showSaveButton();
 }
@@ -3523,9 +3526,11 @@ const settingBank = (() => {
       star_count: setting.star_count || 0,
     };
     if (setting.supabase_id) {
-      await sdb.from('settings').update(payload).eq('id', setting.supabase_id);
+      const { error: updErr } = await sdb.from('settings').update(payload).eq('id', setting.supabase_id);
+      if (updErr) console.error('[SettingBank] update error:', updErr);
     } else {
-      const { data } = await sdb.from('settings').insert(payload).select().single();
+      const { data, error: insErr } = await sdb.from('settings').insert(payload).select().single();
+      if (insErr) console.error('[SettingBank] insert error:', insErr);
       if (data) setting.supabase_id = data.id;
     }
   }
