@@ -2675,6 +2675,39 @@ async function handleSaveToProfile() {
   }
 }
 
+// ── Save setting to Supabase (top-level, mirrors handleSaveToProfile) ──
+async function handleSaveSettingToSupabase(setting) {
+  // Recover session if _currentUser not set
+  if (!_currentUser) {
+    const { data: { session } } = await _sb.auth.getSession();
+    if (session?.user) await _onSignIn(session.user);
+    else { console.warn('[SettingBank] no user session, cannot save to Supabase'); return; }
+  }
+
+  const payload = {
+    user_id:   _currentUser.id,
+    name:      setting.name,
+    locations: setting.locations || [],
+    is_public: true,
+    star_count: setting.star_count || 0,
+  };
+
+  if (setting.supabase_id) {
+    const { error } = await _sb.from('settings').update(payload).eq('id', setting.supabase_id).eq('user_id', _currentUser.id);
+    if (error) console.error('[SettingBank] update error:', error);
+    else console.log('[SettingBank] updated OK:', setting.supabase_id);
+  } else {
+    const { data, error } = await _sb.from('settings').insert(payload).select().single();
+    if (error) {
+      console.error('[SettingBank] insert error:', error);
+      showToast('⚠ Cloud save failed: ' + error.message);
+    } else {
+      setting.supabase_id = data.id;
+      console.log('[SettingBank] inserted OK:', data.id);
+    }
+  }
+}
+
 // ── Community feed ───────────────────────────────────────────
 async function loadCommunity(sortBy = 'stars') {
   _communitySortBy  = sortBy;
@@ -3528,32 +3561,8 @@ const settingBank = (() => {
 
   // ── Supabase: save setting ──
   async function saveToSupabase(setting) {
-    const sdb = db();
-    if (!sdb) { console.warn('[SettingBank] no _sb client'); return; }
-    // Get user directly from Supabase session — don't rely on window._currentUser
-    let userId = currentUser()?.id;
-    if (!userId) {
-      const { data: { session } } = await sdb.auth.getSession();
-      userId = session?.user?.id;
-    }
-    if (!userId) { console.warn('[SettingBank] saveToSupabase: no user session'); return; }
-    const payload = {
-      user_id: userId,
-      name: setting.name,
-      locations: setting.locations,
-      is_public: true,
-      star_count: setting.star_count || 0,
-    };
-    console.log('[SettingBank] saving payload:', payload);
-    if (setting.supabase_id) {
-      const { error: updErr } = await sdb.from('settings').update(payload).eq('id', setting.supabase_id);
-      if (updErr) console.error('[SettingBank] update error:', updErr);
-      else console.log('[SettingBank] updated OK');
-    } else {
-      const { data, error: insErr } = await sdb.from('settings').insert(payload).select().single();
-      if (insErr) console.error('[SettingBank] insert error:', insErr);
-      else { setting.supabase_id = data?.id; console.log('[SettingBank] inserted OK, id:', data?.id); }
-    }
+    // Delegate to top-level function that has direct access to _sb and _currentUser
+    await handleSaveSettingToSupabase(setting);
   }
 
   // ── Supabase: load community settings ──
