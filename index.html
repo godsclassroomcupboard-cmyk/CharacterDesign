@@ -1195,7 +1195,7 @@ async function loadMyCharacters() {
   if (!_currentUser) return;
   const { data, error } = await _sb
     .from('characters')
-    .select('id, name, sketch_url, ai_art_url, personality')
+    .select('id, name, appearance, height, build, personality, strengths, fears, interests, features, sketch_url, ai_art_url, art_style, sketch_description, star_count, created_at')
     .eq('user_id', _currentUser.id)
     .order('created_at', { ascending: false })
     .limit(9);
@@ -3053,8 +3053,17 @@ window.addEventListener('load', () => {
     <!-- Fields -->
     <div id="cdm-view-mode" style="padding:16px 20px;">
       <div id="cdm-fields" style="display:flex;flex-direction:column;gap:0;"></div>
+      <!-- Download buttons -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;">
+        <button onclick="downloadCharModalPDF()" class="btn-pink" style="padding:10px 8px;font-size:11px;display:flex;align-items:center;justify-content:center;gap:5px;">
+          📄 Dossier PDF
+        </button>
+        <button onclick="downloadCharModalDOCX()" style="padding:10px 8px;font-size:11px;font-weight:800;border:none;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;background:linear-gradient(90deg,#2B5CE7,#5B8EF0);color:#fff;display:flex;align-items:center;justify-content:center;gap:5px;">
+          📝 Dossier DOCX
+        </button>
+      </div>
       <!-- Action buttons -->
-      <div style="display:flex;gap:10px;margin-top:20px;">
+      <div style="display:flex;gap:10px;margin-top:10px;">
         <button onclick="openCharEdit()" style="flex:1;padding:11px;font-size:13px;font-weight:800;border:none;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;background:linear-gradient(90deg,#6C5CE7,#9B59B6);color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;">
           ✏️ Edit Character
         </button>
@@ -3168,6 +3177,138 @@ window.addEventListener('load', () => {
 </div>
 
 <script>
+// ══════════════════════════════════════════
+// CHARACTER MODAL DOWNLOADS
+// (uses _activeCharData instead of form fields)
+// ══════════════════════════════════════════
+
+function _charDataToFields(c) {
+  return {
+    name:        c.name        || '',
+    features:    c.features    || '',
+    height:      c.height      || '',
+    build:       c.build       || '',
+    character:   c.personality || '',
+    fears:       c.fears       || '',
+    strengths:   c.strengths   || '',
+    interests:   c.interests   || '',
+    appearance:  c.appearance  || '',
+  };
+}
+
+async function downloadCharModalPDF() {
+  if (!_activeCharData) return;
+  var c = _activeCharData;
+  var imgUrl = c.ai_art_url || c.sketch_url || null;
+  var fields = _charDataToFields(c);
+
+  // Temporarily override getCharacterDetails so downloadDossierPDF uses our data
+  var _origGetDetails = window.getCharacterDetails;
+  window.getCharacterDetails = function() {
+    return { fields: fields, imageDataUrl: null };
+  };
+  // Also temporarily set lastGeneratedDataUrl to the saved image URL
+  var _origLast = lastGeneratedDataUrl;
+  // downloadDossierPDF uses lastGeneratedDataUrl for the image embed
+  // We pass the URL directly by patching the function briefly
+  var _origDownload = window.downloadDossierPDF;
+
+  // Build the PDF directly using the same template as downloadDossierPDF
+  // but feeding character data from the saved object
+  var today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' });
+  var charName = fields.name || 'Unknown Agent';
+
+  var fieldRows = [
+    ['Stand Out Features', fields.features],
+    ['Height',             fields.height],
+    ['Build',              fields.build],
+    ['Character',          fields.character],
+    ['Fears',              fields.fears],
+    ['Strengths',          fields.strengths],
+    ['Interests',          fields.interests],
+    ['Appearance',         fields.appearance],
+  ].filter(function(r){ return r[1]; }).map(function(r) {
+    return '<tr><td class="label-cell">' + r[0] + '</td><td class="value-cell">' + r[1] + '</td></tr>';
+  }).join('');
+
+  var win = window.open('', '_blank');
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"/>'
+    + '<title>Character Dossier – ' + charName + '</title>'
+    + '<style>'
+    + '@page { size: A4 portrait; margin: 0; }'
+    + "@import url(\"https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap\");"
+    + '* { box-sizing: border-box; margin: 0; padding: 0; }'
+    + "html, body { width: 210mm; font-family: 'Courier Prime', 'Courier New', monospace; background: #d4b896; }"
+    + '.folder { width:210mm; min-height:297mm; background:#c9a87c; display:flex; flex-direction:column; padding:5mm 5mm 7mm; }'
+    + '.folder-tab { width:36mm; height:5mm; background:#b8966a; border-radius:3mm 3mm 0 0; margin-left:10mm; margin-bottom:-1px; }'
+    + '.dossier { flex:1; background:#f5f0e0; border-radius:1mm; border:0.5mm solid #c8b896; padding:8mm 10mm 10mm; position:relative; overflow:hidden; }'
+    + '.clip-wrap { position:absolute; top:-2mm; left:14mm; z-index:10; }'
+    + '.stain { position:absolute; border-radius:50%; background:radial-gradient(circle,#8B6914 40%,transparent 70%); pointer-events:none; }'
+    + '.stain-1 { width:24mm; height:24mm; bottom:22mm; right:10mm; opacity:0.09; }'
+    + '.stain-2 { width:14mm; height:14mm; top:50mm; right:20mm; opacity:0.06; }'
+    + '.header-row { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:4mm; }'
+    + '.badge { display:inline-block; background:#5a3a10; color:#f5f0e0; font-size:7pt; font-weight:700; padding:1mm 3mm; border-radius:1mm; letter-spacing:1px; text-transform:uppercase; }'
+    + '.date-line { font-size:7pt; color:#7a6040; font-style:italic; text-align:right; }'
+    + '.divider { border:none; border-top:0.4mm solid #c8b896; margin:3mm 0; }'
+    + ".char-name { font-family:'Special Elite','Courier New',serif; font-size:26pt; color:#2a1a08; margin-bottom:4mm; }"
+    + '.two-col { display:flex; gap:6mm; align-items:flex-start; }'
+    + '.portrait { width:42mm; flex-shrink:0; }'
+    + '.portrait img { width:42mm; height:52mm; object-fit:cover; border:0.5mm solid #c8b896; border-radius:1mm; display:block; }'
+    + '.portrait-placeholder { width:42mm; height:52mm; background:#ede4d4; border:0.5mm dashed #c8b896; border-radius:1mm; display:flex; align-items:center; justify-content:center; color:#a89880; font-size:8pt; font-style:italic; }'
+    + '.fields-table { width:100%; border-collapse:collapse; }'
+    + '.label-cell { font-weight:700; color:#5a3a10; font-size:8pt; width:38mm; padding:1.5mm 2mm 1.5mm 0; border-bottom:0.25mm dotted #c8b896; vertical-align:top; line-height:1.4; }'
+    + '.value-cell { font-size:8pt; color:#2a1a08; padding:1.5mm 0; border-bottom:0.25mm dotted #c8b896; vertical-align:top; line-height:1.4; }'
+    + ".stamp { position:absolute; bottom:10mm; right:8mm; border:0.7mm solid #E84393; color:#E84393; font-family:'Special Elite',serif; font-size:11pt; font-weight:bold; padding:1.5mm 4mm; border-radius:1mm; letter-spacing:3px; opacity:0.75; transform:rotate(-12deg); text-transform:uppercase; }"
+    + '.footer-note { font-size:6.5pt; color:#7a6040; font-style:italic; margin-top:3mm; }'
+    + '@media screen { body { display:flex; align-items:flex-start; justify-content:center; min-height:100vh; padding:10mm; background:#d4b896; } .folder { box-shadow:4px 6px 24px rgba(0,0,0,0.35); border-radius:3mm; } }'
+    + '@media print { html,body { background:none; } .folder { box-shadow:none; border-radius:0; } * { -webkit-print-color-adjust:exact; print-color-adjust:exact; } }'
+    + '</style></head><body>'
+    + '<div class="folder"><div class="folder-tab"></div>'
+    + '<div class="dossier">'
+    + '<div class="clip-wrap"><svg width="14" height="52" viewBox="0 0 14 52" fill="none"><rect x="2" y="1" width="10" height="42" rx="5" stroke="#aaa" stroke-width="2.5" fill="none"/><rect x="5" y="10" width="6" height="34" rx="3" stroke="#bbb" stroke-width="2" fill="none"/></svg></div>'
+    + '<div class="stain stain-1"></div><div class="stain stain-2"></div>'
+    + '<div class="header-row"><span class="badge">Character Dossier</span><span class="date-line">Filed: ' + today + '<br>Aurabot Character Bank</span></div>'
+    + '<hr class="divider"/>'
+    + '<div class="char-name">' + charName + '</div>'
+    + '<div class="two-col">'
+    + '<div class="portrait">'
+    + (imgUrl
+        ? '<img src="' + imgUrl + '" crossorigin="anonymous" />'
+        : '<div class="portrait-placeholder">No image</div>')
+    + '</div>'
+    + '<div style="flex:1;">'
+    + '<table class="fields-table"><tbody>' + (fieldRows || '<tr><td colspan="2" style="color:#a89880;font-style:italic;font-size:8pt;">No details added yet.</td></tr>') + '</tbody></table>'
+    + '</div></div>'
+    + '<hr class="divider"/>'
+    + '<div class="footer-note">Created with Aurabot Character Bank · All details as provided by the creator.</div>'
+    + '<div class="stamp">Confidential</div>'
+    + '</div></div>'
+    + '<script>document.fonts.ready.then(function(){ var imgs=document.querySelectorAll("img"); var pending=Array.from(imgs).filter(function(i){return !i.complete;}); if(pending.length===0){setTimeout(function(){window.print();},300);return;} var loaded=0; pending.forEach(function(img){img.onload=img.onerror=function(){if(++loaded===pending.length)setTimeout(function(){window.print();},200);};}); });<\/script>'
+    + '</body></html>');
+  win.document.close();
+}
+
+async function downloadCharModalDOCX() {
+  if (!_activeCharData) return;
+  try { await loadDocxLibrary(); } catch(err) { alert('⚠ ' + err.message); return; }
+  var c = _activeCharData;
+  var fields = _charDataToFields(c);
+  var imgUrl = c.ai_art_url || c.sketch_url || null;
+
+  // Temporarily override getCharacterDetails to point at saved data
+  var _origGetDetails = window.getCharacterDetails;
+  window.getCharacterDetails = function() { return { fields: fields, imageDataUrl: null }; };
+  // Override lastGeneratedDataUrl so DOCX function picks up the right image
+  var _origLast = lastGeneratedDataUrl;
+  lastGeneratedDataUrl = imgUrl; // URL string — DOCX fn checks if it starts with 'data:' for base64
+  try {
+    await downloadDossierDOCX();
+  } finally {
+    window.getCharacterDetails = _origGetDetails;
+    lastGeneratedDataUrl = _origLast;
+  }
+}
+
 // ══════════════════════════════════════════
 // CHARACTER DETAIL MODAL
 // ══════════════════════════════════════════
