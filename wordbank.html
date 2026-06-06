@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Word Bank — Aurabot</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800;900&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --purple:#6C5CE7; --purple-lt:#A29BFE; --pink:#E84393;
+  --bg:#EAE7FC; --text:#1E1B4B; --muted:#9E98C8;
+  --border:#E5E0FA; --white:#fff;
+  --gold:#F5A623; --green:#2ECC71;
+}
+html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);}
+.page{display:flex;flex-direction:column;min-height:100vh;}
+
+/* ── Topbar ── */
+.topbar{
+  height:58px;background:#fff;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;padding:0 24px;
+  flex-shrink:0;box-shadow:0 2px 10px rgba(108,92,231,0.07);
+  position:sticky;top:0;z-index:50;
+}
+.back-btn{
+  display:flex;align-items:center;gap:6px;background:#F0ECFC;
+  border:none;border-radius:99px;padding:7px 14px;font-size:12px;
+  font-weight:800;color:var(--purple);cursor:pointer;font-family:'Nunito',sans-serif;
+  text-decoration:none;transition:background 0.15s;
+}
+.back-btn:hover{background:#E5E0FA;}
+.topbar-title{font-family:'Baloo 2',cursive;font-size:22px;font-weight:900;color:var(--text);flex:1;}
+.btn{padding:8px 18px;border:none;border-radius:99px;font-family:'Nunito',sans-serif;font-weight:800;font-size:12px;cursor:pointer;transition:all 0.18s;}
+.btn-purple{background:linear-gradient(90deg,#6C5CE7,#9B59B6);color:#fff;}
+.btn-pink{background:linear-gradient(90deg,#E84393,#FF6EB4);color:#fff;}
+.btn-outline{background:#fff;border:2px solid var(--border);color:var(--purple);}
+.btn:hover{opacity:0.9;transform:translateY(-1px);}
+
+/* ── Hero ── */
+.hero{
+  background:linear-gradient(135deg,#3B2EA8 0%,#6C5CE7 55%,#9A60D0 100%);
+  padding:36px 32px 32px;
+  position:relative;overflow:hidden;
+}
+.hero::after{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");pointer-events:none;}
+.hero-content{position:relative;z-index:1;max-width:900px;margin:0 auto;}
+.hero h1{font-family:'Baloo 2',cursive;font-size:32px;font-weight:900;color:#fff;margin-bottom:6px;}
+.hero p{font-size:14px;color:rgba(255,255,255,0.8);font-weight:600;margin-bottom:24px;}
+
+/* ── Search bar ── */
+.search-wrap{
+  display:flex;gap:10px;align-items:center;
+  background:rgba(255,255,255,0.15);border-radius:99px;
+  padding:6px 8px 6px 18px;max-width:560px;border:1.5px solid rgba(255,255,255,0.25);
+}
+.search-input{
+  flex:1;border:none;background:transparent;outline:none;
+  font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;color:#fff;
+}
+.search-input::placeholder{color:rgba(255,255,255,0.6);}
+.search-clear{
+  background:rgba(255,255,255,0.2);border:none;border-radius:99px;
+  color:#fff;padding:5px 12px;font-size:11px;font-weight:800;
+  cursor:pointer;font-family:'Nunito',sans-serif;transition:background 0.15s;
+}
+.search-clear:hover{background:rgba(255,255,255,0.3);}
+
+/* ── Category filters ── */
+.cat-filters{
+  max-width:900px;margin:0 auto;
+  padding:18px 24px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+}
+.cat-pill{
+  padding:7px 16px;border-radius:99px;border:2px solid var(--border);
+  background:#fff;color:var(--muted);font-family:'Nunito',sans-serif;
+  font-size:12px;font-weight:800;cursor:pointer;transition:all 0.15s;
+}
+.cat-pill:hover{border-color:var(--purple);color:var(--purple);}
+.cat-pill.active{background:var(--purple);color:#fff;border-color:var(--purple);}
+
+/* ── Rating filter ── */
+.rating-wrap{margin-left:auto;display:flex;gap:6px;align-items:center;}
+.rating-label{font-size:11px;font-weight:700;color:var(--muted);}
+.rating-btn{
+  padding:6px 12px;border-radius:99px;border:2px solid var(--border);
+  background:#fff;color:var(--muted);font-size:11px;font-weight:800;
+  cursor:pointer;font-family:'Nunito',sans-serif;transition:all 0.15s;
+}
+.rating-btn.active{background:var(--gold);border-color:var(--gold);color:#fff;}
+
+/* ── Main content ── */
+.main{max-width:900px;margin:0 auto;padding:20px 24px 60px;width:100%;}
+
+/* ── Category section ── */
+.cat-section{margin-bottom:32px;}
+.cat-header{
+  display:flex;align-items:center;gap:10px;margin-bottom:14px;
+  padding-bottom:8px;border-bottom:2px solid var(--border);
+}
+.cat-title{font-family:'Baloo 2',cursive;font-size:18px;font-weight:900;color:var(--text);}
+.cat-count{font-size:11px;font-weight:800;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+
+/* ── Word cards in category ── */
+.words-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+.word-card{
+  background:var(--white);border:1.5px solid var(--border);border-radius:14px;
+  padding:12px 14px;transition:all 0.18s;cursor:pointer;position:relative;
+}
+.word-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(108,92,231,0.12);border-color:var(--purple);}
+.word-card.rating-2{border-left:3px solid var(--gold);}
+.word-card.rating-3{border-left:3px solid var(--pink);}
+.word-main{font-family:'DM Serif Display',serif;font-size:17px;color:var(--text);margin-bottom:4px;}
+.word-replaces{font-size:10px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:4px;}
+.word-replaces::before{content:'replaces';background:#F0ECFC;color:var(--purple);padding:1px 6px;border-radius:4px;font-size:9px;font-weight:800;}
+.word-stars{position:absolute;top:10px;right:10px;font-size:9px;color:var(--gold);}
+.word-copy-hint{
+  position:absolute;bottom:0;left:0;right:0;
+  background:var(--purple);color:#fff;border-radius:0 0 12px 12px;
+  text-align:center;font-size:10px;font-weight:800;padding:4px;
+  opacity:0;transition:opacity 0.15s;
+}
+.word-card:hover .word-copy-hint{opacity:1;}
+
+/* ── Empty state ── */
+.empty-state{text-align:center;padding:48px 20px;color:var(--muted);}
+.empty-state h3{font-family:'Baloo 2',cursive;font-size:20px;font-weight:800;color:#9E98C8;margin:14px 0 6px;}
+
+/* ── Suggest / Add modals ── */
+.modal-bg{display:none;position:fixed;inset:0;z-index:200;background:rgba(26,29,58,0.6);align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal-box{background:#fff;border-radius:22px;width:460px;max-width:96vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 64px rgba(108,92,231,0.28);}
+.modal-header{background:linear-gradient(135deg,#EEE9FC,#E8E3FA);padding:18px 20px 14px;border-radius:22px 22px 0 0;display:flex;align-items:center;justify-content:space-between;}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:24px;line-height:1;}
+.modal-body{padding:16px 20px 20px;}
+.field-group{margin-bottom:14px;}
+.field-label{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px;}
+.field-input{
+  width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;
+  font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:var(--text);outline:none;
+  transition:border-color 0.15s;
+}
+.field-input:focus{border-color:var(--purple);}
+.field-select{appearance:none;background:#F8F5FF;cursor:pointer;}
+.rating-stars{display:flex;gap:6px;}
+.star-btn{
+  padding:7px 14px;border-radius:99px;border:2px solid var(--border);
+  background:#fff;font-size:12px;font-weight:800;cursor:pointer;
+  font-family:'Nunito',sans-serif;transition:all 0.15s;color:var(--muted);
+}
+.star-btn.selected{background:var(--gold);border-color:var(--gold);color:#fff;}
+
+/* ── Pending queue (teacher) ── */
+.pending-list{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+.pending-item{
+  background:#F8F5FF;border-radius:10px;padding:10px 12px;
+  display:flex;align-items:center;gap:10px;border:1.5px solid var(--border);
+}
+.pending-word{font-family:'DM Serif Display',serif;font-size:15px;color:var(--text);flex:1;}
+.pending-meta{font-size:10px;color:var(--muted);font-weight:600;}
+.approve-btn{background:var(--green);color:#fff;border:none;border-radius:99px;padding:5px 12px;font-size:11px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;}
+.reject-btn{background:#FFE0EF;color:var(--pink);border:none;border-radius:99px;padding:5px 12px;font-size:11px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#1E1B4B;color:#fff;border-radius:99px;padding:10px 22px;font-size:12px;font-weight:800;box-shadow:0 6px 24px rgba(26,29,58,0.3);opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;z-index:9999;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.spinner{width:28px;height:28px;border:3px solid #E5E0FA;border-top-color:var(--purple);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <button onclick="history.back()" class="back-btn">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><line x1="13" y1="8" x2="3" y2="8"/><polyline points="7,4 3,8 7,12"/></svg>
+      Back
+    </button>
+    <div class="topbar-title">📚 Word Bank</div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="openSuggestModal()" class="btn btn-outline">💡 Suggest a Word</button>
+      <button id="teacher-btn" onclick="openTeacherModal()" class="btn btn-purple" style="display:none;">➕ Add Word</button>
+      <button id="pending-btn" onclick="openPendingModal()" class="btn btn-pink" style="display:none;">⏳ Review Suggestions</button>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-content">
+      <h1>📚 Word Bank</h1>
+      <p>Click any word to copy it. Use vivid, precise words to make your writing come alive.</p>
+      <div class="search-wrap">
+        <svg viewBox="0 0 18 18" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" width="16" height="16"><circle cx="7.5" cy="7.5" r="5"/><line x1="11.5" y1="11.5" x2="16" y2="16"/></svg>
+        <input class="search-input" id="search-input" type="text" placeholder="Search words or type a basic word to replace…" oninput="filterWords()"/>
+        <button class="search-clear" onclick="clearSearch()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category filters -->
+  <div class="cat-filters">
+    <button class="cat-pill active" data-cat="all" onclick="filterCat('all',this)">All</button>
+    <div id="cat-pills" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+    <div class="rating-wrap">
+      <span class="rating-label">Level:</span>
+      <button class="rating-btn active" data-rating="0" onclick="filterRating(0,this)">All</button>
+      <button class="rating-btn" data-rating="1" onclick="filterRating(1,this)">⭐ Beginner</button>
+      <button class="rating-btn" data-rating="2" onclick="filterRating(2,this)">⭐⭐ Intermediate</button>
+      <button class="rating-btn" data-rating="3" onclick="filterRating(3,this)">⭐⭐⭐ Advanced</button>
+    </div>
+  </div>
+
+  <!-- Main word grid -->
+  <main class="main" id="main-content">
+    <div style="text-align:center;padding:48px;"><div class="spinner"></div></div>
+  </main>
+
+</div>
+
+<!-- Suggest Word Modal -->
+<div class="modal-bg" id="suggest-modal" onclick="handleBg(event,'suggest-modal')">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:900;color:var(--text);">💡 Suggest a Word</div>
+      <button class="modal-close" onclick="closeModal('suggest-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <div class="field-label">Your vivid word</div>
+        <input class="field-input" id="sug-word" type="text" placeholder="e.g. luminous"/>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Replaces (basic word)</div>
+        <input class="field-input" id="sug-replaces" type="text" placeholder="e.g. bright"/>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Category</div>
+        <input class="field-input" id="sug-category" type="text" placeholder="e.g. Appearance"/>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Difficulty level</div>
+        <div class="rating-stars">
+          <button class="star-btn selected" data-val="1" onclick="selectRating(this)">⭐ Beginner</button>
+          <button class="star-btn" data-val="2" onclick="selectRating(this)">⭐⭐ Intermediate</button>
+          <button class="star-btn" data-val="3" onclick="selectRating(this)">⭐⭐⭐ Advanced</button>
+        </div>
+      </div>
+      <button onclick="submitSuggestion()" class="btn btn-purple" style="width:100%;padding:12px;font-size:13px;">Submit Suggestion →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Teacher Add Word Modal -->
+<div class="modal-bg" id="teacher-modal" onclick="handleBg(event,'teacher-modal')">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:900;color:var(--text);">➕ Add Word to Bank</div>
+      <button class="modal-close" onclick="closeModal('teacher-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <div class="field-label">Vivid word</div>
+        <input class="field-input" id="add-word" type="text" placeholder="e.g. magnificent"/>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Replaces (basic word)</div>
+        <input class="field-input" id="add-replaces" type="text" placeholder="e.g. good"/>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Category</div>
+        <select class="field-input field-select" id="add-category">
+          <option value="">— select or type new —</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <div class="field-label">New category (if not listed)</div>
+        <input class="field-input" id="add-category-new" type="text" placeholder="e.g. Weather"/>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Difficulty level</div>
+        <div class="rating-stars">
+          <button class="star-btn selected" data-val="1" onclick="selectRating(this)">⭐ Beginner</button>
+          <button class="star-btn" data-val="2" onclick="selectRating(this)">⭐⭐ Intermediate</button>
+          <button class="star-btn" data-val="3" onclick="selectRating(this)">⭐⭐⭐ Advanced</button>
+        </div>
+      </div>
+      <button onclick="addWord()" class="btn btn-purple" style="width:100%;padding:12px;font-size:13px;">Add to Word Bank →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Pending Suggestions Modal (teacher) -->
+<div class="modal-bg" id="pending-modal" onclick="handleBg(event,'pending-modal')">
+  <div class="modal-box" style="width:560px;">
+    <div class="modal-header">
+      <div style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:900;color:var(--text);">⏳ Pending Suggestions</div>
+      <button class="modal-close" onclick="closeModal('pending-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="pending-list">
+        <div style="text-align:center;padding:20px;"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL      = 'https://nwhaliuajvovesnrdfrr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53aGFsaXVhanZvdmVzbnJkZnJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDUyMzEsImV4cCI6MjA5NTQ4MTIzMX0.cGZ_yqeTyQYyyUAIc1CrV-M6iwN34CtSzjYBF_nG9xE';
+const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+var _user = null, _profile = null;
+var _allWords = [], _categories = [];
+var _activeCat = 'all', _activeRating = 0;
+var _selectedRating = 1;
+var _isTeacher = false;
+
+// ── Init ──
+async function init() {
+  const { data: { session } } = await _sb.auth.getSession();
+  if (session?.user) await onSignIn(session.user);
+  _sb.auth.onAuthStateChange(async function(ev, s) {
+    if (ev === 'SIGNED_IN' && s?.user) await onSignIn(s.user);
+  });
+  await loadWords();
+}
+
+async function onSignIn(user) {
+  _user = user;
+  const { data } = await _sb.from('profiles').select('*').eq('id', user.id).single();
+  _profile = data;
+  _isTeacher = data?.role === 'teacher' || data?.is_teacher;
+  if (_isTeacher) {
+    document.getElementById('teacher-btn').style.display = '';
+    document.getElementById('pending-btn').style.display = '';
+    loadPendingCount();
+  }
+}
+
+// ── Load words ──
+async function loadWords() {
+  var { data, error } = await _sb
+    .from('word_bank')
+    .select('id, word, category, replaces, rating, approved')
+    .eq('approved', true)
+    .order('category').order('word');
+  if (error || !data || data.length === 0) {
+    data = getDefaultWords().map(function(w, i) { return Object.assign({ id: 'default-' + i, approved: true }, w); });
+  }
+  _allWords = data;
+  _categories = [...new Set(data.map(function(w){ return w.category || 'General'; }))].sort();
+  buildCatPills();
+  populateCatSelect();
+  renderWords();
+}
+
+function buildCatPills() {
+  var pills = document.getElementById('cat-pills');
+  pills.innerHTML = _categories.map(function(c) {
+    return '<button class="cat-pill" data-cat="' + escHtml(c) + '" onclick="filterCat(\'' + escHtml(c) + '\',this)">' + escHtml(c) + '</button>';
+  }).join('');
+}
+
+function populateCatSelect() {
+  var sel = document.getElementById('add-category');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— select or type new —</option>'
+    + _categories.map(function(c){ return '<option value="' + escHtml(c) + '">' + escHtml(c) + '</option>'; }).join('');
+}
+
+// ── Filter ──
+function filterCat(cat, btn) {
+  _activeCat = cat;
+  document.querySelectorAll('.cat-pill').forEach(function(b){ b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderWords();
+}
+
+function filterRating(r, btn) {
+  _activeRating = r;
+  document.querySelectorAll('.rating-btn').forEach(function(b){ b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderWords();
+}
+
+function filterWords() {
+  renderWords();
+}
+
+function clearSearch() {
+  document.getElementById('search-input').value = '';
+  renderWords();
+}
+
+// ── Render ──
+function renderWords() {
+  var q = document.getElementById('search-input').value.toLowerCase().trim();
+  var filtered = _allWords.filter(function(w) {
+    if (_activeCat !== 'all' && w.category !== _activeCat) return false;
+    if (_activeRating > 0 && w.rating !== _activeRating) return false;
+    if (q) {
+      return w.word.toLowerCase().includes(q)
+        || (w.replaces||'').toLowerCase().includes(q)
+        || (w.category||'').toLowerCase().includes(q);
+    }
+    return true;
+  });
+
+  var main = document.getElementById('main-content');
+  if (filtered.length === 0) {
+    main.innerHTML = '<div class="empty-state"><svg viewBox="0 0 64 64" fill="none" stroke="#C0BADA" stroke-width="1.5" width="52" height="52" style="display:block;margin:0 auto;"><rect x="8" y="8" width="48" height="48" rx="8"/><line x1="18" y1="24" x2="46" y2="24"/><line x1="18" y1="32" x2="38" y2="32"/><line x1="18" y1="40" x2="30" y2="40"/></svg><h3>No words found</h3><p>Try a different search or category.</p></div>';
+    return;
+  }
+
+  // Group by category
+  var cats = {};
+  filtered.forEach(function(w) {
+    var c = w.category || 'General';
+    if (!cats[c]) cats[c] = [];
+    cats[c].push(w);
+  });
+
+  main.innerHTML = Object.entries(cats).map(function(entry) {
+    var cat = entry[0], words = entry[1];
+    return '<div class="cat-section">'
+      + '<div class="cat-header">'
+      + '<span class="cat-title">' + escHtml(cat) + '</span>'
+      + '<span class="cat-count">' + words.length + '</span>'
+      + '</div>'
+      + '<div class="words-grid">'
+      + words.map(function(w) {
+          var stars = '⭐'.repeat(w.rating || 1);
+          return '<div class="word-card rating-' + (w.rating||1) + '" onclick="copyWord(\'' + escHtml(w.word) + '\')">'
+            + '<div class="word-stars">' + stars + '</div>'
+            + '<div class="word-main">' + escHtml(w.word) + '</div>'
+            + (w.replaces ? '<div class="word-replaces">' + escHtml(w.replaces) + '</div>' : '')
+            + '<div class="word-copy-hint">Click to copy</div>'
+            + '</div>';
+        }).join('')
+      + '</div></div>';
+  }).join('');
+}
+
+// ── Copy ──
+function copyWord(word) {
+  navigator.clipboard.writeText(word).then(function() {
+    toast('📋 "' + word + '" copied to clipboard!');
+  }).catch(function() {
+    toast('"' + word + '" — copy it manually');
+  });
+}
+
+// ── Suggest word ──
+function openSuggestModal() {
+  document.getElementById('sug-word').value = '';
+  document.getElementById('sug-replaces').value = '';
+  document.getElementById('sug-category').value = '';
+  _selectedRating = 1;
+  document.querySelectorAll('#suggest-modal .star-btn').forEach(function(b,i){ b.classList.toggle('selected', i===0); });
+  document.getElementById('suggest-modal').classList.add('open');
+}
+
+async function submitSuggestion() {
+  var word     = document.getElementById('sug-word').value.trim();
+  var replaces = document.getElementById('sug-replaces').value.trim();
+  var category = document.getElementById('sug-category').value.trim() || 'General';
+  if (!word) { toast('Please enter a word'); return; }
+  var payload = {
+    word:      word,
+    replaces:  replaces || null,
+    category:  category,
+    rating:    _selectedRating,
+    approved:  false,
+    suggested_by: _user?.id || null,
+  };
+  var { error } = await _sb.from('word_bank').insert(payload);
+  if (error) { toast('⚠ ' + error.message); return; }
+  closeModal('suggest-modal');
+  toast('✓ Suggestion submitted for teacher review!');
+}
+
+// ── Teacher: add word ──
+function openTeacherModal() {
+  document.getElementById('add-word').value = '';
+  document.getElementById('add-replaces').value = '';
+  document.getElementById('add-category').value = '';
+  document.getElementById('add-category-new').value = '';
+  _selectedRating = 1;
+  document.querySelectorAll('#teacher-modal .star-btn').forEach(function(b,i){ b.classList.toggle('selected', i===0); });
+  document.getElementById('teacher-modal').classList.add('open');
+}
+
+async function addWord() {
+  var word     = document.getElementById('add-word').value.trim();
+  var replaces = document.getElementById('add-replaces').value.trim();
+  var catSel   = document.getElementById('add-category').value;
+  var catNew   = document.getElementById('add-category-new').value.trim();
+  var category = catNew || catSel || 'General';
+  if (!word) { toast('Please enter a word'); return; }
+  var { error } = await _sb.from('word_bank').insert({ word, replaces: replaces||null, category, rating: _selectedRating, approved: true });
+  if (error) { toast('⚠ ' + error.message); return; }
+  closeModal('teacher-modal');
+  toast('✓ "' + word + '" added to the Word Bank!');
+  await loadWords();
+}
+
+// ── Teacher: pending review ──
+async function loadPendingCount() {
+  var { count } = await _sb.from('word_bank').select('id', { count: 'exact', head: true }).eq('approved', false);
+  var btn = document.getElementById('pending-btn');
+  if (btn && count > 0) btn.textContent = '⏳ Review Suggestions (' + count + ')';
+}
+
+async function openPendingModal() {
+  document.getElementById('pending-modal').classList.add('open');
+  var { data } = await _sb.from('word_bank').select('id, word, replaces, category, rating, suggested_by').eq('approved', false).order('word');
+  var list = document.getElementById('pending-list');
+  if (!data || data.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px;font-weight:700;">No pending suggestions 🎉</div>';
+    return;
+  }
+  list.innerHTML = '<div class="pending-list">'
+    + data.map(function(w) {
+        var stars = '⭐'.repeat(w.rating||1);
+        return '<div class="pending-item">'
+          + '<div class="pending-word">' + escHtml(w.word) + '</div>'
+          + '<div class="pending-meta">' + escHtml(w.replaces||'') + ' · ' + escHtml(w.category||'') + ' · ' + stars + '</div>'
+          + '<button class="approve-btn" onclick="approveWord(\'' + w.id + '\')">✓ Approve</button>'
+          + '<button class="reject-btn" onclick="rejectWord(\'' + w.id + '\')">✕</button>'
+          + '</div>';
+      }).join('')
+    + '</div>';
+}
+
+async function approveWord(id) {
+  await _sb.from('word_bank').update({ approved: true }).eq('id', id);
+  toast('✓ Word approved!');
+  openPendingModal();
+  loadWords();
+  loadPendingCount();
+}
+
+async function rejectWord(id) {
+  if (!confirm('Delete this suggestion?')) return;
+  await _sb.from('word_bank').delete().eq('id', id);
+  toast('Suggestion removed');
+  openPendingModal();
+  loadPendingCount();
+}
+
+// ── Rating selector ──
+function selectRating(btn) {
+  var parent = btn.closest('.rating-stars');
+  parent.querySelectorAll('.star-btn').forEach(function(b){ b.classList.remove('selected'); });
+  btn.classList.add('selected');
+  _selectedRating = parseInt(btn.dataset.val);
+}
+
+// ── Modals ──
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function handleBg(e, id) { if (e.target.id === id) closeModal(id); }
+
+// ── Default words (fallback if DB empty) ──
+function getDefaultWords() {
+  return [
+    {word:'whispered',category:'Said alternatives',replaces:'said',rating:1},
+    {word:'muttered',category:'Said alternatives',replaces:'said',rating:1},
+    {word:'exclaimed',category:'Said alternatives',replaces:'said',rating:1},
+    {word:'hissed',category:'Said alternatives',replaces:'said',rating:2},
+    {word:'stammered',category:'Said alternatives',replaces:'said',rating:2},
+    {word:'bellowed',category:'Said alternatives',replaces:'said',rating:2},
+    {word:'murmured',category:'Said alternatives',replaces:'said',rating:1},
+    {word:'announced',category:'Said alternatives',replaces:'said',rating:1},
+    {word:'scoffed',category:'Said alternatives',replaces:'said',rating:2},
+    {word:'pleaded',category:'Said alternatives',replaces:'said',rating:1},
+    {word:'magnificent',category:'Good / Bad',replaces:'good',rating:2},
+    {word:'exceptional',category:'Good / Bad',replaces:'good',rating:2},
+    {word:'extraordinary',category:'Good / Bad',replaces:'good',rating:3},
+    {word:'flawless',category:'Good / Bad',replaces:'good',rating:2},
+    {word:'superb',category:'Good / Bad',replaces:'good',rating:1},
+    {word:'dreadful',category:'Good / Bad',replaces:'bad',rating:1},
+    {word:'appalling',category:'Good / Bad',replaces:'bad',rating:2},
+    {word:'catastrophic',category:'Good / Bad',replaces:'bad',rating:3},
+    {word:'wretched',category:'Good / Bad',replaces:'bad',rating:2},
+    {word:'abysmal',category:'Good / Bad',replaces:'bad',rating:3},
+    {word:'crept',category:'Movement',replaces:'walked',rating:1},
+    {word:'strode',category:'Movement',replaces:'walked',rating:1},
+    {word:'trudged',category:'Movement',replaces:'walked',rating:1},
+    {word:'stumbled',category:'Movement',replaces:'walked',rating:1},
+    {word:'prowled',category:'Movement',replaces:'walked',rating:2},
+    {word:'lurched',category:'Movement',replaces:'walked',rating:2},
+    {word:'sprinted',category:'Movement',replaces:'ran',rating:1},
+    {word:'bolted',category:'Movement',replaces:'ran',rating:1},
+    {word:'hurtled',category:'Movement',replaces:'ran',rating:2},
+    {word:'careened',category:'Movement',replaces:'ran',rating:3},
+    {word:'trembling',category:'Emotions',replaces:'scared',rating:1},
+    {word:'paralysed with fear',category:'Emotions',replaces:'scared',rating:2},
+    {word:'dread crept over',category:'Emotions',replaces:'scared',rating:2},
+    {word:'elated',category:'Emotions',replaces:'happy',rating:2},
+    {word:'overjoyed',category:'Emotions',replaces:'happy',rating:1},
+    {word:'beaming',category:'Emotions',replaces:'happy',rating:1},
+    {word:'euphoric',category:'Emotions',replaces:'happy',rating:3},
+    {word:'devastated',category:'Emotions',replaces:'sad',rating:2},
+    {word:'heartbroken',category:'Emotions',replaces:'sad',rating:1},
+    {word:'desolate',category:'Emotions',replaces:'sad',rating:3},
+    {word:'despondent',category:'Emotions',replaces:'sad',rating:3},
+    {word:'seething',category:'Emotions',replaces:'angry',rating:2},
+    {word:'fuming',category:'Emotions',replaces:'angry',rating:1},
+    {word:'incensed',category:'Emotions',replaces:'angry',rating:3},
+    {word:'towering',category:'Appearance',replaces:'tall',rating:1},
+    {word:'imposing',category:'Appearance',replaces:'tall',rating:2},
+    {word:'weather-beaten',category:'Appearance',replaces:'old',rating:2},
+    {word:'ancient',category:'Appearance',replaces:'old',rating:1},
+    {word:'luminous',category:'Appearance',replaces:'bright',rating:2},
+    {word:'gleaming',category:'Appearance',replaces:'shiny',rating:1},
+    {word:'shadowy',category:'Appearance',replaces:'dark',rating:1},
+    {word:'murky',category:'Appearance',replaces:'dark',rating:1},
+    {word:'haggard',category:'Appearance',replaces:'tired looking',rating:2},
+    {word:'thunderous',category:'Sound',replaces:'loud',rating:2},
+    {word:'deafening',category:'Sound',replaces:'loud',rating:2},
+    {word:'hushed',category:'Sound',replaces:'quiet',rating:1},
+    {word:'barely audible',category:'Sound',replaces:'quiet',rating:2},
+    {word:'rustling',category:'Sound',replaces:'soft sound',rating:1},
+    {word:'resonating',category:'Sound',replaces:'echoing',rating:3},
+    {word:'cacophony',category:'Sound',replaces:'noise',rating:3},
+    {word:'coarse',category:'Texture',replaces:'rough',rating:1},
+    {word:'jagged',category:'Texture',replaces:'rough',rating:1},
+    {word:'velvety',category:'Texture',replaces:'soft',rating:2},
+    {word:'silken',category:'Texture',replaces:'smooth',rating:2},
+    {word:'gritty',category:'Texture',replaces:'rough',rating:1},
+    {word:'in an instant',category:'Time',replaces:'quickly',rating:1},
+    {word:'without warning',category:'Time',replaces:'suddenly',rating:1},
+    {word:'in the blink of an eye',category:'Time',replaces:'fast',rating:2},
+    {word:'agonisingly slowly',category:'Time',replaces:'slowly',rating:3},
+    {word:'swirling',category:'Weather',replaces:'windy',rating:1},
+    {word:'pelting',category:'Weather',replaces:'raining hard',rating:1},
+    {word:'relentless',category:'Weather',replaces:'constant',rating:2},
+    {word:'oppressive',category:'Weather',replaces:'hot',rating:2},
+    {word:'bitter',category:'Weather',replaces:'cold',rating:1},
+    {word:'blistering',category:'Weather',replaces:'very hot',rating:2},
+  ];
+}
+
+// ── Toast ──
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2600);
+}
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-bg.open').forEach(function(m){ m.classList.remove('open'); });
+});
+
+init();
+</script>
+</body>
+</html>
