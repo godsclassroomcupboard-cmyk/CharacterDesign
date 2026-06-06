@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard — Aurabot</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#1A1020; --paper:#F5F0E8; --paper2:#EDE8DC; --cream:#FAF7F0;
+  --purple:#6C5CE7; --pink:#E84393; --gold:#D4A017;
+  --green:#2A7A4B; --red:#C0392B; --border:#1A1020;
+}
+html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--paper);color:var(--ink);}
+.topbar{background:var(--ink);color:#fff;display:flex;align-items:center;gap:14px;padding:0 24px;height:52px;position:sticky;top:0;z-index:100;border-bottom:3px solid var(--gold);}
+.back-btn{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:5px 12px;font-size:11px;font-weight:800;color:#fff;cursor:pointer;font-family:'Space Mono',monospace;text-decoration:none;transition:background 0.15s;letter-spacing:0.5px;}
+.back-btn:hover{background:rgba(255,255,255,0.2);}
+.topbar-masthead{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;letter-spacing:2px;text-transform:uppercase;flex:1;}
+.topbar-date{font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,0.6);text-align:right;}
+.teacher-badge{background:var(--gold);color:var(--ink);border-radius:3px;padding:3px 10px;font-size:10px;font-weight:900;font-family:'Space Mono',monospace;display:none;}
+.masthead{background:var(--ink);color:var(--paper);padding:32px 32px 24px;border-bottom:6px double var(--gold);text-align:center;position:relative;overflow:hidden;}
+.masthead::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(255,255,255,0.03) 28px,rgba(255,255,255,0.03) 29px);pointer-events:none;}
+.masthead-eyebrow{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:12px;}
+.masthead-title{font-family:'Playfair Display',serif;font-size:clamp(36px,6vw,72px);font-weight:900;line-height:1;margin-bottom:8px;letter-spacing:-1px;}
+.masthead-title em{color:var(--gold);font-style:italic;}
+.masthead-sub{font-family:'Space Mono',monospace;font-size:11px;color:rgba(255,255,255,0.55);letter-spacing:2px;text-transform:uppercase;border-top:1px solid rgba(255,255,255,0.15);padding-top:12px;margin-top:12px;}
+.masthead-week{display:inline-block;background:var(--gold);color:var(--ink);font-family:'Space Mono',monospace;font-size:10px;font-weight:700;padding:3px 14px;border-radius:2px;margin-bottom:14px;letter-spacing:1px;}
+.zine-wrap{max-width:1100px;margin:0 auto;padding:28px 20px 80px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;}
+.zine-block{border:2px solid var(--border);background:var(--cream);position:relative;overflow:hidden;}
+.zine-block+.zine-block{border-left:none;}
+.span-2{grid-column:span 2;}
+.span-3{grid-column:span 3;}
+.block-header{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:2px solid var(--border);background:var(--ink);color:var(--paper);}
+.block-eyebrow{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);flex:1;}
+.block-rule{font-family:'Space Mono',monospace;font-size:9px;color:rgba(255,255,255,0.4);}
+.prompt-img-wrap{position:relative;overflow:hidden;height:280px;border-bottom:2px solid var(--border);}
+.prompt-img{width:100%;height:100%;object-fit:cover;display:block;filter:contrast(1.05);}
+.prompt-img-placeholder{width:100%;height:100%;background:linear-gradient(135deg,#2A1A40,#4A3A7A,#2A1A40);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
+.prompt-img-placeholder-text{font-family:'Playfair Display',serif;font-size:14px;font-style:italic;color:rgba(255,255,255,0.5);text-align:center;padding:0 24px;}
+.prompt-date-stamp{position:absolute;top:12px;left:12px;background:var(--ink);color:var(--gold);font-family:'Space Mono',monospace;font-size:10px;font-weight:700;padding:4px 10px;letter-spacing:1px;border:1px solid var(--gold);}
+.prompt-body{padding:20px 20px 16px;}
+.prompt-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;line-height:1.2;margin-bottom:10px;color:var(--ink);}
+.prompt-caption{font-size:12px;font-weight:600;color:#5a5070;line-height:1.6;margin-bottom:14px;font-style:italic;border-left:3px solid var(--gold);padding-left:10px;}
+.prompt-questions{list-style:none;display:flex;flex-direction:column;gap:7px;}
+.prompt-questions li{display:flex;gap:8px;align-items:flex-start;font-size:12px;font-weight:700;color:var(--ink);line-height:1.5;}
+.prompt-q-num{background:var(--purple);color:#fff;font-family:'Space Mono',monospace;font-size:9px;font-weight:700;width:18px;height:18px;border-radius:2px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.winner-inner{padding:14px 16px;}
+.winner-crown{font-size:24px;display:block;margin-bottom:4px;animation:bob 2s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+.winner-name{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;line-height:1.15;margin-bottom:3px;color:var(--ink);}
+.winner-by{font-size:11px;font-weight:700;color:#6a5a80;margin-bottom:8px;}
+.winner-stars{display:flex;align-items:center;gap:5px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--gold);}
+.winner-img{width:100%;height:120px;object-fit:cover;border-bottom:2px solid var(--border);filter:grayscale(15%) contrast(1.05);}
+.winner-img-placeholder{width:100%;height:120px;border-bottom:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:40px;background:var(--paper2);}
+.winner-tag{display:inline-block;background:var(--ink);color:var(--paper);font-family:'Space Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;margin-bottom:6px;}
+.winner-detail{font-size:11px;line-height:1.6;color:#3a2a50;max-height:64px;overflow:hidden;position:relative;margin-top:8px;}
+.winner-detail::after{content:'';position:absolute;bottom:0;left:0;right:0;height:20px;background:linear-gradient(transparent,var(--cream));}
+.winner-char .block-header{background:#2A1A40;}.winner-char .block-eyebrow{color:#C084FC;}
+.winner-set  .block-header{background:#0A2A1A;}.winner-set  .block-eyebrow{color:#4ADE80;}
+.winner-story .block-header{background:#1A0A2A;}.winner-story .block-eyebrow{color:var(--gold);}
+.leaderboard-block{background:var(--paper2);}
+.leaderboard-list{padding:8px 14px;display:flex;flex-direction:column;gap:0;}
+.lb-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dashed rgba(26,16,32,0.15);}
+.lb-item:last-child{border-bottom:none;}
+.lb-rank{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;width:22px;text-align:center;flex-shrink:0;color:var(--gold);}
+.lb-rank.top{color:var(--ink);background:var(--gold);width:20px;height:20px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:10px;}
+.lb-info{flex:1;min-width:0;}
+.lb-name{font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lb-sub{font-size:9px;font-weight:700;color:#8a7a98;font-family:'Space Mono',monospace;}
+.lb-stars{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--gold);flex-shrink:0;}
+.zine-rule{grid-column:1/-1;height:6px;background:repeating-linear-gradient(90deg,var(--ink) 0px,var(--ink) 8px,var(--gold) 8px,var(--gold) 10px);}
+.pull-quote{background:var(--ink);color:var(--paper);padding:18px 20px;font-family:'Playfair Display',serif;font-size:15px;font-style:italic;line-height:1.5;border-left:4px solid var(--gold);}
+.pull-quote cite{display:block;margin-top:8px;font-family:'Space Mono',monospace;font-size:9px;color:var(--gold);font-style:normal;letter-spacing:1px;}
+.no-data{padding:28px 16px;text-align:center;font-family:'Playfair Display',serif;font-style:italic;font-size:13px;color:#8a7a98;line-height:1.6;}
+.teacher-panel{display:none;background:var(--ink);color:var(--paper);padding:14px 20px;border-top:3px solid var(--gold);position:fixed;bottom:0;left:0;right:0;z-index:80;}
+.teacher-panel.visible{display:block;}
+.teacher-panel-inner{max-width:1100px;margin:0 auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.teacher-panel-title{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);flex-shrink:0;}
+.tp-btn{padding:7px 16px;border:none;border-radius:3px;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:1px;background:var(--gold);color:var(--ink);transition:opacity 0.15s;}
+.tp-btn:hover{opacity:0.85;}
+.tp-btn-outline{background:transparent;border:1px solid rgba(255,255,255,0.3);color:#fff;}
+.modal-bg{display:none;position:fixed;inset:0;z-index:300;background:rgba(26,16,32,0.75);align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal-box{background:var(--cream);border:2px solid var(--border);width:560px;max-width:96vw;max-height:90vh;overflow-y:auto;}
+.modal-header{background:var(--ink);color:var(--paper);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--gold);}
+.modal-header h2{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;}
+.modal-close{background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.6);font-size:22px;}
+.modal-body{padding:20px;}
+.field-group{margin-bottom:14px;}
+.field-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6a5a80;margin-bottom:5px;display:block;}
+.field-input{width:100%;padding:9px 12px;border:2px solid var(--border);background:#fff;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:var(--ink);outline:none;}
+.field-input:focus{border-color:var(--purple);}
+textarea.field-input{min-height:80px;resize:vertical;}
+.field-hint{font-size:10px;color:#8a7a98;margin-top:3px;font-style:italic;}
+.img-upload-zone{border:2px dashed var(--border);padding:20px;text-align:center;cursor:pointer;background:#faf8f5;transition:border-color 0.15s;}
+.img-upload-zone:hover{border-color:var(--purple);}
+.img-preview{width:100%;max-height:180px;object-fit:cover;display:none;margin-bottom:8px;}
+.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink);color:var(--paper);border:1px solid var(--gold);padding:10px 22px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1px;opacity:0;transition:all 0.3s;pointer-events:none;z-index:9999;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.spinner{width:24px;height:24px;border:2px solid rgba(26,16,32,0.15);border-top-color:var(--purple);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@media(max-width:780px){.zine-wrap{grid-template-columns:1fr 1fr;}.span-3{grid-column:span 2;}}
+@media(max-width:520px){.zine-wrap{grid-template-columns:1fr;}.span-3,.span-2{grid-column:span 1;}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <button onclick="history.back()" class="back-btn">← BACK</button>
+  <div class="topbar-masthead">✦ Aurabot</div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span class="teacher-badge" id="teacher-badge">✦ TEACHER</span>
+    <div class="topbar-date" id="topbar-date"></div>
+  </div>
+</header>
+
+<div class="masthead">
+  <div class="masthead-eyebrow">The Official Aurabot Publication</div>
+  <div class="masthead-week" id="week-label">Week of …</div>
+  <h1 class="masthead-title">The <em>Weekly</em><br>Spotlight</h1>
+  <div class="masthead-sub" id="masthead-sub">Loading this week's stars…</div>
+</div>
+
+<div class="zine-wrap">
+
+  <!-- Story Prompt — 2 cols -->
+  <div class="zine-block span-2" id="prompt-block" style="border-right:2px solid var(--border);">
+    <div class="block-header">
+      <span class="block-eyebrow">✦ Story Prompt of the Day</span>
+      <button id="edit-prompt-btn" onclick="openPromptModal()" style="display:none;background:var(--gold);color:var(--ink);border:none;padding:3px 10px;font-size:9px;font-weight:700;font-family:'Space Mono',monospace;cursor:pointer;letter-spacing:1px;">EDIT PROMPT</button>
+    </div>
+    <div id="prompt-content"><div style="padding:48px;text-align:center;"><div class="spinner"></div></div></div>
+  </div>
+
+  <!-- Right winners column -->
+  <div style="grid-column:3;display:flex;flex-direction:column;border:2px solid var(--border);border-left:none;">
+    <div class="zine-block winner-char" style="border:none;border-bottom:2px solid var(--border);flex:1;">
+      <div class="block-header"><span class="block-eyebrow">🎭 Character of the Week</span><span class="block-rule" id="char-stars-label"></span></div>
+      <div id="winner-char-content"><div style="padding:20px;text-align:center;"><div class="spinner"></div></div></div>
+    </div>
+    <div class="zine-block winner-set" style="border:none;border-bottom:2px solid var(--border);flex:1;">
+      <div class="block-header"><span class="block-eyebrow">📍 Setting of the Week</span><span class="block-rule" id="set-stars-label"></span></div>
+      <div id="winner-set-content"><div style="padding:20px;text-align:center;"><div class="spinner"></div></div></div>
+    </div>
+    <div class="zine-block winner-story" style="border:none;flex:1;">
+      <div class="block-header"><span class="block-eyebrow">📖 Story of the Week</span><span class="block-rule" id="story-stars-label"></span></div>
+      <div id="winner-story-content"><div style="padding:20px;text-align:center;"><div class="spinner"></div></div></div>
+    </div>
+  </div>
+
+  <div class="zine-rule"></div>
+
+  <!-- Leaderboards -->
+  <div class="zine-block leaderboard-block" style="border-top:none;">
+    <div class="block-header" style="background:#2A1A40;"><span class="block-eyebrow" style="color:#C084FC;">🏆 Character Leaderboard</span></div>
+    <div id="lb-chars" class="leaderboard-list"><div style="padding:16px;text-align:center;"><div class="spinner"></div></div></div>
+  </div>
+  <div class="zine-block leaderboard-block" style="border-top:none;border-left:none;">
+    <div class="block-header" style="background:#0A2A1A;"><span class="block-eyebrow" style="color:#4ADE80;">🏆 Setting Leaderboard</span></div>
+    <div id="lb-settings" class="leaderboard-list"><div style="padding:16px;text-align:center;"><div class="spinner"></div></div></div>
+  </div>
+  <div class="zine-block" style="border-top:none;border-left:none;">
+    <div class="block-header"><span class="block-eyebrow">✦ Writer's Corner</span></div>
+    <blockquote class="pull-quote" id="writers-tip">"The first draft is just you telling yourself the story."<cite>— Terry Pratchett</cite></blockquote>
+    <div style="padding:12px 16px;">
+      <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:#8a7a98;text-transform:uppercase;margin-bottom:8px;">This week in numbers</div>
+      <div id="stats-strip" style="display:flex;flex-direction:column;gap:4px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Teacher panel -->
+<div class="teacher-panel" id="teacher-panel">
+  <div class="teacher-panel-inner">
+    <span class="teacher-panel-title">✦ Teacher Controls</span>
+    <button onclick="openPromptModal()" class="tp-btn">📝 Set Today's Prompt</button>
+    <button onclick="refreshDashboard()" class="tp-btn tp-btn-outline">↻ Refresh</button>
+  </div>
+</div>
+
+<!-- Prompt Modal -->
+<div class="modal-bg" id="prompt-modal" onclick="handleBg(event,'prompt-modal')">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Set Story Prompt of the Day</h2>
+      <button class="modal-close" onclick="closeModal('prompt-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group"><label class="field-label">Prompt Title</label><input class="field-input" id="p-title" type="text" placeholder="e.g. The Midnight Garden"/></div>
+      <div class="field-group">
+        <label class="field-label">Image</label>
+        <div class="img-upload-zone" onclick="document.getElementById('p-img-input').click()" ondragover="event.preventDefault()" ondrop="handleImgDrop(event)">
+          <img id="p-img-preview" class="img-preview"/>
+          <div id="p-img-label" style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;color:#8a7a98;">UPLOAD IMAGE (JPG, PNG)<br/><span style="font-size:9px;">Drag &amp; drop or click</span></div>
+        </div>
+        <input type="file" id="p-img-input" accept="image/*" style="display:none;" onchange="handleImgUpload(event)"/>
+        <div class="field-hint">Use an evocative, mysterious image — Pobble 365 style.</div>
+      </div>
+      <div class="field-group"><label class="field-label">Scene Caption / Hook</label><textarea class="field-input" id="p-caption" placeholder="A short evocative description about the image…"></textarea></div>
+      <div class="field-group">
+        <label class="field-label">Writing Prompt Questions (one per line)</label>
+        <textarea class="field-input" id="p-questions" style="min-height:120px;" placeholder="Who is in this place, and why are they here?&#10;What happened just before this moment?&#10;What can you hear? What does the air smell like?&#10;Write the opening paragraph of this story."></textarea>
+        <div class="field-hint">Students see these numbered. Add 3–5 questions.</div>
+      </div>
+      <div class="field-group"><label class="field-label">Date (leave blank for today)</label><input class="field-input" id="p-date" type="date"/></div>
+      <div style="display:flex;gap:10px;margin-top:6px;">
+        <button onclick="closeModal('prompt-modal')" style="flex:1;padding:11px;background:#F0ECFC;border:2px solid #E5E0FA;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;color:#6C5CE7;">CANCEL</button>
+        <button onclick="savePrompt()" style="flex:2;padding:11px;background:var(--ink);color:var(--gold);border:none;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px;cursor:pointer;">PUBLISH PROMPT</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var SUPABASE_URL      = 'https://nwhaliuajvovesnrdfrr.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53aGFsaXVhanZvdmVzbnJkZnJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDUyMzEsImV4cCI6MjA5NTQ4MTIzMX0.cGZ_yqeTyQYyyUAIc1CrV-M6iwN34CtSzjYBF_nG9xE';
+var _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var _user = null, _profile = null, _isTeacher = false, _promptImageDataUrl = null;
+
+var TIPS = [
+  {q:'"The first draft is just you telling yourself the story."',c:'Terry Pratchett'},
+  {q:'"You can always edit a bad page. You cannot edit a blank page."',c:'Jodi Picoult'},
+  {q:'"Start writing, no matter what. The water does not flow until the faucet is turned on."',c:'Louis L\'Amour'},
+  {q:'"If there is a book you want to read, but it has not been written yet, you must be the one to write it."',c:'Toni Morrison'},
+  {q:'"A writer only begins a book. A reader finishes it."',c:'Samuel Johnson'},
+];
+
+async function init() {
+  setDateLabels();
+  var tip = TIPS[Math.floor(Date.now()/86400000) % TIPS.length];
+  document.getElementById('writers-tip').innerHTML = tip.q + '<cite>— ' + tip.c + '</cite>';
+  var res = await _sb.auth.getSession();
+  if (res.data.session) await onSignIn(res.data.session.user);
+  _sb.auth.onAuthStateChange(async function(ev,s){ if(ev==='SIGNED_IN'&&s)await onSignIn(s.user); });
+  await Promise.all([loadPrompt(),loadWinners(),loadLeaderboards(),loadStats()]);
+}
+
+async function onSignIn(user) {
+  _user = user;
+  var r = await _sb.from('profiles').select('*').eq('id',user.id).single();
+  _profile = r.data;
+  _isTeacher = !!(r.data && (r.data.is_teacher || r.data.role==='teacher'));
+  if (_isTeacher) {
+    document.getElementById('teacher-badge').style.display='';
+    document.getElementById('teacher-panel').classList.add('visible');
+    document.getElementById('edit-prompt-btn').style.display='';
+  }
+}
+
+function setDateLabels() {
+  var now = new Date();
+  document.getElementById('topbar-date').textContent = now.toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  var mon = new Date(now); mon.setDate(now.getDate()-((now.getDay()+6)%7));
+  var sun = new Date(mon); sun.setDate(mon.getDate()+6);
+  document.getElementById('week-label').textContent = 'Week of '+mon.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' – '+sun.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  document.getElementById('masthead-sub').textContent = 'Character • Setting • Story • Prompt — '+now.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  document.getElementById('p-date').value = now.toISOString().slice(0,10);
+}
+
+function weekStart(){var d=new Date();d.setDate(d.getDate()-((d.getDay()+6)%7));d.setHours(0,0,0,0);return d.toISOString();}
+function weekEnd(){var d=new Date();d.setDate(d.getDate()-((d.getDay()+6)%7)+7);d.setHours(0,0,0,0);return d.toISOString();}
+
+async function loadPrompt() {
+  var today = new Date().toISOString().slice(0,10);
+  var r = await _sb.from('story_prompts').select('*').lte('prompt_date',today).order('prompt_date',{ascending:false}).limit(1);
+  var p = r.data && r.data[0];
+  var el = document.getElementById('prompt-content');
+  if (!p) {
+    el.innerHTML='<div class="no-data"><div style="font-size:48px;margin-bottom:10px;">✍️</div>No prompt set for today.'
+      +(_isTeacher?'<br><span style="font-size:11px;">Click EDIT PROMPT to set one.</span>':'<br><span style="font-size:11px;">Check back later!</span>')+'</div>';
+    return;
+  }
+  var qs=(p.questions||'').split('\n').filter(function(q){return q.trim();});
+  var imgHtml=p.image_url
+    ?'<img src="'+escHtml(p.image_url)+'" class="prompt-img" alt="Prompt image"/>'
+    :'<div class="prompt-img-placeholder"><span style="font-size:48px;">🌟</span><div class="prompt-img-placeholder-text">Use your imagination</div></div>';
+  el.innerHTML='<div class="prompt-img-wrap"><div class="prompt-date-stamp">'+formatDate(p.prompt_date)+'</div>'+imgHtml+'</div>'
+    +'<div class="prompt-body"><h2 class="prompt-title">'+escHtml(p.title||'Story Prompt')+'</h2>'
+    +(p.caption?'<p class="prompt-caption">'+escHtml(p.caption)+'</p>':'')
+    +(qs.length?'<ol class="prompt-questions">'+qs.map(function(q,i){return'<li><span class="prompt-q-num">'+(i+1)+'</span><span>'+escHtml(q)+'</span></li>';}).join('')+'</ol>':'')
+    +'</div>';
+}
+
+async function loadWinners() {
+  var ws=weekStart(),we=weekEnd();
+  // Char
+  var cr=await _sb.from('stars').select('character_id').gte('created_at',ws).lt('created_at',we);
+  var cc={};(cr.data||[]).forEach(function(s){cc[s.character_id]=(cc[s.character_id]||0)+1;});
+  var topC=Object.entries(cc).sort(function(a,b){return b[1]-a[1];})[0];
+  if(topC){
+    var cr2=await _sb.from('characters').select('id,name,personality,strengths,ai_art_url,sketch_url,user_id').eq('id',topC[0]).single();
+    var cp=cr2.data?await _sb.from('profiles').select('display_name,username').eq('id',cr2.data.user_id).single():null;
+    if(cr2.data){var c=cr2.data;c.profiles=cp?cp.data:null;renderWinner('char',c,topC[1]);}else renderNoWinner('char');
+    document.getElementById('char-stars-label').textContent=topC[1]+' ⭐ this week';
+  } else renderNoWinner('char');
+  // Setting
+  var sr=await _sb.from('setting_stars').select('setting_id').gte('created_at',ws).lt('created_at',we);
+  var sc={};(sr.data||[]).forEach(function(s){sc[s.setting_id]=(sc[s.setting_id]||0)+1;});
+  var topS=Object.entries(sc).sort(function(a,b){return b[1]-a[1];})[0];
+  if(topS){
+    var sr2=await _sb.from('settings').select('id,name,locations,user_id').eq('id',topS[0]).single();
+    var sp=sr2.data?await _sb.from('profiles').select('display_name,username').eq('id',sr2.data.user_id).single():null;
+    if(sr2.data){var s=sr2.data;s.profiles=sp?sp.data:null;renderWinner('set',s,topS[1]);}else renderNoWinner('set');
+    document.getElementById('set-stars-label').textContent=topS[1]+' ⭐ this week';
+  } else renderNoWinner('set');
+  // Story
+  var str=await _sb.from('stories').select('id,title,paragraphs,user_id,updated_at').eq('is_public',true).gte('updated_at',ws).order('updated_at',{ascending:false}).limit(1);
+  if(str.data&&str.data[0]){
+    var st=str.data[0];
+    var stp=await _sb.from('profiles').select('display_name,username').eq('id',st.user_id).single();
+    st.profiles=stp.data;renderWinner('story',st,null);
+  } else renderNoWinner('story');
+}
+
+function renderWinner(type,item,stars){
+  var el=document.getElementById('winner-'+type+'-content');
+  if(type==='char'){
+    var img=item.ai_art_url||item.sketch_url;
+    var auth=item.profiles?(item.profiles.display_name||item.profiles.username||'Unknown'):'Unknown';
+    el.innerHTML=(img?'<img class="winner-img" src="'+escHtml(img)+'"/>'
+      :'<div class="winner-img-placeholder">🎭</div>')
+      +'<div class="winner-inner"><span class="winner-crown">👑</span>'
+      +'<span class="winner-tag">Character of the Week</span>'
+      +'<div class="winner-name">'+escHtml(item.name||'?')+'</div>'
+      +'<div class="winner-by">by '+escHtml(auth)+'</div>'
+      +(stars?'<div class="winner-stars">⭐ '+stars+' stars</div>':'')
+      +(item.personality?'<div class="winner-detail">'+escHtml(item.personality)+'</div>':'')
+      +'</div>';
+  } else if(type==='set'){
+    var auth2=item.profiles?(item.profiles.display_name||item.profiles.username||'Unknown'):'Unknown';
+    var locs=Array.isArray(item.locations)?item.locations:[];
+    var fi=locs[0]&&locs[0].imageDataUrl?locs[0].imageDataUrl:null;
+    el.innerHTML=(fi?'<img class="winner-img" src="'+escHtml(fi)+'"/>'
+      :'<div class="winner-img-placeholder">📍</div>')
+      +'<div class="winner-inner"><span class="winner-crown">👑</span>'
+      +'<span class="winner-tag">Setting of the Week</span>'
+      +'<div class="winner-name">'+escHtml(item.name||'?')+'</div>'
+      +'<div class="winner-by">by '+escHtml(auth2)+' · '+locs.length+' locations</div>'
+      +(stars?'<div class="winner-stars">⭐ '+stars+' stars</div>':'')
+      +(locs[0]&&locs[0].see?'<div class="winner-detail">👁 '+escHtml(locs[0].see)+'</div>':'')
+      +'</div>';
+  } else {
+    var auth3=item.profiles?(item.profiles.display_name||item.profiles.username||'Unknown'):'Unknown';
+    var hook=(item.paragraphs&&(item.paragraphs.hook||item.paragraphs.intro))||'';
+    el.innerHTML='<div class="winner-img-placeholder" style="height:80px;font-size:32px;">📖</div>'
+      +'<div class="winner-inner"><span class="winner-crown">👑</span>'
+      +'<span class="winner-tag">Story of the Week</span>'
+      +'<div class="winner-name">'+escHtml(item.title||'Untitled')+'</div>'
+      +'<div class="winner-by">by '+escHtml(auth3)+'</div>'
+      +(hook?'<div class="winner-detail" style="font-style:italic;">"'+escHtml(hook.slice(0,100))+(hook.length>100?'…':'\'')+'</div>':'')
+      +'</div>';
+  }
+}
+
+function renderNoWinner(type){
+  var el=document.getElementById('winner-'+type+'-content');
+  var labels={char:'character',set:'setting',story:'story'};
+  el.innerHTML='<div class="no-data">No '+labels[type]+' starred this week yet.<br><span style="font-size:11px;">Head to Community Bank and star your favourites!</span></div>';
+}
+
+async function loadLeaderboards(){
+  var ws=weekStart(),we=weekEnd();
+  var cr=await _sb.from('stars').select('character_id').gte('created_at',ws).lt('created_at',we);
+  var cc={};(cr.data||[]).forEach(function(s){cc[s.character_id]=(cc[s.character_id]||0)+1;});
+  var topC=Object.entries(cc).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
+  var lbC=document.getElementById('lb-chars');
+  if(!topC.length){lbC.innerHTML='<div class="no-data" style="padding:14px;">No stars this week yet.</div>';return;}
+  var cids=topC.map(function(x){return x[0];});
+  var cr2=await _sb.from('characters').select('id,name,user_id').in('id',cids);
+  var cmap={};(cr2.data||[]).forEach(function(c){cmap[c.id]=c;});
+  var cuids=[...new Set((cr2.data||[]).map(function(c){return c.user_id;}))];
+  var cp=await _sb.from('profiles').select('id,display_name,username').in('id',cuids);
+  var cpmap={};(cp.data||[]).forEach(function(p){cpmap[p.id]=p;});
+  lbC.innerHTML=topC.map(function(e,i){var c=cmap[e[0]];if(!c)return'';var p=cpmap[c.user_id];var auth=p?(p.display_name||p.username||'?'):'?';
+    return'<div class="lb-item"><span class="lb-rank'+(i===0?' top':'')+'">'+( i+1)+'</span><div class="lb-info"><div class="lb-name">'+escHtml(c.name||'?')+'</div><div class="lb-sub">by '+escHtml(auth)+'</div></div><span class="lb-stars">⭐ '+e[1]+'</span></div>';
+  }).join('');
+  var sr=await _sb.from('setting_stars').select('setting_id').gte('created_at',ws).lt('created_at',we);
+  var sc={};(sr.data||[]).forEach(function(s){sc[s.setting_id]=(sc[s.setting_id]||0)+1;});
+  var topS=Object.entries(sc).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
+  var lbS=document.getElementById('lb-settings');
+  if(!topS.length){lbS.innerHTML='<div class="no-data" style="padding:14px;">No stars this week yet.</div>';return;}
+  var sids=topS.map(function(x){return x[0];});
+  var sr2=await _sb.from('settings').select('id,name,user_id').in('id',sids);
+  var smap={};(sr2.data||[]).forEach(function(s){smap[s.id]=s;});
+  var suids=[...new Set((sr2.data||[]).map(function(s){return s.user_id;}))];
+  var sp=await _sb.from('profiles').select('id,display_name,username').in('id',suids);
+  var spmap={};(sp.data||[]).forEach(function(p){spmap[p.id]=p;});
+  lbS.innerHTML=topS.map(function(e,i){var s=smap[e[0]];if(!s)return'';var p=spmap[s.user_id];var auth=p?(p.display_name||p.username||'?'):'?';
+    return'<div class="lb-item"><span class="lb-rank'+(i===0?' top':'')+'">'+( i+1)+'</span><div class="lb-info"><div class="lb-name">'+escHtml(s.name||'?')+'</div><div class="lb-sub">by '+escHtml(auth)+'</div></div><span class="lb-stars">⭐ '+e[1]+'</span></div>';
+  }).join('');
+}
+
+async function loadStats(){
+  var ws=weekStart();
+  var results=await Promise.all([
+    _sb.from('characters').select('id',{count:'exact',head:true}).gte('created_at',ws),
+    _sb.from('settings').select('id',{count:'exact',head:true}).gte('created_at',ws),
+    _sb.from('stories').select('id',{count:'exact',head:true}).gte('created_at',ws),
+    _sb.from('stars').select('id',{count:'exact',head:true}).gte('created_at',ws),
+  ]);
+  var labels=['🎭 Characters created','📍 Settings created','📖 Stories written','⭐ Stars given'];
+  document.getElementById('stats-strip').innerHTML=results.map(function(r,i){
+    return'<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(26,16,32,0.12);">'
+      +'<span style="font-size:11px;font-weight:700;color:#3a2a50;">'+labels[i]+'</span>'
+      +'<span style="font-family:Space Mono,monospace;font-size:11px;font-weight:700;color:var(--ink);">'+(r.count||0)+'</span></div>';
+  }).join('');
+}
+
+function openPromptModal(){
+  _promptImageDataUrl=null;
+  ['p-title','p-caption'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('p-questions').value='Who is in this place, and why are they here?\nWhat happened just before this moment?\nWhat can you hear? What does the air smell like?\nWrite the opening paragraph of this story.';
+  document.getElementById('p-img-preview').style.display='none';
+  document.getElementById('p-img-label').style.display='';
+  document.getElementById('p-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('prompt-modal').classList.add('open');
+}
+
+async function savePrompt(){
+  if(!_user||!_isTeacher){toast('Teachers only');return;}
+  var title=document.getElementById('p-title').value.trim();
+  var caption=document.getElementById('p-caption').value.trim();
+  var questions=document.getElementById('p-questions').value.trim();
+  var date=document.getElementById('p-date').value||new Date().toISOString().slice(0,10);
+  if(!title){toast('Please add a title');return;}
+  var imageUrl=null;
+  if(_promptImageDataUrl){
+    try{
+      var b64=_promptImageDataUrl.split(',')[1];
+      var mm=_promptImageDataUrl.match(/data:([^;]+);/);
+      var mime=mm?mm[1]:'image/jpeg';
+      var ext=mime.includes('png')?'png':'jpg';
+      var bin=atob(b64);var bytes=new Uint8Array(bin.length);
+      for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+      var fname='prompt-'+date+'-'+Date.now()+'.'+ext;
+      var up=await _sb.storage.from('prompt-images').upload(fname,bytes.buffer,{contentType:mime,upsert:true});
+      if(!up.error){var pu=_sb.storage.from('prompt-images').getPublicUrl(fname);imageUrl=pu.data&&pu.data.publicUrl;}
+    }catch(e){console.warn('img upload failed',e);}
+  }
+  var payload={title:title,caption:caption,questions:questions,prompt_date:date,image_url:imageUrl,created_by:_user.id};
+  var r=await _sb.from('story_prompts').insert(payload);
+  if(r.error){toast('Error: '+r.error.message);return;}
+  closeModal('prompt-modal');toast('Prompt published!');await loadPrompt();
+}
+
+function handleImgUpload(e){var f=e.target.files[0];if(f)loadImgFile(f);e.target.value='';}
+function handleImgDrop(e){e.preventDefault();var f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadImgFile(f);}
+function loadImgFile(f){
+  var r=new FileReader();
+  r.onload=function(ev){
+    _promptImageDataUrl=ev.target.result;
+    var p=document.getElementById('p-img-preview');p.src=ev.target.result;p.style.display='block';
+    document.getElementById('p-img-label').style.display='none';
+  };
+  r.readAsDataURL(f);
+}
+
+function refreshDashboard(){toast('Refreshing…');Promise.all([loadPrompt(),loadWinners(),loadLeaderboards(),loadStats()]).then(function(){toast('Dashboard refreshed');});}
+function formatDate(d){if(!d)return'';var dt=new Date(d+'T12:00:00');return dt.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'}).toUpperCase();}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function handleBg(e,id){if(e.target.id===id)closeModal(id);}
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2600);}
+function escHtml(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.modal-bg.open').forEach(function(m){m.classList.remove('open');});});
+init();
+</script>
+</body>
+</html>
