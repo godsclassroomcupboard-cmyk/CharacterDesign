@@ -269,6 +269,48 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--bg);color
 .spinner{width:28px;height:28px;border:3px solid #E5E0FA;border-top-color:var(--purple);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
+/* ── Examples panel ── */
+.examples-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  background:#F0ECFC;border:1.5px solid var(--border);border-radius:99px;
+  padding:5px 14px;font-size:11px;font-weight:800;color:var(--purple);
+  cursor:pointer;font-family:'Nunito',sans-serif;transition:all 0.15s;
+  margin-top:8px;
+}
+.examples-btn:hover{background:var(--purple);color:#fff;border-color:var(--purple);}
+.examples-panel{
+  display:none;margin-top:10px;
+  border:1.5px solid var(--border);border-radius:12px;overflow:hidden;
+  background:#FDFCFF;
+}
+.examples-panel.open{display:block;}
+.examples-panel-header{
+  padding:8px 14px;background:linear-gradient(90deg,#6C5CE7,#9B59B6);
+  font-size:10px;font-weight:900;color:#fff;letter-spacing:0.5px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.example-item{
+  padding:12px 14px;border-bottom:1px solid var(--border);
+  position:relative;
+}
+.example-item:last-child{border-bottom:none;}
+.example-num{
+  font-family:'Space Mono',monospace;font-size:9px;font-weight:700;
+  color:var(--purple);text-transform:uppercase;letter-spacing:1px;
+  margin-bottom:5px;
+}
+.example-text{
+  font-family:'Lora',serif;font-size:12px;line-height:1.7;
+  color:#2a1a40;font-style:italic;
+}
+.example-use-btn{
+  display:inline-block;margin-top:6px;
+  background:transparent;border:1px solid var(--border);border-radius:99px;
+  padding:3px 10px;font-size:10px;font-weight:800;color:var(--muted);
+  cursor:pointer;font-family:'Nunito',sans-serif;transition:all 0.15s;
+}
+.example-use-btn:hover{background:var(--purple);color:#fff;border-color:var(--purple);}
+
 /* ── Story list sidebar ── */
 .stories-list{display:flex;flex-direction:column;gap:6px;padding:8px 12px;}
 .story-item{
@@ -365,7 +407,29 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--bg);color
               </ul>
             </div>
             <div class="ref-chips" id="chips-hook"></div>
-            <textarea class="layer-textarea" id="text-hook" placeholder="The day everything changed, nobody was watching the sky…" oninput="onTextChange('hook')"></textarea>
+            <button class="examples-btn" onclick="toggleExamples('examples-hook', this)">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="8" cy="8" r="7"/><line x1="8" y1="6" x2="8" y2="10"/><line x1="8" y1="4" x2="8" y2="4.5"/></svg>
+              See examples
+            </button>
+            <div class="examples-panel" id="examples-hook">
+              <div class="examples-panel-header">
+                <span>✦ 3 examples of great writing</span>
+                <span style="font-size:9px;opacity:0.7;">Click a word to copy it to your writing</span>
+              </div>            <div class="example-item">
+              <div class="example-num">Example 1 — Action opening</div>
+              <div class="example-text">The window shattered before Marcus even heard the sound. Glass exploded inward like a thousand tiny stars, and he threw himself to the floor, heart hammering against the cold tiles.</div>
+              <button class="example-use-btn" onclick="useExample('text-hook', 'The window shattered before Marcus even heard the sound. Glass exploded inward like a thousand tiny stars, and he threw himself to the floor, heart hammering against the cold tiles.')">Use as inspiration →</button>
+            </div>            <div class="example-item">
+              <div class="example-num">Example 2 — Bold statement</div>
+              <div class="example-text">The last thing Priya expected to find in her grandmother's attic was a door that hadn't existed the day before. But there it was — solid oak, brass handle, and absolutely no explanation.</div>
+              <button class="example-use-btn" onclick="useExample('text-hook', "The last thing Priya expected to find in her grandmother's attic was a door that hadn't existed the day before. But there it was — solid oak, brass handle, and absolutely no explanation.")">Use as inspiration →</button>
+            </div>            <div class="example-item">
+              <div class="example-num">Example 3 — Question hook</div>
+              <div class="example-text">Have you ever had the feeling that someone is watching you? Not the paranoid prickle you get walking home alone — I mean the absolute, bone-deep certainty that somewhere, something knows your name.</div>
+              <button class="example-use-btn" onclick="useExample('text-hook', 'Have you ever had the feeling that someone is watching you? Not the paranoid prickle you get walking home alone — I mean the absolute, bone-deep certainty that somewhere, something knows your name.')">Use as inspiration →</button>
+            </div>
+            </div>
+                        <textarea class="layer-textarea" id="text-hook" placeholder="The day everything changed, nobody was watching the sky…" oninput="onTextChange('hook')"></textarea>
           </div>
         </div>
 
@@ -395,7 +459,29 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--bg);color
               </ul>
             </div>
             <div class="ref-chips" id="chips-intro"></div>
-            <textarea class="layer-textarea" id="text-intro" placeholder="Describe your character and setting here…" style="min-height:140px;" oninput="onTextChange('intro')"></textarea>
+            <button class="examples-btn" onclick="toggleExamples('examples-intro', this)">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="8" cy="8" r="7"/><line x1="8" y1="6" x2="8" y2="10"/><line x1="8" y1="4" x2="8" y2="4.5"/></svg>
+              See examples
+            </button>
+            <div class="examples-panel" id="examples-intro">
+              <div class="examples-panel-header">
+                <span>✦ 3 examples of great writing</span>
+                <span style="font-size:9px;opacity:0.7;">Click a word to copy it to your writing</span>
+              </div>            <div class="example-item">
+              <div class="example-num">Example 1 — Character + setting woven together</div>
+              <div class="example-text">Zara had always been too tall for doorways and too loud for libraries — which made the reading room of St. Aldric's School for the Gifted particularly ironic. Dust motes drifted through amber light, the smell of old paper hung in the air like a held breath, and Zara sat in the corner, knees folded to her chest, reading about dragons.</div>
+              <button class="example-use-btn" onclick="useExample('text-intro', "Zara had always been too tall for doorways and too loud for libraries — which made the reading room of St. Aldric's School for the Gifted particularly ironic. Dust motes drifted through amber light, the smell of old paper hung in the air like a held breath, and Zara sat in the corner, knees folded to her chest, reading about dragons.")">Use as inspiration →</button>
+            </div>            <div class="example-item">
+              <div class="example-num">Example 2 — Setting first, then character</div>
+              <div class="example-text">The harbour at Millhaven looked like a painting in the early morning — fishing boats rocking gently, the water a bruised purple, mist coiling off the surface like smoke from a dying fire. Into this quiet stepped twelve-year-old Eli, school bag slung over one shoulder, a map that shouldn't exist tucked carefully inside it.</div>
+              <button class="example-use-btn" onclick="useExample('text-intro', "The harbour at Millhaven looked like a painting in the early morning — fishing boats rocking gently, the water a bruised purple, mist coiling off the surface like smoke from a dying fire. Into this quiet stepped twelve-year-old Eli, school bag slung over one shoulder, a map that shouldn't exist tucked carefully inside it.")">Use as inspiration →</button>
+            </div>            <div class="example-item">
+              <div class="example-num">Example 3 — Inside the character's head</div>
+              <div class="example-text">Tom had three rules: don't draw attention, don't ask questions, and definitely don't go anywhere near the old observatory on the hill. He'd broken all three by lunchtime on his first day at Caldwell Academy, which was, he would later reflect, entirely on brand.</div>
+              <button class="example-use-btn" onclick="useExample('text-intro', "Tom had three rules: don't draw attention, don't ask questions, and definitely don't go anywhere near the old observatory on the hill. He'd broken all three by lunchtime on his first day at Caldwell Academy, which was, he would later reflect, entirely on brand.")">Use as inspiration →</button>
+            </div>
+            </div>
+                        <textarea class="layer-textarea" id="text-intro" placeholder="Describe your character and setting here…" style="min-height:140px;" oninput="onTextChange('intro')"></textarea>
           </div>
         </div>
 
@@ -426,7 +512,29 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--bg);color
               </ul>
             </div>
             <div class="ref-chips" id="chips-rising"></div>
-            <textarea class="layer-textarea" id="text-rising" placeholder="The problem begins to build here…" style="min-height:160px;" oninput="onTextChange('rising')"></textarea>
+            <button class="examples-btn" onclick="toggleExamples('examples-rising', this)">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="8" cy="8" r="7"/><line x1="8" y1="6" x2="8" y2="10"/><line x1="8" y1="4" x2="8" y2="4.5"/></svg>
+              See examples
+            </button>
+            <div class="examples-panel" id="examples-rising">
+              <div class="examples-panel-header">
+                <span>✦ 3 examples of great writing</span>
+                <span style="font-size:9px;opacity:0.7;">Click a word to copy it to your writing</span>
+              </div>            <div class="example-item">
+              <div class="example-num">Example 1 — Problem builds through discovery</div>
+              <div class="example-text">It started with a name scratched into the underside of her desk. Then a locker that wasn't hers opened when she touched it. Then the photograph in the school archive — a girl who looked exactly like Maya, standing in the same corridor, wearing the same expression. Dated 1987. Maya hadn't been born until 2012.</div>
+              <button class="example-use-btn" onclick="useExample('text-rising', "It started with a name scratched into the underside of her desk. Then a locker that wasn't hers opened when she touched it. Then the photograph in the school archive — a girl who looked exactly like Maya, standing in the same corridor, wearing the same expression. Dated 1987. Maya hadn't been born until 2012.")">Use as inspiration →</button>
+            </div>            <div class="example-item">
+              <div class="example-num">Example 2 — Tension through obstacles</div>
+              <div class="example-text">Every route to the lighthouse was blocked. The coast road: closed, orange barriers across it and a sign that simply read NO ENTRY. The cliff path: half-collapsed, chalk crumbling into the sea below. The beach: the tide was in, grey waves swallowing the sand completely. Finn looked at all three options and understood, slowly, that someone did not want him getting there.</div>
+              <button class="example-use-btn" onclick="useExample('text-rising', 'Every route to the lighthouse was blocked. The coast road: closed, orange barriers across it and a sign that simply read NO ENTRY. The cliff path: half-collapsed, chalk crumbling into the sea below. The beach: the tide was in, grey waves swallowing the sand completely. Finn looked at all three options and understood, slowly, that someone did not want him getting there.')">Use as inspiration →</button>
+            </div>            <div class="example-item">
+              <div class="example-num">Example 3 — Internal and external conflict</div>
+              <div class="example-text">The map said three hours to the summit. Nadia had done it in two the year before. But that was before the snow, before her ankle had started to throb with every step, and before she'd realised — with a cold, slow horror — that the trail markers had stopped appearing.</div>
+              <button class="example-use-btn" onclick="useExample('text-rising', "The map said three hours to the summit. Nadia had done it in two the year before. But that was before the snow, before her ankle had started to throb with every step, and before she'd realised — with a cold, slow horror — that the trail markers had stopped appearing.")">Use as inspiration →</button>
+            </div>
+            </div>
+                        <textarea class="layer-textarea" id="text-rising" placeholder="The problem begins to build here…" style="min-height:160px;" oninput="onTextChange('rising')"></textarea>
           </div>
         </div>
 
@@ -457,7 +565,29 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--bg);color
               </ul>
             </div>
             <div class="ref-chips" id="chips-climax"></div>
-            <textarea class="layer-textarea" id="text-climax" placeholder="The most powerful moment of your story…" style="min-height:160px;" oninput="onTextChange('climax')"></textarea>
+            <button class="examples-btn" onclick="toggleExamples('examples-climax', this)">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="8" cy="8" r="7"/><line x1="8" y1="6" x2="8" y2="10"/><line x1="8" y1="4" x2="8" y2="4.5"/></svg>
+              See examples
+            </button>
+            <div class="examples-panel" id="examples-climax">
+              <div class="examples-panel-header">
+                <span>✦ 3 examples of great writing</span>
+                <span style="font-size:9px;opacity:0.7;">Click a word to copy it to your writing</span>
+              </div>            <div class="example-item">
+              <div class="example-num">Example 1 — Sensory, slowed-down climax</div>
+              <div class="example-text">The bridge groaned. A sound like a giant waking up — deep, metallic, wrong. Leo's fingers tightened on the rope. Below him, forty metres of empty air. Above him, Sasha's face, pale as paper, hand outstretched. He had exactly one second to decide. The rope held. His hand reached. Their fingers touched. The bridge fell.</div>
+              <button class="example-use-btn" onclick="useExample('text-climax', "The bridge groaned. A sound like a giant waking up — deep, metallic, wrong. Leo's fingers tightened on the rope. Below him, forty metres of empty air. Above him, Sasha's face, pale as paper, hand outstretched. He had exactly one second to decide. The rope held. His hand reached. Their fingers touched. The bridge fell.")">Use as inspiration →</button>
+            </div>            <div class="example-item">
+              <div class="example-num">Example 2 — Quiet but powerful climax</div>
+              <div class="example-text">Amara put the letter down. She didn't cry. She'd expected this — she'd known, really, since March. But knowing something and reading it in black ink are different things. The kitchen was very still. Outside, a bird was singing. She thought: it's strange that the world just keeps going.</div>
+              <button class="example-use-btn" onclick="useExample('text-climax', "Amara put the letter down. She didn't cry. She'd expected this — she'd known, really, since March. But knowing something and reading it in black ink are different things. The kitchen was very still. Outside, a bird was singing. She thought: it's strange that the world just keeps going.")">Use as inspiration →</button>
+            </div>            <div class="example-item">
+              <div class="example-num">Example 3 — Action and emotion combined</div>
+              <div class="example-text">She ran. Not the panicked stumbling of before — this time her feet found a rhythm, arms pumping, lungs burning in the best way. The door was ten metres away. Five. She hit it with her shoulder, felt it give, burst into blinding white daylight, and collapsed onto grass that smelled like rain and safety, gasping, laughing, alive.</div>
+              <button class="example-use-btn" onclick="useExample('text-climax', 'She ran. Not the panicked stumbling of before — this time her feet found a rhythm, arms pumping, lungs burning in the best way. The door was ten metres away. Five. She hit it with her shoulder, felt it give, burst into blinding white daylight, and collapsed onto grass that smelled like rain and safety, gasping, laughing, alive.')">Use as inspiration →</button>
+            </div>
+            </div>
+                        <textarea class="layer-textarea" id="text-climax" placeholder="The most powerful moment of your story…" style="min-height:160px;" oninput="onTextChange('climax')"></textarea>
           </div>
         </div>
 
@@ -487,7 +617,29 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--bg);color
               </ul>
             </div>
             <div class="ref-chips" id="chips-falling"></div>
-            <textarea class="layer-textarea" id="text-falling" placeholder="The dust begins to settle…" style="min-height:130px;" oninput="onTextChange('falling')"></textarea>
+            <button class="examples-btn" onclick="toggleExamples('examples-falling', this)">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="8" cy="8" r="7"/><line x1="8" y1="6" x2="8" y2="10"/><line x1="8" y1="4" x2="8" y2="4.5"/></svg>
+              See examples
+            </button>
+            <div class="examples-panel" id="examples-falling">
+              <div class="examples-panel-header">
+                <span>✦ 3 examples of great writing</span>
+                <span style="font-size:9px;opacity:0.7;">Click a word to copy it to your writing</span>
+              </div>            <div class="example-item">
+              <div class="example-num">Example 1 — Aftermath and reflection</div>
+              <div class="example-text">Nobody spoke on the drive home. Dad kept both hands on the wheel and stared straight ahead. Mum had her eyes closed, not sleeping — just somewhere else. Olu sat in the back and watched the streetlights slide past the window, each one a small orange bloom in the dark, and thought: I think we're going to be okay. I think.</div>
+              <button class="example-use-btn" onclick="useExample('text-falling', "Nobody spoke on the drive home. Dad kept both hands on the wheel and stared straight ahead. Mum had her eyes closed, not sleeping — just somewhere else. Olu sat in the back and watched the streetlights slide past the window, each one a small orange bloom in the dark, and thought: I think we're going to be okay. I think.")">Use as inspiration →</button>
+            </div>            <div class="example-item">
+              <div class="example-num">Example 2 — Physical and emotional settling</div>
+              <div class="example-text">The storm had passed. The kitchen ceiling was ruined — great dark patches spreading across the plaster like a map of somewhere — but the house was quiet and the rain had stopped. Jess swept up the broken tiles slowly, methodically, each scrape of the dustpan steady and deliberate. Outside, a pale strip of light appeared on the horizon.</div>
+              <button class="example-use-btn" onclick="useExample('text-falling', 'The storm had passed. The kitchen ceiling was ruined — great dark patches spreading across the plaster like a map of somewhere — but the house was quiet and the rain had stopped. Jess swept up the broken tiles slowly, methodically, each scrape of the dustpan steady and deliberate. Outside, a pale strip of light appeared on the horizon.')">Use as inspiration →</button>
+            </div>            <div class="example-item">
+              <div class="example-num">Example 3 — Changed relationships</div>
+              <div class="example-text">Marcus found Priya sitting on the steps outside, knees pulled up, staring at nothing. He sat down beside her without saying anything. After a while, she said: 'I didn't think it would work.' He said: 'Neither did I.' They sat there for a long time after that, which was, somehow, more than enough.</div>
+              <button class="example-use-btn" onclick="useExample('text-falling', "Marcus found Priya sitting on the steps outside, knees pulled up, staring at nothing. He sat down beside her without saying anything. After a while, she said: 'I didn't think it would work.' He said: 'Neither did I.' They sat there for a long time after that, which was, somehow, more than enough.")">Use as inspiration →</button>
+            </div>
+            </div>
+                        <textarea class="layer-textarea" id="text-falling" placeholder="The dust begins to settle…" style="min-height:130px;" oninput="onTextChange('falling')"></textarea>
           </div>
         </div>
 
@@ -517,7 +669,29 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--bg);color
               </ul>
             </div>
             <div class="ref-chips" id="chips-resolution"></div>
-            <textarea class="layer-textarea" id="text-resolution" placeholder="And in the end…" oninput="onTextChange('resolution')"></textarea>
+            <button class="examples-btn" onclick="toggleExamples('examples-resolution', this)">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="8" cy="8" r="7"/><line x1="8" y1="6" x2="8" y2="10"/><line x1="8" y1="4" x2="8" y2="4.5"/></svg>
+              See examples
+            </button>
+            <div class="examples-panel" id="examples-resolution">
+              <div class="examples-panel-header">
+                <span>✦ 3 examples of great writing</span>
+                <span style="font-size:9px;opacity:0.7;">Click a word to copy it to your writing</span>
+              </div>            <div class="example-item">
+              <div class="example-num">Example 1 — Full circle ending</div>
+              <div class="example-text">A year later, Maya passed the same street corner where it had all started. The door was still there — she'd half-expected it to be gone. She stopped, looked at it, and smiled. Then she walked on. Some doors, she'd learned, you don't need to go through twice.</div>
+              <button class="example-use-btn" onclick="useExample('text-resolution', "A year later, Maya passed the same street corner where it had all started. The door was still there — she'd half-expected it to be gone. She stopped, looked at it, and smiled. Then she walked on. Some doors, she'd learned, you don't need to go through twice.")">Use as inspiration →</button>
+            </div>            <div class="example-item">
+              <div class="example-num">Example 2 — Character has changed</div>
+              <div class="example-text">The old Eli would have kept the discovery to himself, buried it deep, pretended it never happened. But that boy had been left somewhere on the harbour road, sometime in October, in the rain. This Eli walked into the police station, map in hand, and asked to speak to someone about the missing lighthouse keeper.</div>
+              <button class="example-use-btn" onclick="useExample('text-resolution', 'The old Eli would have kept the discovery to himself, buried it deep, pretended it never happened. But that boy had been left somewhere on the harbour road, sometime in October, in the rain. This Eli walked into the police station, map in hand, and asked to speak to someone about the missing lighthouse keeper.')">Use as inspiration →</button>
+            </div>            <div class="example-item">
+              <div class="example-num">Example 3 — Quiet, resonant ending</div>
+              <div class="example-text">Tom never did find out what was inside the observatory. He told himself that was fine. Some mysteries weren't meant to be solved — they were just meant to make you braver for having asked the question. He kept the key anyway, in the front pocket of his school bag, cold and heavy and his.</div>
+              <button class="example-use-btn" onclick="useExample('text-resolution', "Tom never did find out what was inside the observatory. He told himself that was fine. Some mysteries weren't meant to be solved — they were just meant to make you braver for having asked the question. He kept the key anyway, in the front pocket of his school bag, cold and heavy and his.")">Use as inspiration →</button>
+            </div>
+            </div>
+                        <textarea class="layer-textarea" id="text-resolution" placeholder="And in the end…" oninput="onTextChange('resolution')"></textarea>
           </div>
         </div>
 
@@ -1110,6 +1284,52 @@ function toast(msg) {
 function escHtml(s) {
   if (!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Examples panel ──
+function toggleExamples(panelId, btn) {
+  var panel = document.getElementById(panelId);
+  if (!panel) return;
+  var isOpen = panel.classList.contains('open');
+  // Close all other panels first
+  document.querySelectorAll('.examples-panel.open').forEach(function(p) {
+    if (p.id !== panelId) {
+      p.classList.remove('open');
+      // Reset that button text
+      var prevBtn = p.previousElementSibling;
+      if (prevBtn && prevBtn.classList.contains('examples-btn')) {
+        prevBtn.innerHTML = prevBtn.innerHTML.replace('Hide examples', 'See examples');
+      }
+    }
+  });
+  panel.classList.toggle('open', !isOpen);
+  // Update button text
+  if (!isOpen) {
+    btn.innerHTML = btn.innerHTML.replace('See examples', 'Hide examples');
+  } else {
+    btn.innerHTML = btn.innerHTML.replace('Hide examples', 'See examples');
+  }
+}
+
+function useExample(textareaId, exampleText) {
+  var ta = document.getElementById(textareaId);
+  if (!ta) return;
+  // If textarea is empty, offer to insert; if not, append with a note
+  if (!ta.value.trim()) {
+    ta.value = exampleText;
+    ta.focus();
+    toast('✓ Example added — now make it your own!');
+  } else {
+    // Copy to clipboard instead
+    navigator.clipboard.writeText(exampleText).then(function() {
+      toast('📋 Example copied — paste it where you need inspiration!');
+    }).catch(function() {
+      toast('Tip: select the example text and copy it manually');
+    });
+  }
+  // Trigger word count update
+  var layerId = textareaId.replace('text-', '');
+  onTextChange(layerId);
 }
 
 // Close on escape
