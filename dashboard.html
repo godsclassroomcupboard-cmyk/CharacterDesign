@@ -3,179 +3,575 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Dashboard — Aurabot</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<title>The Weekly Spotlight — Aurabot</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Bangers&family=Fredoka+One&family=Permanent+Marker&family=Patrick+Hand&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --ink:#1A1020; --paper:#F5F0E8; --paper2:#EDE8DC; --cream:#FAF7F0;
-  --purple:#6C5CE7; --pink:#E84393; --gold:#D4A017;
-  --green:#2A7A4B; --red:#C0392B; --border:#1A1020;
+  --cosmic:#1A0A3A;
+  --purple:#7B2FBE;
+  --purple2:#4A1A8A;
+  --pink:#FF2D78;
+  --pink2:#FF6EB4;
+  --teal:#00C4B4;
+  --yellow:#FFD700;
+  --yellow2:#FFA500;
+  --green:#00E676;
+  --white:#FFFFFF;
+  --cream:#FFFBF0;
+  --ink:#1A0A2A;
 }
-html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--paper);color:var(--ink);}
-.topbar{background:var(--ink);color:#fff;display:flex;align-items:center;gap:14px;padding:0 24px;height:52px;position:sticky;top:0;z-index:100;border-bottom:3px solid var(--gold);}
-.back-btn{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:5px 12px;font-size:11px;font-weight:800;color:#fff;cursor:pointer;font-family:'Space Mono',monospace;text-decoration:none;transition:background 0.15s;letter-spacing:0.5px;}
-.back-btn:hover{background:rgba(255,255,255,0.2);}
-.topbar-masthead{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;letter-spacing:2px;text-transform:uppercase;flex:1;}
-.topbar-date{font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,0.6);text-align:right;}
-.teacher-badge{background:var(--gold);color:var(--ink);border-radius:3px;padding:3px 10px;font-size:10px;font-weight:900;font-family:'Space Mono',monospace;display:none;}
-.masthead{background:var(--ink);color:var(--paper);padding:32px 32px 24px;border-bottom:6px double var(--gold);text-align:center;position:relative;overflow:hidden;}
-.masthead::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(255,255,255,0.03) 28px,rgba(255,255,255,0.03) 29px);pointer-events:none;}
-.masthead-eyebrow{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:12px;}
-.masthead-title{font-family:'Playfair Display',serif;font-size:clamp(36px,6vw,72px);font-weight:900;line-height:1;margin-bottom:8px;letter-spacing:-1px;}
-.masthead-title em{color:var(--gold);font-style:italic;}
-.masthead-sub{font-family:'Space Mono',monospace;font-size:11px;color:rgba(255,255,255,0.55);letter-spacing:2px;text-transform:uppercase;border-top:1px solid rgba(255,255,255,0.15);padding-top:12px;margin-top:12px;}
-.masthead-week{display:inline-block;background:var(--gold);color:var(--ink);font-family:'Space Mono',monospace;font-size:10px;font-weight:700;padding:3px 14px;border-radius:2px;margin-bottom:14px;letter-spacing:1px;}
-.zine-wrap{max-width:1100px;margin:0 auto;padding:28px 20px 80px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;}
-.zine-block{border:2px solid var(--border);background:var(--cream);position:relative;overflow:hidden;}
-.zine-block+.zine-block{border-left:none;}
-.span-2{grid-column:span 2;}
-.span-3{grid-column:span 3;}
-.block-header{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:2px solid var(--border);background:var(--ink);color:var(--paper);}
-.block-eyebrow{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);flex:1;}
-.block-rule{font-family:'Space Mono',monospace;font-size:9px;color:rgba(255,255,255,0.4);}
-.prompt-img-wrap{position:relative;overflow:hidden;height:280px;border-bottom:2px solid var(--border);}
-.prompt-img{width:100%;height:100%;object-fit:cover;display:block;filter:contrast(1.05);}
-.prompt-img-placeholder{width:100%;height:100%;background:linear-gradient(135deg,#2A1A40,#4A3A7A,#2A1A40);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
-.prompt-img-placeholder-text{font-family:'Playfair Display',serif;font-size:14px;font-style:italic;color:rgba(255,255,255,0.5);text-align:center;padding:0 24px;}
-.prompt-date-stamp{position:absolute;top:12px;left:12px;background:var(--ink);color:var(--gold);font-family:'Space Mono',monospace;font-size:10px;font-weight:700;padding:4px 10px;letter-spacing:1px;border:1px solid var(--gold);}
-.prompt-body{padding:20px 20px 16px;}
-.prompt-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;line-height:1.2;margin-bottom:10px;color:var(--ink);}
-.prompt-caption{font-size:12px;font-weight:600;color:#5a5070;line-height:1.6;margin-bottom:14px;font-style:italic;border-left:3px solid var(--gold);padding-left:10px;}
-.prompt-questions{list-style:none;display:flex;flex-direction:column;gap:7px;}
-.prompt-questions li{display:flex;gap:8px;align-items:flex-start;font-size:12px;font-weight:700;color:var(--ink);line-height:1.5;}
-.prompt-q-num{background:var(--purple);color:#fff;font-family:'Space Mono',monospace;font-size:9px;font-weight:700;width:18px;height:18px;border-radius:2px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
-.winner-inner{padding:14px 16px;}
-.winner-crown{font-size:24px;display:block;margin-bottom:4px;animation:bob 2s ease-in-out infinite;}
-@keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
-.winner-name{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;line-height:1.15;margin-bottom:3px;color:var(--ink);}
-.winner-by{font-size:11px;font-weight:700;color:#6a5a80;margin-bottom:8px;}
-.winner-stars{display:flex;align-items:center;gap:5px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--gold);}
-.winner-img{width:100%;height:120px;object-fit:cover;border-bottom:2px solid var(--border);filter:grayscale(15%) contrast(1.05);}
-.winner-img-placeholder{width:100%;height:120px;border-bottom:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:40px;background:var(--paper2);}
-.winner-tag{display:inline-block;background:var(--ink);color:var(--paper);font-family:'Space Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;margin-bottom:6px;}
-.winner-detail{font-size:11px;line-height:1.6;color:#3a2a50;max-height:64px;overflow:hidden;position:relative;margin-top:8px;}
-.winner-detail::after{content:'';position:absolute;bottom:0;left:0;right:0;height:20px;background:linear-gradient(transparent,var(--cream));}
-.winner-char .block-header{background:#2A1A40;}.winner-char .block-eyebrow{color:#C084FC;}
-.winner-set  .block-header{background:#0A2A1A;}.winner-set  .block-eyebrow{color:#4ADE80;}
-.winner-story .block-header{background:#1A0A2A;}.winner-story .block-eyebrow{color:var(--gold);}
-.leaderboard-block{background:var(--paper2);}
-.leaderboard-list{padding:8px 14px;display:flex;flex-direction:column;gap:0;}
-.lb-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dashed rgba(26,16,32,0.15);}
+html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic);color:var(--white);overflow-x:hidden;}
+
+/* ── COSMIC BACKGROUND ── */
+.cosmic-bg{
+  position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse at 20% 20%,#3A1A6A 0%,#1A0A3A 40%,#0A0520 100%);
+  overflow:hidden;
+}
+.cosmic-bg::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    radial-gradient(circle,#fff 1px,transparent 1px),
+    radial-gradient(circle,#fff 1px,transparent 1px),
+    radial-gradient(circle,rgba(255,255,255,0.5) 1px,transparent 1px);
+  background-size:200px 200px,150px 150px,100px 100px;
+  background-position:0 0,75px 75px,25px 25px;
+  opacity:0.3;
+}
+/* User-uploadable bg image */
+.cosmic-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.25;display:none;}
+
+/* Floating decorative stars */
+.deco-star{position:absolute;pointer-events:none;animation:twirl 3s ease-in-out infinite alternate;}
+@keyframes twirl{0%{transform:rotate(0deg) scale(1);}100%{transform:rotate(25deg) scale(1.15);}}
+
+/* ── PAGE WRAP ── */
+.page{position:relative;z-index:1;min-height:100vh;}
+
+/* ── TOPBAR ── */
+.topbar{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 20px;
+  background:rgba(0,0,0,0.4);
+  border-bottom:2px solid rgba(255,215,0,0.3);
+  backdrop-filter:blur(8px);
+  position:sticky;top:0;z-index:100;
+}
+.back-btn{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.25);
+  border-radius:6px;padding:5px 12px;font-family:'Fredoka One',cursive;
+  font-size:13px;color:#fff;cursor:pointer;text-decoration:none;
+  transition:background 0.15s;letter-spacing:0.5px;
+}
+.back-btn:hover{background:rgba(255,255,255,0.22);}
+.topbar-brand{font-family:'Bangers',cursive;font-size:22px;letter-spacing:2px;color:#fff;display:flex;align-items:center;gap:6px;}
+.topbar-brand span{color:var(--yellow);}
+.topbar-date{margin-left:auto;font-family:'Fredoka One',cursive;font-size:13px;color:rgba(255,255,255,0.7);}
+.teacher-badge{background:var(--yellow);color:var(--ink);border-radius:4px;padding:3px 10px;font-family:'Fredoka One',cursive;font-size:12px;display:none;}
+
+/* ── MASTHEAD HERO ── */
+.masthead{
+  position:relative;padding:20px 24px 16px;
+  overflow:hidden;min-height:220px;
+  display:flex;align-items:center;
+}
+.masthead-bg{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(74,26,138,0.7),rgba(26,10,58,0.5));
+}
+/* Uploadable hero image slot */
+.masthead-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.35;display:none;}
+.masthead-robot{position:absolute;left:16px;bottom:0;height:180px;pointer-events:none;display:none;z-index:2;}
+.masthead-content{position:relative;z-index:3;flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;}
+.masthead-eyebrow{
+  background:var(--teal);color:var(--ink);
+  font-family:'Fredoka One',cursive;font-size:11px;letter-spacing:2px;
+  padding:4px 16px;border-radius:2px;margin-bottom:10px;text-transform:uppercase;
+  display:inline-block;
+}
+.masthead-title{
+  font-family:'Bangers',cursive;line-height:0.9;
+  text-transform:uppercase;margin-bottom:8px;
+}
+.masthead-title .the{font-size:clamp(28px,4vw,52px);color:var(--yellow);display:block;letter-spacing:2px;}
+.masthead-title .weekly{font-size:clamp(52px,9vw,110px);color:#fff;display:block;letter-spacing:4px;-webkit-text-stroke:2px rgba(0,0,0,0.3);text-shadow:4px 4px 0 rgba(0,0,0,0.4),0 0 40px rgba(255,215,0,0.3);}
+.masthead-title .spotlight{font-size:clamp(40px,7vw,88px);color:var(--pink);display:block;letter-spacing:3px;-webkit-text-stroke:2px rgba(0,0,0,0.3);text-shadow:4px 4px 0 rgba(0,0,0,0.5);}
+.week-pill{
+  display:inline-block;background:var(--yellow);color:var(--ink);
+  font-family:'Bangers',cursive;font-size:16px;letter-spacing:2px;
+  padding:4px 20px;border-radius:3px;margin-bottom:6px;
+  box-shadow:3px 3px 0 rgba(0,0,0,0.4);
+}
+.masthead-tagline{
+  font-family:'Fredoka One',cursive;font-size:12px;
+  color:rgba(255,255,255,0.7);letter-spacing:2px;text-transform:uppercase;
+}
+/* Speech bubble (robot) */
+.speech-bubble{
+  position:absolute;left:170px;bottom:100px;z-index:4;
+  background:#fff;color:var(--pink);border:3px solid var(--pink);
+  border-radius:12px 12px 12px 0;
+  padding:8px 12px;font-family:'Permanent Marker',cursive;font-size:10px;
+  line-height:1.4;max-width:120px;display:none;
+  box-shadow:3px 3px 0 rgba(0,0,0,0.3);
+}
+/* Starburst badge */
+.starburst{
+  position:absolute;top:16px;right:20px;z-index:4;
+  width:110px;height:110px;display:none;
+}
+.starburst-inner{
+  width:110px;height:110px;background:var(--pink);
+  clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  font-family:'Permanent Marker',cursive;font-size:10px;line-height:1.3;color:#fff;
+  animation:pulse-star 2s ease-in-out infinite alternate;
+  padding:20px 10px;
+}
+@keyframes pulse-star{0%{transform:scale(1) rotate(0deg);}100%{transform:scale(1.08) rotate(5deg);}}
+/* Searchlight (decorative) */
+.searchlight{position:absolute;right:0;top:0;height:100%;pointer-events:none;opacity:0.6;display:none;}
+
+/* ── MAIN GRID ── */
+.zine-grid{
+  max-width:1300px;margin:0 auto;padding:16px 16px 80px;
+  display:grid;
+  grid-template-columns:1fr 340px;
+  grid-template-rows:auto;
+  gap:14px;
+}
+
+/* ── ZINE PANEL base ── */
+.panel{
+  border-radius:8px;overflow:hidden;position:relative;
+}
+
+/* ── PROMPT PANEL ── */
+.prompt-panel{
+  background:rgba(0,0,0,0.5);
+  border:3px solid var(--pink);
+  border-radius:8px;
+  overflow:hidden;
+}
+.prompt-label{
+  background:var(--pink);color:#fff;
+  font-family:'Bangers',cursive;font-size:16px;letter-spacing:2px;
+  padding:6px 20px;display:flex;align-items:center;gap:8px;
+}
+.prompt-label svg{flex-shrink:0;}
+.prompt-img-wrap{
+  position:relative;
+  height:300px;overflow:hidden;
+  border-bottom:3px solid var(--pink);
+}
+.prompt-img{width:100%;height:100%;object-fit:cover;display:block;}
+.prompt-img-placeholder{
+  width:100%;height:100%;
+  background:linear-gradient(135deg,#2A1A5A,#4A2A8A);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+}
+.prompt-date-badge{
+  position:absolute;top:10px;left:10px;
+  background:var(--yellow);color:var(--ink);
+  font-family:'Bangers',cursive;font-size:13px;letter-spacing:1px;
+  padding:4px 12px;border-radius:3px;
+  box-shadow:2px 2px 0 rgba(0,0,0,0.4);z-index:2;
+}
+/* Big image title overlay */
+.prompt-img-title{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;z-index:2;
+  padding:20px;pointer-events:none;
+}
+.prompt-img-title h2{
+  font-family:'Bangers',cursive;font-size:clamp(28px,4vw,52px);
+  color:#fff;text-align:center;letter-spacing:2px;line-height:1.1;
+  text-shadow:2px 2px 0 #000,0 0 30px rgba(255,45,120,0.6);
+}
+.prompt-img-tagline{
+  font-family:'Fredoka One',cursive;font-size:14px;
+  color:var(--yellow);letter-spacing:2px;text-transform:uppercase;
+  margin-top:6px;text-shadow:1px 1px 0 #000;
+}
+/* Paper notepad section */
+.prompt-notepad{
+  background:var(--cream);color:var(--ink);
+  position:relative;
+  padding:18px 20px 16px;
+}
+.notepad-rings{
+  position:absolute;left:0;top:0;bottom:0;width:36px;
+  background:#e8e0d0;border-right:2px solid #ccc;
+  display:flex;flex-direction:column;justify-content:space-around;align-items:center;
+  padding:8px 0;
+}
+.ring{width:16px;height:16px;border-radius:50%;border:3px solid #999;background:#ddd;box-shadow:inset 0 2px 4px rgba(0,0,0,0.2);}
+.notepad-body{margin-left:40px;}
+.notepad-title{
+  font-family:'Permanent Marker',cursive;font-size:18px;color:var(--purple);
+  margin-bottom:4px;line-height:1.2;
+}
+.notepad-caption{
+  font-family:'Patrick Hand',cursive;font-size:13px;color:#555;
+  line-height:1.5;margin-bottom:12px;font-style:italic;
+  border-left:3px solid var(--pink);padding-left:8px;
+}
+.notepad-questions{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.notepad-q{display:flex;align-items:flex-start;gap:10px;font-family:'Patrick Hand',cursive;font-size:14px;color:#222;line-height:1.5;}
+.q-num{
+  background:var(--purple);color:#fff;
+  width:24px;height:24px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bangers',cursive;font-size:14px;flex-shrink:0;margin-top:1px;
+}
+.q-num.n2{background:var(--yellow2);color:#fff;}
+.q-num.n3{background:var(--teal);color:#fff;}
+.q-num.n4{background:var(--pink);color:#fff;}
+.q-num.n5{background:var(--green);color:var(--ink);}
+/* Sticky note */
+.sticky-note{
+  position:absolute;bottom:16px;right:16px;
+  background:#A8E6A3;color:var(--ink);
+  width:120px;padding:10px 12px;
+  transform:rotate(3deg);
+  box-shadow:3px 3px 8px rgba(0,0,0,0.2);
+  font-family:'Permanent Marker',cursive;font-size:11px;
+  line-height:1.5;
+}
+.sticky-note::before{content:'';position:absolute;top:0;left:0;right:0;height:6px;background:rgba(0,0,0,0.08);}
+
+/* ── RIGHT COLUMN WINNERS ── */
+.winners-col{display:flex;flex-direction:column;gap:10px;}
+
+.winner-panel{
+  border-radius:8px;overflow:hidden;
+  border:3px solid transparent;
+}
+.winner-panel.char-panel{border-color:var(--pink);}
+.winner-panel.set-panel{border-color:var(--teal);}
+.winner-panel.story-panel{border-color:var(--yellow);}
+
+.winner-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 14px;font-family:'Bangers',cursive;font-size:14px;letter-spacing:1.5px;
+}
+.char-panel .winner-header{background:var(--pink);color:#fff;}
+.set-panel  .winner-header{background:var(--teal);color:var(--ink);}
+.story-panel .winner-header{background:var(--yellow);color:var(--ink);}
+
+.winner-badge{
+  background:rgba(0,0,0,0.2);color:#fff;
+  font-family:'Fredoka One',cursive;font-size:9px;letter-spacing:1px;
+  padding:2px 8px;border-radius:2px;text-transform:uppercase;
+}
+.set-panel .winner-badge,.story-panel .winner-badge{color:var(--ink);}
+
+.winner-body{
+  display:flex;gap:0;
+  background:rgba(0,0,0,0.55);
+  min-height:90px;
+}
+.winner-img-col{
+  width:110px;flex-shrink:0;overflow:hidden;position:relative;
+}
+.winner-img-col img{width:110px;height:100%;object-fit:cover;display:block;filter:saturate(1.2) contrast(1.05);}
+.winner-img-placeholder{
+  width:110px;height:100%;min-height:90px;
+  display:flex;align-items:center;justify-content:center;font-size:36px;
+  background:rgba(255,255,255,0.05);
+}
+.winner-info{flex:1;padding:10px 12px;display:flex;flex-direction:column;justify-content:center;}
+.winner-name{font-family:'Fredoka One',cursive;font-size:18px;color:#fff;margin-bottom:2px;line-height:1.2;}
+.winner-by{font-size:11px;color:rgba(255,255,255,0.7);font-weight:700;margin-bottom:4px;}
+.winner-stars{font-family:'Bangers',cursive;font-size:13px;color:var(--yellow);letter-spacing:1px;}
+.winner-detail{font-size:10px;color:rgba(255,255,255,0.6);line-height:1.5;margin-top:4px;font-style:italic;overflow:hidden;max-height:36px;}
+.winner-crown{font-size:16px;margin-bottom:2px;}
+.no-winner{padding:18px 14px;text-align:center;background:rgba(0,0,0,0.45);}
+.no-winner-icon{font-size:28px;display:block;margin-bottom:6px;opacity:0.4;}
+.no-winner-text{font-family:'Fredoka One',cursive;font-size:12px;color:rgba(255,255,255,0.5);line-height:1.5;}
+
+/* ── LEADERBOARDS (full width below) ── */
+.leaderboard-row{
+  max-width:1300px;margin:0 auto;padding:0 16px 16px;
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;
+}
+.lb-panel{
+  background:rgba(0,0,0,0.5);border-radius:8px;overflow:hidden;
+  border:2px solid rgba(255,255,255,0.1);
+}
+.lb-header{
+  padding:8px 14px;font-family:'Bangers',cursive;font-size:14px;letter-spacing:1.5px;
+  display:flex;align-items:center;gap:8px;
+}
+.lb-header.chars{background:rgba(255,45,120,0.3);color:var(--pink2);}
+.lb-header.sets{background:rgba(0,196,180,0.25);color:var(--teal);}
+.lb-header.tip{background:rgba(255,215,0,0.2);color:var(--yellow);}
+.lb-list{padding:6px 12px;display:flex;flex-direction:column;gap:0;}
+.lb-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.07);}
 .lb-item:last-child{border-bottom:none;}
-.lb-rank{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;width:22px;text-align:center;flex-shrink:0;color:var(--gold);}
-.lb-rank.top{color:var(--ink);background:var(--gold);width:20px;height:20px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:10px;}
-.lb-info{flex:1;min-width:0;}
-.lb-name{font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.lb-sub{font-size:9px;font-weight:700;color:#8a7a98;font-family:'Space Mono',monospace;}
-.lb-stars{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--gold);flex-shrink:0;}
-.zine-rule{grid-column:1/-1;height:6px;background:repeating-linear-gradient(90deg,var(--ink) 0px,var(--ink) 8px,var(--gold) 8px,var(--gold) 10px);}
-.pull-quote{background:var(--ink);color:var(--paper);padding:18px 20px;font-family:'Playfair Display',serif;font-size:15px;font-style:italic;line-height:1.5;border-left:4px solid var(--gold);}
-.pull-quote cite{display:block;margin-top:8px;font-family:'Space Mono',monospace;font-size:9px;color:var(--gold);font-style:normal;letter-spacing:1px;}
-.no-data{padding:28px 16px;text-align:center;font-family:'Playfair Display',serif;font-style:italic;font-size:13px;color:#8a7a98;line-height:1.6;}
-.teacher-panel{display:none;background:var(--ink);color:var(--paper);padding:14px 20px;border-top:3px solid var(--gold);position:fixed;bottom:0;left:0;right:0;z-index:80;}
+.lb-rank{
+  font-family:'Bangers',cursive;font-size:15px;
+  width:22px;text-align:center;flex-shrink:0;color:rgba(255,255,255,0.4);
+}
+.lb-rank.gold{color:var(--yellow);text-shadow:0 0 10px rgba(255,215,0,0.6);}
+.lb-name{flex:1;font-size:12px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lb-sub{font-size:9px;color:rgba(255,255,255,0.45);font-weight:700;}
+.lb-stars{font-family:'Bangers',cursive;font-size:12px;color:var(--yellow);flex-shrink:0;}
+.tip-body{padding:12px 14px;}
+.tip-quote{
+  font-family:'Permanent Marker',cursive;font-size:12px;
+  color:rgba(255,255,255,0.85);line-height:1.6;
+  border-left:3px solid var(--yellow);padding-left:10px;margin-bottom:8px;
+}
+.tip-cite{font-family:'Fredoka One',cursive;font-size:10px;color:var(--yellow);letter-spacing:1px;}
+.stats-grid{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.stat-box{background:rgba(255,255,255,0.06);border-radius:6px;padding:8px 10px;text-align:center;}
+.stat-num{font-family:'Bangers',cursive;font-size:22px;color:#fff;display:block;line-height:1;}
+.stat-label{font-size:9px;color:rgba(255,255,255,0.5);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;}
+
+/* ── TEACHER PANEL ── */
+.teacher-panel{
+  display:none;position:fixed;bottom:0;left:0;right:0;z-index:80;
+  background:rgba(10,5,30,0.95);backdrop-filter:blur(10px);
+  border-top:2px solid var(--yellow);padding:10px 20px;
+}
 .teacher-panel.visible{display:block;}
-.teacher-panel-inner{max-width:1100px;margin:0 auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
-.teacher-panel-title{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);flex-shrink:0;}
-.tp-btn{padding:7px 16px;border:none;border-radius:3px;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:1px;background:var(--gold);color:var(--ink);transition:opacity 0.15s;}
+.teacher-inner{max-width:1300px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.teacher-label{font-family:'Bangers',cursive;font-size:14px;letter-spacing:2px;color:var(--yellow);flex-shrink:0;}
+.tp-btn{
+  padding:7px 18px;border:none;border-radius:6px;
+  font-family:'Fredoka One',cursive;font-size:13px;cursor:pointer;
+  background:var(--pink);color:#fff;transition:opacity 0.15s;
+  letter-spacing:0.5px;
+}
 .tp-btn:hover{opacity:0.85;}
-.tp-btn-outline{background:transparent;border:1px solid rgba(255,255,255,0.3);color:#fff;}
-.modal-bg{display:none;position:fixed;inset:0;z-index:300;background:rgba(26,16,32,0.75);align-items:center;justify-content:center;}
+.tp-btn-outline{background:transparent;border:1.5px solid rgba(255,255,255,0.3);color:#fff;}
+/* Image upload controls (teacher) */
+.tp-file-label{
+  padding:7px 16px;border:1.5px dashed rgba(255,255,255,0.3);border-radius:6px;
+  font-family:'Fredoka One',cursive;font-size:12px;color:rgba(255,255,255,0.6);
+  cursor:pointer;transition:border-color 0.15s;
+}
+.tp-file-label:hover{border-color:var(--yellow);color:var(--yellow);}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;z-index:300;background:rgba(10,5,30,0.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;}
 .modal-bg.open{display:flex;}
-.modal-box{background:var(--cream);border:2px solid var(--border);width:560px;max-width:96vw;max-height:90vh;overflow-y:auto;}
-.modal-header{background:var(--ink);color:var(--paper);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--gold);}
-.modal-header h2{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;}
-.modal-close{background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.6);font-size:22px;}
-.modal-body{padding:20px;}
+.modal-box{
+  background:#1E0E40;border:2px solid var(--pink);border-radius:12px;
+  width:580px;max-width:96vw;max-height:92vh;overflow-y:auto;
+  box-shadow:0 0 60px rgba(255,45,120,0.3);
+}
+.modal-hdr{
+  background:var(--pink);padding:14px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.modal-hdr h2{font-family:'Bangers',cursive;font-size:20px;letter-spacing:2px;color:#fff;}
+.modal-close{background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.7);font-size:24px;}
+.modal-body{padding:18px 20px 22px;}
 .field-group{margin-bottom:14px;}
-.field-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6a5a80;margin-bottom:5px;display:block;}
-.field-input{width:100%;padding:9px 12px;border:2px solid var(--border);background:#fff;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:var(--ink);outline:none;}
-.field-input:focus{border-color:var(--purple);}
-textarea.field-input{min-height:80px;resize:vertical;}
-.field-hint{font-size:10px;color:#8a7a98;margin-top:3px;font-style:italic;}
-.img-upload-zone{border:2px dashed var(--border);padding:20px;text-align:center;cursor:pointer;background:#faf8f5;transition:border-color 0.15s;}
-.img-upload-zone:hover{border-color:var(--purple);}
-.img-preview{width:100%;max-height:180px;object-fit:cover;display:none;margin-bottom:8px;}
-.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink);color:var(--paper);border:1px solid var(--gold);padding:10px 22px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1px;opacity:0;transition:all 0.3s;pointer-events:none;z-index:9999;}
+.field-lbl{font-family:'Fredoka One',cursive;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:5px;display:block;}
+.field-inp{
+  width:100%;padding:9px 12px;
+  background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);
+  border-radius:6px;color:#fff;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;outline:none;
+  transition:border-color 0.15s;
+}
+.field-inp:focus{border-color:var(--pink);}
+.field-inp::placeholder{color:rgba(255,255,255,0.3);}
+textarea.field-inp{min-height:90px;resize:vertical;}
+.field-hint{font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px;font-style:italic;}
+.img-zone{
+  border:2px dashed rgba(255,255,255,0.2);border-radius:8px;
+  padding:20px;text-align:center;cursor:pointer;transition:border-color 0.15s;
+  background:rgba(255,255,255,0.04);
+}
+.img-zone:hover{border-color:var(--pink);}
+.img-preview-el{width:100%;max-height:160px;object-fit:cover;border-radius:6px;display:none;margin-bottom:8px;}
+.modal-btns{display:flex;gap:10px;margin-top:6px;}
+.modal-btn-cancel{flex:1;padding:11px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.2);border-radius:6px;color:rgba(255,255,255,0.7);font-family:'Fredoka One',cursive;font-size:13px;cursor:pointer;}
+.modal-btn-publish{flex:2;padding:11px;background:var(--pink);border:none;border-radius:6px;color:#fff;font-family:'Bangers',cursive;font-size:16px;letter-spacing:2px;cursor:pointer;transition:opacity 0.15s;}
+.modal-btn-publish:hover{opacity:0.9;}
+
+/* ── DECORATIVE SVG ELEMENTS ── */
+.deco-wrap{position:absolute;pointer-events:none;}
+.lightning{fill:var(--yellow);opacity:0.8;animation:flash 2.5s ease-in-out infinite alternate;}
+@keyframes flash{0%{opacity:0.6;}100%{opacity:1;}}
+.squiggle{stroke:var(--teal);fill:none;stroke-width:2.5;opacity:0.6;}
+.sparkle{fill:var(--yellow);animation:spin-sparkle 4s linear infinite;}
+@keyframes spin-sparkle{to{transform:rotate(360deg);}}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--purple2);color:#fff;border:1.5px solid var(--yellow);border-radius:99px;padding:10px 22px;font-family:'Fredoka One',cursive;font-size:13px;opacity:0;transition:all 0.3s;pointer-events:none;z-index:9999;white-space:nowrap;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-.spinner{width:24px;height:24px;border:2px solid rgba(26,16,32,0.15);border-top-color:var(--purple);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto;}
+.spinner{width:24px;height:24px;border:2px solid rgba(255,255,255,0.2);border-top-color:var(--pink);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto;}
 @keyframes spin{to{transform:rotate(360deg);}}
-@media(max-width:780px){.zine-wrap{grid-template-columns:1fr 1fr;}.span-3{grid-column:span 2;}}
-@media(max-width:520px){.zine-wrap{grid-template-columns:1fr;}.span-3,.span-2{grid-column:span 1;}}
+.no-data-zine{padding:20px 14px;text-align:center;}
+.no-data-zine-icon{font-size:32px;display:block;margin-bottom:6px;opacity:0.4;}
+.no-data-zine-text{font-family:'Fredoka One',cursive;font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5;}
+
+@media(max-width:900px){
+  .zine-grid{grid-template-columns:1fr;}
+  .leaderboard-row{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:600px){
+  .leaderboard-row{grid-template-columns:1fr;}
+  .masthead-title .weekly{font-size:52px;}
+  .masthead-title .spotlight{font-size:40px;}
+}
 </style>
 </head>
 <body>
 
+<!-- Cosmic background -->
+<div class="cosmic-bg">
+  <img id="bg-img" class="cosmic-bg-img" alt=""/>
+  <!-- Decorative stars -->
+  <div class="deco-star" style="left:5%;top:15%;font-size:20px;color:#FFD700;animation-delay:0s;">✦</div>
+  <div class="deco-star" style="left:15%;top:40%;font-size:14px;color:#FF6EB4;animation-delay:0.5s;">★</div>
+  <div class="deco-star" style="left:80%;top:10%;font-size:24px;color:#00C4B4;animation-delay:1s;">✦</div>
+  <div class="deco-star" style="left:90%;top:35%;font-size:16px;color:#FFD700;animation-delay:1.5s;">⭐</div>
+  <div class="deco-star" style="left:40%;top:5%;font-size:12px;color:#FF2D78;animation-delay:0.8s;">★</div>
+  <div class="deco-star" style="left:65%;top:20%;font-size:18px;color:#FFD700;animation-delay:0.3s;">✦</div>
+  <div class="deco-star" style="left:25%;top:70%;font-size:14px;color:#A29BFE;animation-delay:1.2s;">★</div>
+  <div class="deco-star" style="left:75%;top:65%;font-size:20px;color:#00E676;animation-delay:0.6s;">✦</div>
+</div>
+
+<div class="page">
+
+<!-- Topbar -->
 <header class="topbar">
   <button onclick="history.back()" class="back-btn">← BACK</button>
-  <div class="topbar-masthead">✦ Aurabot</div>
-  <div style="display:flex;align-items:center;gap:10px;">
-    <span class="teacher-badge" id="teacher-badge">✦ TEACHER</span>
+  <div class="topbar-brand">✦ <span>AURABOT</span></div>
+  <div style="display:flex;align-items:center;gap:10px;margin-left:auto;">
+    <span class="teacher-badge" id="teacher-badge">✦ TEACHER MODE</span>
     <div class="topbar-date" id="topbar-date"></div>
   </div>
 </header>
 
+<!-- Masthead -->
 <div class="masthead">
-  <div class="masthead-eyebrow">The Official Aurabot Publication</div>
-  <div class="masthead-week" id="week-label">Week of …</div>
-  <h1 class="masthead-title">The <em>Weekly</em><br>Spotlight</h1>
-  <div class="masthead-sub" id="masthead-sub">Loading this week's stars…</div>
-</div>
+  <img id="masthead-img" class="masthead-hero-img" alt=""/>
+  <img id="robot-img" class="masthead-robot" alt="Aurabot mascot"/>
+  <div class="speech-bubble" id="speech-bubble">YOUR IDEAS.<br>YOUR STORIES.<br>YOUR SPOTLIGHT!</div>
 
-<div class="zine-wrap">
-
-  <!-- Story Prompt — 2 cols -->
-  <div class="zine-block span-2" id="prompt-block" style="border-right:2px solid var(--border);">
-    <div class="block-header">
-      <span class="block-eyebrow">✦ Story Prompt of the Day</span>
-      <button id="edit-prompt-btn" onclick="openPromptModal()" style="display:none;background:var(--gold);color:var(--ink);border:none;padding:3px 10px;font-size:9px;font-weight:700;font-family:'Space Mono',monospace;cursor:pointer;letter-spacing:1px;">EDIT PROMPT</button>
-    </div>
-    <div id="prompt-content"><div style="padding:48px;text-align:center;"><div class="spinner"></div></div></div>
+  <!-- Decorative SVGs -->
+  <div class="deco-wrap" style="left:2%;top:10%;">
+    <svg width="40" height="50" viewBox="0 0 40 50"><path class="lightning" d="M22 2L8 26h12L16 48l20-28H24z"/></svg>
+  </div>
+  <div class="deco-wrap" style="right:5%;top:20%;">
+    <svg width="30" height="36" viewBox="0 0 30 36"><path class="lightning" d="M16 2L6 19h9L11 34l14-21H18z"/></svg>
+  </div>
+  <div class="deco-wrap" style="left:8%;bottom:10%;">
+    <svg width="60" height="20" viewBox="0 0 60 20"><path class="squiggle" d="M2 10 C10 2,20 18,30 10 S50 2,58 10"/></svg>
+  </div>
+  <div class="deco-wrap" style="right:8%;bottom:15%;">
+    <svg width="50" height="50" viewBox="0 0 50 50"><g transform="translate(25,25)"><polygon class="sparkle" points="0,-12 2.5,-2.5 12,0 2.5,2.5 0,12 -2.5,2.5 -12,0 -2.5,-2.5" transform-origin="0 0"/></g></svg>
   </div>
 
-  <!-- Right winners column -->
-  <div style="grid-column:3;display:flex;flex-direction:column;border:2px solid var(--border);border-left:none;">
-    <div class="zine-block winner-char" style="border:none;border-bottom:2px solid var(--border);flex:1;">
-      <div class="block-header"><span class="block-eyebrow">🎭 Character of the Week</span><span class="block-rule" id="char-stars-label"></span></div>
-      <div id="winner-char-content"><div style="padding:20px;text-align:center;"><div class="spinner"></div></div></div>
+  <div class="masthead-content">
+    <div class="masthead-eyebrow">The Official Aurabot Publication</div>
+    <div class="week-pill" id="week-label">WEEK OF …</div>
+    <div class="masthead-title">
+      <span class="the">THE</span>
+      <span class="weekly">WEEKLY</span>
+      <span class="spotlight">SPOTLIGHT</span>
     </div>
-    <div class="zine-block winner-set" style="border:none;border-bottom:2px solid var(--border);flex:1;">
-      <div class="block-header"><span class="block-eyebrow">📍 Setting of the Week</span><span class="block-rule" id="set-stars-label"></span></div>
-      <div id="winner-set-content"><div style="padding:20px;text-align:center;"><div class="spinner"></div></div></div>
-    </div>
-    <div class="zine-block winner-story" style="border:none;flex:1;">
-      <div class="block-header"><span class="block-eyebrow">📖 Story of the Week</span><span class="block-rule" id="story-stars-label"></span></div>
-      <div id="winner-story-content"><div style="padding:20px;text-align:center;"><div class="spinner"></div></div></div>
-    </div>
+    <div class="masthead-tagline" id="masthead-sub">Character ✦ Setting ✦ Story ✦ Prompt ✦ June 2026</div>
   </div>
 
-  <div class="zine-rule"></div>
-
-  <!-- Leaderboards -->
-  <div class="zine-block leaderboard-block" style="border-top:none;">
-    <div class="block-header" style="background:#2A1A40;"><span class="block-eyebrow" style="color:#C084FC;">🏆 Character Leaderboard</span></div>
-    <div id="lb-chars" class="leaderboard-list"><div style="padding:16px;text-align:center;"><div class="spinner"></div></div></div>
-  </div>
-  <div class="zine-block leaderboard-block" style="border-top:none;border-left:none;">
-    <div class="block-header" style="background:#0A2A1A;"><span class="block-eyebrow" style="color:#4ADE80;">🏆 Setting Leaderboard</span></div>
-    <div id="lb-settings" class="leaderboard-list"><div style="padding:16px;text-align:center;"><div class="spinner"></div></div></div>
-  </div>
-  <div class="zine-block" style="border-top:none;border-left:none;">
-    <div class="block-header"><span class="block-eyebrow">✦ Writer's Corner</span></div>
-    <blockquote class="pull-quote" id="writers-tip">"The first draft is just you telling yourself the story."<cite>— Terry Pratchett</cite></blockquote>
-    <div style="padding:12px 16px;">
-      <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:#8a7a98;text-transform:uppercase;margin-bottom:8px;">This week in numbers</div>
-      <div id="stats-strip" style="display:flex;flex-direction:column;gap:4px;"></div>
-    </div>
+  <!-- Starburst -->
+  <div class="starburst" id="starburst-el">
+    <div class="starburst-inner">BE BOLD!<br>BE CREATIVE!<br>BE YOU!</div>
   </div>
 </div>
 
-<!-- Teacher panel -->
+<!-- Main 2-col grid -->
+<div class="zine-grid">
+
+  <!-- LEFT: Story Prompt -->
+  <div class="prompt-panel">
+    <div class="prompt-label">
+      <svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="2" width="14" height="14"><path d="M13 5H3M13 8H3M8 11H3"/></svg>
+      ⚡ STORY PROMPT OF THE DAY
+      <button id="edit-prompt-btn" onclick="openPromptModal()" style="display:none;margin-left:auto;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.4);color:#fff;padding:3px 10px;font-family:'Fredoka One',cursive;font-size:11px;cursor:pointer;border-radius:4px;letter-spacing:0.5px;">✏ EDIT</button>
+    </div>
+    <div id="prompt-content">
+      <div style="padding:60px;text-align:center;"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Winners -->
+  <div class="winners-col">
+
+    <!-- Character of the Week -->
+    <div class="winner-panel char-panel">
+      <div class="winner-header">
+        👑 CHARACTER OF THE WEEK
+        <span class="winner-badge" id="char-week-badge">✦ THIS WEEK</span>
+      </div>
+      <div id="winner-char"><div style="padding:20px;text-align:center;"><div class="spinner"></div></div></div>
+    </div>
+
+    <!-- Setting of the Week -->
+    <div class="winner-panel set-panel">
+      <div class="winner-header">
+        ⭐ SETTING OF THE WEEK
+        <span class="winner-badge" id="set-week-badge">✦ THIS WEEK</span>
+      </div>
+      <div id="winner-set"><div style="padding:20px;text-align:center;"><div class="spinner"></div></div></div>
+    </div>
+
+    <!-- Story of the Week -->
+    <div class="winner-panel story-panel">
+      <div class="winner-header">
+        📖 STORY OF THE WEEK
+        <span class="winner-badge" id="story-week-badge" style="background:rgba(0,0,0,0.2);color:var(--ink);">✦ THIS WEEK</span>
+      </div>
+      <div id="winner-story"><div style="padding:20px;text-align:center;"><div class="spinner"></div></div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Leaderboards row -->
+<div class="leaderboard-row">
+  <div class="lb-panel">
+    <div class="lb-header chars">🏆 CHARACTER LEADERBOARD</div>
+    <div class="lb-list" id="lb-chars"><div style="padding:14px;text-align:center;"><div class="spinner"></div></div></div>
+  </div>
+  <div class="lb-panel">
+    <div class="lb-header sets">🏆 SETTING LEADERBOARD</div>
+    <div class="lb-list" id="lb-settings"><div style="padding:14px;text-align:center;"><div class="spinner"></div></div></div>
+  </div>
+  <div class="lb-panel">
+    <div class="lb-header tip">✦ WRITER'S CORNER</div>
+    <div class="tip-body">
+      <div class="tip-quote" id="tip-quote">"The first draft is just you telling yourself the story."</div>
+      <div class="tip-cite" id="tip-cite">— Terry Pratchett</div>
+      <div class="stats-grid" id="stats-grid"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end page -->
+
+<!-- Teacher sticky panel -->
 <div class="teacher-panel" id="teacher-panel">
-  <div class="teacher-panel-inner">
-    <span class="teacher-panel-title">✦ Teacher Controls</span>
+  <div class="teacher-inner">
+    <span class="teacher-label">✦ TEACHER CONTROLS</span>
     <button onclick="openPromptModal()" class="tp-btn">📝 Set Today's Prompt</button>
+    <label class="tp-file-label">
+      🖼 Upload Background
+      <input type="file" accept="image/*" style="display:none;" onchange="handleBgUpload(event)"/>
+    </label>
+    <label class="tp-file-label">
+      🤖 Upload Robot Image
+      <input type="file" accept="image/*" style="display:none;" onchange="handleRobotUpload(event)"/>
+    </label>
     <button onclick="refreshDashboard()" class="tp-btn tp-btn-outline">↻ Refresh</button>
   </div>
 </div>
@@ -183,31 +579,30 @@ textarea.field-input{min-height:80px;resize:vertical;}
 <!-- Prompt Modal -->
 <div class="modal-bg" id="prompt-modal" onclick="handleBg(event,'prompt-modal')">
   <div class="modal-box">
-    <div class="modal-header">
-      <h2>Set Story Prompt of the Day</h2>
+    <div class="modal-hdr">
+      <h2>⚡ SET STORY PROMPT</h2>
       <button class="modal-close" onclick="closeModal('prompt-modal')">×</button>
     </div>
     <div class="modal-body">
-      <div class="field-group"><label class="field-label">Prompt Title</label><input class="field-input" id="p-title" type="text" placeholder="e.g. The Midnight Garden"/></div>
+      <div class="field-group"><label class="field-lbl">Prompt Title</label><input class="field-inp" id="p-title" type="text" placeholder="e.g. What's Behind the Door?"/></div>
       <div class="field-group">
-        <label class="field-label">Image</label>
-        <div class="img-upload-zone" onclick="document.getElementById('p-img-input').click()" ondragover="event.preventDefault()" ondrop="handleImgDrop(event)">
-          <img id="p-img-preview" class="img-preview"/>
-          <div id="p-img-label" style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;color:#8a7a98;">UPLOAD IMAGE (JPG, PNG)<br/><span style="font-size:9px;">Drag &amp; drop or click</span></div>
+        <label class="field-lbl">Prompt Image</label>
+        <div class="img-zone" onclick="document.getElementById('p-img-input').click()" ondragover="event.preventDefault()" ondrop="handleImgDrop(event)">
+          <img id="p-img-preview" class="img-preview-el"/>
+          <div id="p-img-label" style="font-family:'Fredoka One',cursive;font-size:12px;color:rgba(255,255,255,0.4);letter-spacing:1px;">🖼 UPLOAD IMAGE — drag &amp; drop or click</div>
         </div>
         <input type="file" id="p-img-input" accept="image/*" style="display:none;" onchange="handleImgUpload(event)"/>
-        <div class="field-hint">Use an evocative, mysterious image — Pobble 365 style.</div>
       </div>
-      <div class="field-group"><label class="field-label">Scene Caption / Hook</label><textarea class="field-input" id="p-caption" placeholder="A short evocative description about the image…"></textarea></div>
+      <div class="field-group"><label class="field-lbl">Caption / Hook Sentence</label><textarea class="field-inp" id="p-caption" placeholder="A short atmospheric sentence about the image…"></textarea></div>
       <div class="field-group">
-        <label class="field-label">Writing Prompt Questions (one per line)</label>
-        <textarea class="field-input" id="p-questions" style="min-height:120px;" placeholder="Who is in this place, and why are they here?&#10;What happened just before this moment?&#10;What can you hear? What does the air smell like?&#10;Write the opening paragraph of this story."></textarea>
-        <div class="field-hint">Students see these numbered. Add 3–5 questions.</div>
+        <label class="field-lbl">Writing Prompt Questions (one per line)</label>
+        <textarea class="field-inp" id="p-questions" style="min-height:130px;" placeholder="Who is in this place, and why are they here?&#10;What happened just before this moment?&#10;What can you see, hear and smell?&#10;Write the opening paragraph of your story."></textarea>
+        <div class="field-hint">Students see these numbered 1, 2, 3…</div>
       </div>
-      <div class="field-group"><label class="field-label">Date (leave blank for today)</label><input class="field-input" id="p-date" type="date"/></div>
-      <div style="display:flex;gap:10px;margin-top:6px;">
-        <button onclick="closeModal('prompt-modal')" style="flex:1;padding:11px;background:#F0ECFC;border:2px solid #E5E0FA;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;color:#6C5CE7;">CANCEL</button>
-        <button onclick="savePrompt()" style="flex:2;padding:11px;background:var(--ink);color:var(--gold);border:none;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px;cursor:pointer;">PUBLISH PROMPT</button>
+      <div class="field-group"><label class="field-lbl">Date (leave blank for today)</label><input class="field-inp" id="p-date" type="date"/></div>
+      <div class="modal-btns">
+        <button class="modal-btn-cancel" onclick="closeModal('prompt-modal')">CANCEL</button>
+        <button class="modal-btn-publish" onclick="savePrompt()">⚡ PUBLISH PROMPT</button>
       </div>
     </div>
   </div>
@@ -219,83 +614,109 @@ textarea.field-input{min-height:80px;resize:vertical;}
 var SUPABASE_URL      = 'https://nwhaliuajvovesnrdfrr.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53aGFsaXVhanZvdmVzbnJkZnJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDUyMzEsImV4cCI6MjA5NTQ4MTIzMX0.cGZ_yqeTyQYyyUAIc1CrV-M6iwN34CtSzjYBF_nG9xE';
 var _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-var _user = null, _profile = null, _isTeacher = false, _promptImageDataUrl = null;
+var _user=null,_profile=null,_isTeacher=false,_promptImgDataUrl=null;
 
-var TIPS = [
+var TIPS=[
   {q:'"The first draft is just you telling yourself the story."',c:'Terry Pratchett'},
   {q:'"You can always edit a bad page. You cannot edit a blank page."',c:'Jodi Picoult'},
   {q:'"Start writing, no matter what. The water does not flow until the faucet is turned on."',c:'Louis L\'Amour'},
-  {q:'"If there is a book you want to read, but it has not been written yet, you must be the one to write it."',c:'Toni Morrison'},
-  {q:'"A writer only begins a book. A reader finishes it."',c:'Samuel Johnson'},
+  {q:'"If there is a book you want to read, but it has not been written yet, you must write it."',c:'Toni Morrison'},
+  {q:'"Write what should not be forgotten."',c:'Isabel Allende'},
 ];
 
 async function init() {
   setDateLabels();
-  var tip = TIPS[Math.floor(Date.now()/86400000) % TIPS.length];
-  document.getElementById('writers-tip').innerHTML = tip.q + '<cite>— ' + tip.c + '</cite>';
-  var res = await _sb.auth.getSession();
-  if (res.data.session) await onSignIn(res.data.session.user);
-  _sb.auth.onAuthStateChange(async function(ev,s){ if(ev==='SIGNED_IN'&&s)await onSignIn(s.user); });
+  var tip=TIPS[Math.floor(Date.now()/86400000)%TIPS.length];
+  document.getElementById('tip-quote').textContent=tip.q;
+  document.getElementById('tip-cite').textContent='— '+tip.c;
+  // Load saved bg/robot from localStorage
+  var savedBg=localStorage.getItem('aurabot_dash_bg');
+  if(savedBg){var bg=document.getElementById('bg-img');bg.src=savedBg;bg.style.display='block';}
+  var savedRobot=localStorage.getItem('aurabot_dash_robot');
+  if(savedRobot){showRobot(savedRobot);}
+
+  var res=await _sb.auth.getSession();
+  if(res.data.session)await onSignIn(res.data.session.user);
+  _sb.auth.onAuthStateChange(async function(ev,s){if(ev==='SIGNED_IN'&&s)await onSignIn(s.user);});
   await Promise.all([loadPrompt(),loadWinners(),loadLeaderboards(),loadStats()]);
 }
 
-async function onSignIn(user) {
-  _user = user;
-  var r = await _sb.from('profiles').select('*').eq('id',user.id).single();
-  _profile = r.data;
-  _isTeacher = !!(r.data && (r.data.is_teacher || r.data.role==='teacher'));
-  if (_isTeacher) {
+async function onSignIn(user){
+  _user=user;
+  var r=await _sb.from('profiles').select('*').eq('id',user.id).single();
+  _profile=r.data;
+  _isTeacher=!!(r.data&&(r.data.is_teacher||r.data.role==='teacher'));
+  if(_isTeacher){
     document.getElementById('teacher-badge').style.display='';
     document.getElementById('teacher-panel').classList.add('visible');
     document.getElementById('edit-prompt-btn').style.display='';
+    document.getElementById('starburst-el').style.display='block';
   }
 }
 
-function setDateLabels() {
-  var now = new Date();
-  document.getElementById('topbar-date').textContent = now.toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  var mon = new Date(now); mon.setDate(now.getDate()-((now.getDay()+6)%7));
-  var sun = new Date(mon); sun.setDate(mon.getDate()+6);
-  document.getElementById('week-label').textContent = 'Week of '+mon.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' – '+sun.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-  document.getElementById('masthead-sub').textContent = 'Character • Setting • Story • Prompt — '+now.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
-  document.getElementById('p-date').value = now.toISOString().slice(0,10);
+function setDateLabels(){
+  var now=new Date();
+  document.getElementById('topbar-date').textContent=now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
+  var sun=new Date(mon);sun.setDate(mon.getDate()+6);
+  document.getElementById('week-label').textContent='WEEK OF '+mon.toLocaleDateString('en-GB',{day:'numeric',month:'short'}).toUpperCase()+' – '+sun.toLocaleDateString('en-GB',{day:'numeric',month:'short'}).toUpperCase();
+  document.getElementById('masthead-sub').textContent='CHARACTER ✦ SETTING ✦ STORY ✦ PROMPT ✦ '+now.toLocaleDateString('en-GB',{month:'long',year:'numeric'}).toUpperCase();
+  document.getElementById('p-date').value=now.toISOString().slice(0,10);
 }
 
 function weekStart(){var d=new Date();d.setDate(d.getDate()-((d.getDay()+6)%7));d.setHours(0,0,0,0);return d.toISOString();}
 function weekEnd(){var d=new Date();d.setDate(d.getDate()-((d.getDay()+6)%7)+7);d.setHours(0,0,0,0);return d.toISOString();}
 
-async function loadPrompt() {
-  var today = new Date().toISOString().slice(0,10);
-  var r = await _sb.from('story_prompts').select('*').lte('prompt_date',today).order('prompt_date',{ascending:false}).limit(1);
-  var p = r.data && r.data[0];
-  var el = document.getElementById('prompt-content');
-  if (!p) {
-    el.innerHTML='<div class="no-data"><div style="font-size:48px;margin-bottom:10px;">✍️</div>No prompt set for today.'
-      +(_isTeacher?'<br><span style="font-size:11px;">Click EDIT PROMPT to set one.</span>':'<br><span style="font-size:11px;">Check back later!</span>')+'</div>';
+async function loadPrompt(){
+  var today=new Date().toISOString().slice(0,10);
+  var r=await _sb.from('story_prompts').select('*').lte('prompt_date',today).order('prompt_date',{ascending:false}).limit(1);
+  var p=r.data&&r.data[0];
+  var el=document.getElementById('prompt-content');
+  if(!p){
+    el.innerHTML='<div class="prompt-img-wrap"><div class="prompt-img-placeholder"><span style="font-size:52px;">✍️</span>'
+      +'<div style="font-family:\'Fredoka One\',cursive;font-size:14px;color:rgba(255,255,255,0.4);letter-spacing:1px;">NO PROMPT SET YET</div></div></div>'
+      +'<div class="prompt-notepad"><div class="notepad-rings">'
+      +'<div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div></div>'
+      +'<div class="notepad-body"><div class="notepad-title">Check back soon!</div>'
+      +(_isTeacher?'<div class="notepad-caption">Click ✏ EDIT above to set today\'s prompt.</div>':'<div class="notepad-caption">Your teacher is cooking something up — check back soon!</div>')
+      +'</div></div>';
     return;
   }
   var qs=(p.questions||'').split('\n').filter(function(q){return q.trim();});
+  var colors=['','n2','n3','n4','n5'];
   var imgHtml=p.image_url
-    ?'<img src="'+escHtml(p.image_url)+'" class="prompt-img" alt="Prompt image"/>'
-    :'<div class="prompt-img-placeholder"><span style="font-size:48px;">🌟</span><div class="prompt-img-placeholder-text">Use your imagination</div></div>';
-  el.innerHTML='<div class="prompt-img-wrap"><div class="prompt-date-stamp">'+formatDate(p.prompt_date)+'</div>'+imgHtml+'</div>'
-    +'<div class="prompt-body"><h2 class="prompt-title">'+escHtml(p.title||'Story Prompt')+'</h2>'
-    +(p.caption?'<p class="prompt-caption">'+escHtml(p.caption)+'</p>':'')
-    +(qs.length?'<ol class="prompt-questions">'+qs.map(function(q,i){return'<li><span class="prompt-q-num">'+(i+1)+'</span><span>'+escHtml(q)+'</span></li>';}).join('')+'</ol>':'')
+    ?'<img src="'+escHtml(p.image_url)+'" class="prompt-img" alt="Prompt"/>'
+    :'<div class="prompt-img-placeholder"><span style="font-size:52px;">🌟</span></div>';
+  el.innerHTML='<div class="prompt-img-wrap">'
+    +'<div class="prompt-date-badge">'+formatDate(p.prompt_date)+'</div>'
+    +imgHtml
+    +'<div class="prompt-img-title">'
+    +'<h2>'+escHtml(p.title||'Story Prompt')+'</h2>'
+    +(p.caption?'<div class="prompt-img-tagline">USE YOUR IMAGINATION</div>':'')
+    +'</div></div>'
+    +'<div class="prompt-notepad">'
+    +'<div class="notepad-rings"><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div></div>'
+    +'<div class="notepad-body">'
+    +'<div class="notepad-title">'+escHtml(p.title||'Story Prompt')+'</div>'
+    +(p.caption?'<div class="notepad-caption">'+escHtml(p.caption)+'</div>':'')
+    +'<ol class="notepad-questions">'
+    +qs.map(function(q,i){return'<li class="notepad-q"><span class="q-num '+( colors[i]||'')+'">'+( i+1)+'</span><span>'+escHtml(q)+'</span></li>';}).join('')
+    +'</ol></div>'
+    +'<div class="sticky-note">Top SECRET IDEAS<br><br>Jot down anything that pops into your head!</div>'
     +'</div>';
 }
 
-async function loadWinners() {
+async function loadWinners(){
   var ws=weekStart(),we=weekEnd();
-  // Char
+  // Character
   var cr=await _sb.from('stars').select('character_id').gte('created_at',ws).lt('created_at',we);
   var cc={};(cr.data||[]).forEach(function(s){cc[s.character_id]=(cc[s.character_id]||0)+1;});
   var topC=Object.entries(cc).sort(function(a,b){return b[1]-a[1];})[0];
   if(topC){
-    var cr2=await _sb.from('characters').select('id,name,personality,strengths,ai_art_url,sketch_url,user_id').eq('id',topC[0]).single();
+    var cr2=await _sb.from('characters').select('id,name,personality,ai_art_url,sketch_url,user_id').eq('id',topC[0]).single();
     var cp=cr2.data?await _sb.from('profiles').select('display_name,username').eq('id',cr2.data.user_id).single():null;
-    if(cr2.data){var c=cr2.data;c.profiles=cp?cp.data:null;renderWinner('char',c,topC[1]);}else renderNoWinner('char');
-    document.getElementById('char-stars-label').textContent=topC[1]+' ⭐ this week';
+    if(cr2.data){var c=cr2.data;c.profiles=cp?cp.data:null;renderWinner('char',c,topC[1]);}
+    else renderNoWinner('char');
   } else renderNoWinner('char');
   // Setting
   var sr=await _sb.from('setting_stars').select('setting_id').gte('created_at',ws).lt('created_at',we);
@@ -304,8 +725,8 @@ async function loadWinners() {
   if(topS){
     var sr2=await _sb.from('settings').select('id,name,locations,user_id').eq('id',topS[0]).single();
     var sp=sr2.data?await _sb.from('profiles').select('display_name,username').eq('id',sr2.data.user_id).single():null;
-    if(sr2.data){var s=sr2.data;s.profiles=sp?sp.data:null;renderWinner('set',s,topS[1]);}else renderNoWinner('set');
-    document.getElementById('set-stars-label').textContent=topS[1]+' ⭐ this week';
+    if(sr2.data){var s=sr2.data;s.profiles=sp?sp.data:null;renderWinner('set',s,topS[1]);}
+    else renderNoWinner('set');
   } else renderNoWinner('set');
   // Story
   var str=await _sb.from('stories').select('id,title,paragraphs,user_id,updated_at').eq('is_public',true).gte('updated_at',ws).order('updated_at',{ascending:false}).limit(1);
@@ -317,81 +738,77 @@ async function loadWinners() {
 }
 
 function renderWinner(type,item,stars){
-  var el=document.getElementById('winner-'+type+'-content');
+  var el=document.getElementById('winner-'+type);
+  var auth=item.profiles?(item.profiles.display_name||item.profiles.username||'Unknown'):'Unknown';
   if(type==='char'){
     var img=item.ai_art_url||item.sketch_url;
-    var auth=item.profiles?(item.profiles.display_name||item.profiles.username||'Unknown'):'Unknown';
-    el.innerHTML=(img?'<img class="winner-img" src="'+escHtml(img)+'"/>'
-      :'<div class="winner-img-placeholder">🎭</div>')
-      +'<div class="winner-inner"><span class="winner-crown">👑</span>'
-      +'<span class="winner-tag">Character of the Week</span>'
-      +'<div class="winner-name">'+escHtml(item.name||'?')+'</div>'
+    el.innerHTML='<div class="winner-body">'
+      +(img?'<div class="winner-img-col"><img src="'+escHtml(img)+'" alt=""/></div>':'<div class="winner-img-col"><div class="winner-img-placeholder">🎭</div></div>')
+      +'<div class="winner-info"><div class="winner-crown">👑</div><div class="winner-name">'+escHtml(item.name||'?')+'</div>'
       +'<div class="winner-by">by '+escHtml(auth)+'</div>'
-      +(stars?'<div class="winner-stars">⭐ '+stars+' stars</div>':'')
+      +(stars?'<div class="winner-stars">⭐ '+stars+' STARS THIS WEEK</div>':'')
       +(item.personality?'<div class="winner-detail">'+escHtml(item.personality)+'</div>':'')
-      +'</div>';
+      +'</div></div>';
   } else if(type==='set'){
-    var auth2=item.profiles?(item.profiles.display_name||item.profiles.username||'Unknown'):'Unknown';
     var locs=Array.isArray(item.locations)?item.locations:[];
     var fi=locs[0]&&locs[0].imageDataUrl?locs[0].imageDataUrl:null;
-    el.innerHTML=(fi?'<img class="winner-img" src="'+escHtml(fi)+'"/>'
-      :'<div class="winner-img-placeholder">📍</div>')
-      +'<div class="winner-inner"><span class="winner-crown">👑</span>'
-      +'<span class="winner-tag">Setting of the Week</span>'
-      +'<div class="winner-name">'+escHtml(item.name||'?')+'</div>'
-      +'<div class="winner-by">by '+escHtml(auth2)+' · '+locs.length+' locations</div>'
-      +(stars?'<div class="winner-stars">⭐ '+stars+' stars</div>':'')
-      +(locs[0]&&locs[0].see?'<div class="winner-detail">👁 '+escHtml(locs[0].see)+'</div>':'')
-      +'</div>';
+    el.innerHTML='<div class="winner-body">'
+      +(fi?'<div class="winner-img-col"><img src="'+escHtml(fi)+'" alt=""/></div>':'<div class="winner-img-col"><div class="winner-img-placeholder">📍</div></div>')
+      +'<div class="winner-info"><div class="winner-crown">⭐</div><div class="winner-name">'+escHtml(item.name||'?')+'</div>'
+      +'<div class="winner-by">by '+escHtml(auth)+' · '+locs.length+' locations</div>'
+      +(stars?'<div class="winner-stars">⭐ '+stars+' STARS</div>':'')
+      +'</div></div>';
   } else {
-    var auth3=item.profiles?(item.profiles.display_name||item.profiles.username||'Unknown'):'Unknown';
     var hook=(item.paragraphs&&(item.paragraphs.hook||item.paragraphs.intro))||'';
-    el.innerHTML='<div class="winner-img-placeholder" style="height:80px;font-size:32px;">📖</div>'
-      +'<div class="winner-inner"><span class="winner-crown">👑</span>'
-      +'<span class="winner-tag">Story of the Week</span>'
-      +'<div class="winner-name">'+escHtml(item.title||'Untitled')+'</div>'
-      +'<div class="winner-by">by '+escHtml(auth3)+'</div>'
-      +(hook?'<div class="winner-detail" style="font-style:italic;">"'+escHtml(hook.slice(0,100))+(hook.length>100?'…':'\'')+'</div>':'')
-      +'</div>';
+    el.innerHTML='<div class="winner-body">'
+      +'<div class="winner-img-col"><div class="winner-img-placeholder">📖</div></div>'
+      +'<div class="winner-info"><div class="winner-crown">📖</div><div class="winner-name">'+escHtml(item.title||'Untitled')+'</div>'
+      +'<div class="winner-by">by '+escHtml(auth)+'</div>'
+      +(hook?'<div class="winner-detail">"'+escHtml(hook.slice(0,80))+(hook.length>80?'…':'\'')+'</div>':'')
+      +'</div></div>';
   }
 }
 
 function renderNoWinner(type){
-  var el=document.getElementById('winner-'+type+'-content');
+  var el=document.getElementById('winner-'+type);
   var labels={char:'character',set:'setting',story:'story'};
-  el.innerHTML='<div class="no-data">No '+labels[type]+' starred this week yet.<br><span style="font-size:11px;">Head to Community Bank and star your favourites!</span></div>';
+  el.innerHTML='<div class="no-winner"><span class="no-winner-icon">☆</span><div class="no-winner-text">No '+labels[type]+' starred this week yet.<br><strong>Head to Community Bank<br>and star your favourites!</strong></div></div>';
 }
 
 async function loadLeaderboards(){
   var ws=weekStart(),we=weekEnd();
   var cr=await _sb.from('stars').select('character_id').gte('created_at',ws).lt('created_at',we);
   var cc={};(cr.data||[]).forEach(function(s){cc[s.character_id]=(cc[s.character_id]||0)+1;});
-  var topC=Object.entries(cc).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
+  var topC=Object.entries(cc).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
   var lbC=document.getElementById('lb-chars');
-  if(!topC.length){lbC.innerHTML='<div class="no-data" style="padding:14px;">No stars this week yet.</div>';return;}
-  var cids=topC.map(function(x){return x[0];});
-  var cr2=await _sb.from('characters').select('id,name,user_id').in('id',cids);
-  var cmap={};(cr2.data||[]).forEach(function(c){cmap[c.id]=c;});
-  var cuids=[...new Set((cr2.data||[]).map(function(c){return c.user_id;}))];
-  var cp=await _sb.from('profiles').select('id,display_name,username').in('id',cuids);
-  var cpmap={};(cp.data||[]).forEach(function(p){cpmap[p.id]=p;});
-  lbC.innerHTML=topC.map(function(e,i){var c=cmap[e[0]];if(!c)return'';var p=cpmap[c.user_id];var auth=p?(p.display_name||p.username||'?'):'?';
-    return'<div class="lb-item"><span class="lb-rank'+(i===0?' top':'')+'">'+( i+1)+'</span><div class="lb-info"><div class="lb-name">'+escHtml(c.name||'?')+'</div><div class="lb-sub">by '+escHtml(auth)+'</div></div><span class="lb-stars">⭐ '+e[1]+'</span></div>';
-  }).join('');
+  if(!topC.length){lbC.innerHTML='<div class="no-data-zine"><span class="no-data-zine-icon">☆</span><div class="no-data-zine-text">No stars yet this week</div></div>';
+  } else {
+    var cids=topC.map(function(x){return x[0];});
+    var cr2=await _sb.from('characters').select('id,name,user_id').in('id',cids);
+    var cmap={};(cr2.data||[]).forEach(function(c){cmap[c.id]=c;});
+    var cuids=[...new Set((cr2.data||[]).map(function(c){return c.user_id;}))];
+    var cp=await _sb.from('profiles').select('id,display_name,username').in('id',cuids);
+    var cpmap={};(cp.data||[]).forEach(function(p){cpmap[p.id]=p;});
+    lbC.innerHTML=topC.map(function(e,i){var c=cmap[e[0]];if(!c)return'';var p=cpmap[c.user_id];var auth=p?(p.display_name||p.username||'?'):'?';
+      return'<div class="lb-item"><span class="lb-rank'+(i===0?' gold':'')+'">'+( i+1)+'</span><div><div class="lb-name">'+escHtml(c.name||'?')+'</div><div class="lb-sub">by '+escHtml(auth)+'</div></div><span class="lb-stars">⭐'+e[1]+'</span></div>';
+    }).join('');
+  }
   var sr=await _sb.from('setting_stars').select('setting_id').gte('created_at',ws).lt('created_at',we);
   var sc={};(sr.data||[]).forEach(function(s){sc[s.setting_id]=(sc[s.setting_id]||0)+1;});
-  var topS=Object.entries(sc).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
+  var topS=Object.entries(sc).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
   var lbS=document.getElementById('lb-settings');
-  if(!topS.length){lbS.innerHTML='<div class="no-data" style="padding:14px;">No stars this week yet.</div>';return;}
-  var sids=topS.map(function(x){return x[0];});
-  var sr2=await _sb.from('settings').select('id,name,user_id').in('id',sids);
-  var smap={};(sr2.data||[]).forEach(function(s){smap[s.id]=s;});
-  var suids=[...new Set((sr2.data||[]).map(function(s){return s.user_id;}))];
-  var sp=await _sb.from('profiles').select('id,display_name,username').in('id',suids);
-  var spmap={};(sp.data||[]).forEach(function(p){spmap[p.id]=p;});
-  lbS.innerHTML=topS.map(function(e,i){var s=smap[e[0]];if(!s)return'';var p=spmap[s.user_id];var auth=p?(p.display_name||p.username||'?'):'?';
-    return'<div class="lb-item"><span class="lb-rank'+(i===0?' top':'')+'">'+( i+1)+'</span><div class="lb-info"><div class="lb-name">'+escHtml(s.name||'?')+'</div><div class="lb-sub">by '+escHtml(auth)+'</div></div><span class="lb-stars">⭐ '+e[1]+'</span></div>';
-  }).join('');
+  if(!topS.length){lbS.innerHTML='<div class="no-data-zine"><span class="no-data-zine-icon">☆</span><div class="no-data-zine-text">No stars yet this week</div></div>';
+  } else {
+    var sids=topS.map(function(x){return x[0];});
+    var sr2=await _sb.from('settings').select('id,name,user_id').in('id',sids);
+    var smap={};(sr2.data||[]).forEach(function(s){smap[s.id]=s;});
+    var suids=[...new Set((sr2.data||[]).map(function(s){return s.user_id;}))];
+    var sp2=await _sb.from('profiles').select('id,display_name,username').in('id',suids);
+    var spmap={};(sp2.data||[]).forEach(function(p){spmap[p.id]=p;});
+    lbS.innerHTML=topS.map(function(e,i){var s=smap[e[0]];if(!s)return'';var p=spmap[s.user_id];var auth=p?(p.display_name||p.username||'?'):'?';
+      return'<div class="lb-item"><span class="lb-rank'+(i===0?' gold':'')+'">'+( i+1)+'</span><div><div class="lb-name">'+escHtml(s.name||'?')+'</div><div class="lb-sub">by '+escHtml(auth)+'</div></div><span class="lb-stars">⭐'+e[1]+'</span></div>';
+    }).join('');
+  }
 }
 
 async function loadStats(){
@@ -402,24 +819,45 @@ async function loadStats(){
     _sb.from('stories').select('id',{count:'exact',head:true}).gte('created_at',ws),
     _sb.from('stars').select('id',{count:'exact',head:true}).gte('created_at',ws),
   ]);
-  var labels=['🎭 Characters created','📍 Settings created','📖 Stories written','⭐ Stars given'];
-  document.getElementById('stats-strip').innerHTML=results.map(function(r,i){
-    return'<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(26,16,32,0.12);">'
-      +'<span style="font-size:11px;font-weight:700;color:#3a2a50;">'+labels[i]+'</span>'
-      +'<span style="font-family:Space Mono,monospace;font-size:11px;font-weight:700;color:var(--ink);">'+(r.count||0)+'</span></div>';
+  var items=[{icon:'🎭',label:'Characters',val:results[0].count||0},{icon:'📍',label:'Settings',val:results[1].count||0},{icon:'📖',label:'Stories',val:results[2].count||0},{icon:'⭐',label:'Stars given',val:results[3].count||0}];
+  document.getElementById('stats-grid').innerHTML=items.map(function(s){
+    return'<div class="stat-box"><span class="stat-num">'+s.val+'</span><div class="stat-label">'+s.icon+' '+s.label+'</div></div>';
   }).join('');
 }
 
+// ── IMAGE UPLOADS (teacher) ──
+function handleBgUpload(e){
+  var f=e.target.files[0];if(!f)return;
+  var r=new FileReader();r.onload=function(ev){
+    var bg=document.getElementById('bg-img');bg.src=ev.target.result;bg.style.display='block';
+    localStorage.setItem('aurabot_dash_bg',ev.target.result);
+    toast('Background updated!');
+  };r.readAsDataURL(f);e.target.value='';
+}
+function handleRobotUpload(e){
+  var f=e.target.files[0];if(!f)return;
+  var r=new FileReader();r.onload=function(ev){
+    showRobot(ev.target.result);
+    localStorage.setItem('aurabot_dash_robot',ev.target.result);
+    toast('Robot image updated!');
+  };r.readAsDataURL(f);e.target.value='';
+}
+function showRobot(src){
+  var robot=document.getElementById('robot-img');robot.src=src;robot.style.display='block';
+  document.getElementById('speech-bubble').style.display='block';
+  document.getElementById('starburst-el').style.display='block';
+}
+
+// ── PROMPT MODAL ──
 function openPromptModal(){
-  _promptImageDataUrl=null;
+  _promptImgDataUrl=null;
   ['p-title','p-caption'].forEach(function(id){document.getElementById(id).value='';});
-  document.getElementById('p-questions').value='Who is in this place, and why are they here?\nWhat happened just before this moment?\nWhat can you hear? What does the air smell like?\nWrite the opening paragraph of this story.';
+  document.getElementById('p-questions').value='Who is in this place, and why are they here?\nWhat happened just before this moment?\nWhat can you see, hear and smell?\nWrite the opening paragraph of your story.';
   document.getElementById('p-img-preview').style.display='none';
   document.getElementById('p-img-label').style.display='';
   document.getElementById('p-date').value=new Date().toISOString().slice(0,10);
   document.getElementById('prompt-modal').classList.add('open');
 }
-
 async function savePrompt(){
   if(!_user||!_isTeacher){toast('Teachers only');return;}
   var title=document.getElementById('p-title').value.trim();
@@ -428,38 +866,25 @@ async function savePrompt(){
   var date=document.getElementById('p-date').value||new Date().toISOString().slice(0,10);
   if(!title){toast('Please add a title');return;}
   var imageUrl=null;
-  if(_promptImageDataUrl){
+  if(_promptImgDataUrl){
     try{
-      var b64=_promptImageDataUrl.split(',')[1];
-      var mm=_promptImageDataUrl.match(/data:([^;]+);/);
-      var mime=mm?mm[1]:'image/jpeg';
-      var ext=mime.includes('png')?'png':'jpg';
-      var bin=atob(b64);var bytes=new Uint8Array(bin.length);
-      for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+      var b64=_promptImgDataUrl.split(',')[1];var mm=_promptImgDataUrl.match(/data:([^;]+);/);
+      var mime=mm?mm[1]:'image/jpeg';var ext=mime.includes('png')?'png':'jpg';
+      var bin=atob(b64);var bytes=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
       var fname='prompt-'+date+'-'+Date.now()+'.'+ext;
       var up=await _sb.storage.from('prompt-images').upload(fname,bytes.buffer,{contentType:mime,upsert:true});
       if(!up.error){var pu=_sb.storage.from('prompt-images').getPublicUrl(fname);imageUrl=pu.data&&pu.data.publicUrl;}
-    }catch(e){console.warn('img upload failed',e);}
+    }catch(e){console.warn('img upload',e);}
   }
-  var payload={title:title,caption:caption,questions:questions,prompt_date:date,image_url:imageUrl,created_by:_user.id};
-  var r=await _sb.from('story_prompts').insert(payload);
+  var r=await _sb.from('story_prompts').insert({title:title,caption:caption,questions:questions,prompt_date:date,image_url:imageUrl,created_by:_user.id});
   if(r.error){toast('Error: '+r.error.message);return;}
-  closeModal('prompt-modal');toast('Prompt published!');await loadPrompt();
+  closeModal('prompt-modal');toast('⚡ Prompt published!');await loadPrompt();
 }
-
 function handleImgUpload(e){var f=e.target.files[0];if(f)loadImgFile(f);e.target.value='';}
 function handleImgDrop(e){e.preventDefault();var f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadImgFile(f);}
-function loadImgFile(f){
-  var r=new FileReader();
-  r.onload=function(ev){
-    _promptImageDataUrl=ev.target.result;
-    var p=document.getElementById('p-img-preview');p.src=ev.target.result;p.style.display='block';
-    document.getElementById('p-img-label').style.display='none';
-  };
-  r.readAsDataURL(f);
-}
+function loadImgFile(f){var r=new FileReader();r.onload=function(ev){_promptImgDataUrl=ev.target.result;var p=document.getElementById('p-img-preview');p.src=ev.target.result;p.style.display='block';document.getElementById('p-img-label').style.display='none';};r.readAsDataURL(f);}
 
-function refreshDashboard(){toast('Refreshing…');Promise.all([loadPrompt(),loadWinners(),loadLeaderboards(),loadStats()]).then(function(){toast('Dashboard refreshed');});}
+function refreshDashboard(){toast('Refreshing…');Promise.all([loadPrompt(),loadWinners(),loadLeaderboards(),loadStats()]).then(function(){toast('✓ Refreshed!');});}
 function formatDate(d){if(!d)return'';var dt=new Date(d+'T12:00:00');return dt.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'}).toUpperCase();}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 function handleBg(e,id){if(e.target.id===id)closeModal(id);}
