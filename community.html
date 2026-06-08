@@ -198,7 +198,8 @@ html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--cosmi
 <script>
 var SUPABASE_URL='https://nwhaliuajvovesnrdfrr.supabase.co';
 var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53aGFsaXVhanZvdmVzbnJkZnJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDUyMzEsImV4cCI6MjA5NTQ4MTIzMX0.cGZ_yqeTyQYyyUAIc1CrV-M6iwN34CtSzjYBF_nG9xE';
-var _sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+window.__aurabot_sb = window.__aurabot_sb || supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var _sb = window.__aurabot_sb;
 var _user=null,_profile=null,_type='characters',_sortBy='stars',_classId='all';
 var _allChars=[],_allSettings=[],_starredIds=new Set(),_starredSettingIds=new Set();
 var _activeItem=null,_classes=[],_renderedItems=[];

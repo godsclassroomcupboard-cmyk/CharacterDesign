@@ -613,8 +613,9 @@ textarea.field-inp{min-height:90px;resize:vertical;}
 <script>
 var SUPABASE_URL      = 'https://nwhaliuajvovesnrdfrr.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53aGFsaXVhanZvdmVzbnJkZnJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDUyMzEsImV4cCI6MjA5NTQ4MTIzMX0.cGZ_yqeTyQYyyUAIc1CrV-M6iwN34CtSzjYBF_nG9xE';
-var _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-var _user=null,_profile=null,_isTeacher=false,_promptImgDataUrl=null;
+window.__aurabot_sb = window.__aurabot_sb || supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var _sb = window.__aurabot_sb;
+var _user=null,_profile=null,_isTeacher=false,_promptImgDataUrl=null,_currentPrompt=null;
 
 var TIPS=[
   {q:'"The first draft is just you telling yourself the story."',c:'Terry Pratchett'},
@@ -671,6 +672,7 @@ async function loadPrompt(){
   var today=new Date().toISOString().slice(0,10);
   var r=await _sb.from('story_prompts').select('*').lte('prompt_date',today).order('prompt_date',{ascending:false}).limit(1);
   var p=r.data&&r.data[0];
+  _currentPrompt=p||null;
   var el=document.getElementById('prompt-content');
   if(!p){
     el.innerHTML='<div class="prompt-img-wrap"><div class="prompt-img-placeholder"><span style="font-size:52px;">✍️</span>'
@@ -851,11 +853,40 @@ function showRobot(src){
 // ── PROMPT MODAL ──
 function openPromptModal(){
   _promptImgDataUrl=null;
-  ['p-title','p-caption'].forEach(function(id){document.getElementById(id).value='';});
-  document.getElementById('p-questions').value='Who is in this place, and why are they here?\nWhat happened just before this moment?\nWhat can you see, hear and smell?\nWrite the opening paragraph of your story.';
-  document.getElementById('p-img-preview').style.display='none';
-  document.getElementById('p-img-label').style.display='';
-  document.getElementById('p-date').value=new Date().toISOString().slice(0,10);
+  var today=new Date().toISOString().slice(0,10);
+  // Pre-fill with today's existing prompt if there is one
+  if(_currentPrompt){
+    document.getElementById('p-title').value=_currentPrompt.title||'';
+    document.getElementById('p-caption').value=_currentPrompt.caption||'';
+    document.getElementById('p-questions').value=_currentPrompt.questions||'';
+    document.getElementById('p-date').value=_currentPrompt.prompt_date||today;
+    // Show existing image if present
+    if(_currentPrompt.image_url){
+      var prev=document.getElementById('p-img-preview');
+      prev.src=_currentPrompt.image_url;
+      prev.style.display='block';
+      document.getElementById('p-img-label').style.display='none';
+    } else {
+      document.getElementById('p-img-preview').style.display='none';
+      document.getElementById('p-img-label').style.display='';
+    }
+    // Update modal header to say "Edit" not "Set"
+    var hdr=document.querySelector('#prompt-modal .modal-hdr h2');
+    if(hdr)hdr.textContent='✏️ EDIT PROMPT';
+    var btn=document.querySelector('#prompt-modal .modal-btn-publish');
+    if(btn)btn.textContent='⚡ UPDATE PROMPT';
+  } else {
+    document.getElementById('p-title').value='';
+    document.getElementById('p-caption').value='';
+    document.getElementById('p-questions').value='Who is in this place, and why are they here?\nWhat happened just before this moment?\nWhat can you see, hear and smell?\nWrite the opening paragraph of your story.';
+    document.getElementById('p-date').value=today;
+    document.getElementById('p-img-preview').style.display='none';
+    document.getElementById('p-img-label').style.display='';
+    var hdr2=document.querySelector('#prompt-modal .modal-hdr h2');
+    if(hdr2)hdr2.textContent='⚡ SET STORY PROMPT';
+    var btn2=document.querySelector('#prompt-modal .modal-btn-publish');
+    if(btn2)btn2.textContent='⚡ PUBLISH PROMPT';
+  }
   document.getElementById('prompt-modal').classList.add('open');
 }
 async function savePrompt(){
@@ -876,9 +907,21 @@ async function savePrompt(){
       if(!up.error){var pu=_sb.storage.from('prompt-images').getPublicUrl(fname);imageUrl=pu.data&&pu.data.publicUrl;}
     }catch(e){console.warn('img upload',e);}
   }
-  var r=await _sb.from('story_prompts').insert({title:title,caption:caption,questions:questions,prompt_date:date,image_url:imageUrl,created_by:_user.id});
+  // Build payload — keep existing image if no new one uploaded
+  var payload={title:title,caption:caption,questions:questions,prompt_date:date,created_by:_user.id};
+  if(imageUrl){payload.image_url=imageUrl;}
+  else if(_currentPrompt&&_currentPrompt.image_url){payload.image_url=_currentPrompt.image_url;}
+  else{payload.image_url=null;}
+  var r;
+  if(_currentPrompt&&_currentPrompt.id){
+    r=await _sb.from('story_prompts').update(payload).eq('id',_currentPrompt.id);
+  } else {
+    r=await _sb.from('story_prompts').upsert(payload,{onConflict:'prompt_date'});
+  }
   if(r.error){toast('Error: '+r.error.message);return;}
-  closeModal('prompt-modal');toast('⚡ Prompt published!');await loadPrompt();
+  closeModal('prompt-modal');
+  toast(_currentPrompt?'✓ Prompt updated!':'⚡ Prompt published!');
+  await loadPrompt();
 }
 function handleImgUpload(e){var f=e.target.files[0];if(f)loadImgFile(f);e.target.value='';}
 function handleImgDrop(e){e.preventDefault();var f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadImgFile(f);}

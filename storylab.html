@@ -591,7 +591,8 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic2);
 <script>
 const SUPABASE_URL      = 'https://nwhaliuajvovesnrdfrr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53aGFsaXVhanZvdmVzbnJkZnJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDUyMzEsImV4cCI6MjA5NTQ4MTIzMX0.cGZ_yqeTyQYyyUAIc1CrV-M6iwN34CtSzjYBF_nG9xE';
-const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.__aurabot_sb = window.__aurabot_sb || supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var _sb = window.__aurabot_sb;
 
 // ── State ──
 var _user       = null;

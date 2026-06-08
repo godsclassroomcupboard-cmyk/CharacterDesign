@@ -164,15 +164,15 @@ body { font-family: 'Nunito', sans-serif; background: #0A0520; min-height: 100vh
 
 /* ── FORM ── */
 input[type="text"] {
-  background:#F5F3FF; border:1.5px solid #E5E0FA; border-radius:10px;
-  padding:8px 13px; font-family:'Nunito',sans-serif; font-size:13px; color:#333;
+  background:rgba(255,255,255,0.08); border:1.5px solid rgba(255,255,255,0.2); border-radius:10px;
+  padding:8px 13px; font-family:'Nunito',sans-serif; font-size:13px; color:#fff;
   outline:none; width:100%; transition:border-color 0.18s, box-shadow 0.18s;
 }
-input[type="text"]:focus { border-color:#A29BFE; box-shadow:0 0 0 3px rgba(162,155,254,0.18); }
-input[type="text"]::placeholder { color:#C0BADA; }
-.field-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #F0ECFC; }
+input[type="text"]:focus { border-color:#FF2D78; box-shadow:0 0 0 3px rgba(255,45,120,0.2); }
+input[type="text"]::placeholder { color:rgba(255,255,255,0.3); }
+.field-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.08); }
 .field-row:last-child { border-bottom:none; }
-.field-label { min-width:155px; display:flex; align-items:center; gap:8px; font-weight:800; font-size:13px; color:#2D2D5A; }
+.field-label { min-width:155px; display:flex; align-items:center; gap:8px; font-weight:800; font-size:13px; color:rgba(255,255,255,0.85); }
 
 /* ── BUTTONS ── */
 .btn-purple {
@@ -329,8 +329,8 @@ input[type="text"]::placeholder { color:#C0BADA; }
   font-family:'Nunito',sans-serif;font-size:14px;color:#333;
   outline:none;margin-bottom:10px;transition:border-color 0.18s;
 }
-.auth-input:focus { border-color:#6C5CE7; }
-.auth-input::placeholder { color:#C0BADA; }
+.auth-input:focus { border-color:#FF2D78; }
+.auth-input::placeholder { color:rgba(255,255,255,0.3); }
 
 /* ── PROFILE DROPDOWN ── */
 .profile-dropdown {
@@ -343,7 +343,7 @@ input[type="text"]::placeholder { color:#C0BADA; }
 .profile-dropdown.open { display:block; }
 .profile-menu-item {
   padding:10px 14px;border-radius:10px;cursor:pointer;
-  font-size:13px;font-weight:700;color:#333;
+  font-size:13px;font-weight:700;color:#fff;
   display:flex;align-items:center;gap:9px;
   transition:background 0.15s;
 }
@@ -367,7 +367,7 @@ input[type="text"]::placeholder { color:#C0BADA; }
   background:none;border:none;cursor:pointer;
   display:flex;align-items:center;gap:4px;
   font-family:'Nunito',sans-serif;font-weight:800;font-size:12px;
-  color:#9E98C8;padding:4px 8px;border-radius:8px;
+  color:rgba(255,255,255,0.55);padding:4px 8px;border-radius:8px;
   transition:color 0.15s,background 0.15s;
 }
 .star-btn:hover { background:#FFF5E0;color:#F6C90E; }
@@ -419,11 +419,11 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
     <div style="width:42px;height:42px;background:linear-gradient(135deg,#6C5CE7,#E84393);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 14px rgba(108,92,231,0.40);">
       <svg viewBox="0 0 32 32" fill="none" width="24" height="24">
         <rect x="6" y="10" width="20" height="16" rx="5" fill="#fff" opacity="0.95"/>
-        <circle cx="12" cy="18" r="2.4" fill="#6C5CE7"/>
-        <circle cx="20" cy="18" r="2.4" fill="#6C5CE7"/>
+        <circle cx="12" cy="18" r="2.4" fill="#00C4B4"/>
+        <circle cx="20" cy="18" r="2.4" fill="#00C4B4"/>
         <rect x="13" y="22" width="6" height="2" rx="1" fill="#E84393"/>
         <rect x="14" y="5" width="4" height="6" rx="2" fill="#A29BFE"/>
-        <circle cx="16" cy="5" r="1.4" fill="#6C5CE7"/>
+        <circle cx="16" cy="5" r="1.4" fill="#00C4B4"/>
       </svg>
     </div>
     <span style="color:#A29BFE;font-size:9px;font-weight:900;letter-spacing:1.8px;text-transform:uppercase;margin-top:2px;">AURABOT</span>
@@ -587,7 +587,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       <!-- My Characters — live list -->
       <div style="background:rgba(255,255,255,0.06);border-radius:18px;padding:16px;border:1.5px solid rgba(255,255,255,0.1);">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#1E1B4B;">My Characters</h3>
+          <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#fff;">My Characters</h3>
           <span id="my-char-count" style="background:#6C5CE7;color:#fff;border-radius:99px;font-size:10px;font-weight:800;padding:2px 8px;">0</span>
         </div>
         <div id="my-char-mini-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;">
@@ -608,42 +608,42 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 
 
       <div style="flex:1;overflow-y:auto;padding:14px 20px;" id="tab-create-content">
-        <h2 style="font-family:'Baloo 2',cursive;font-size:19px;font-weight:800;color:#6C5CE7;margin-bottom:12px;">Character Details</h2>
+        <h2 style="font-family:'Baloo 2',cursive;font-size:19px;font-weight:800;color:#FFD700;margin-bottom:12px;font-family:'Bangers',cursive;letter-spacing:1.5px;">Character Details</h2>
         <div id="char-form">
           <div class="field-row">
-            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><circle cx="10" cy="7" r="4"/><path d="M3 18c0-4 3.1-6 7-6s7 2 7 6"/></svg>Name</div>
+            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><circle cx="10" cy="7" r="4"/><path d="M3 18c0-4 3.1-6 7-6s7 2 7 6"/></svg>Name</div>
             <input type="text" id="f-name" placeholder="e.g. Zara Stormwhisper" />
           </div>
           <div class="field-row">
-            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><polygon points="10,2 12.5,7.5 18,8.2 14,12 15.4,17.5 10,14.5 4.6,17.5 6,12 2,8.2 7.5,7.5"/></svg>Stand Out Features</div>
+            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><polygon points="10,2 12.5,7.5 18,8.2 14,12 15.4,17.5 10,14.5 4.6,17.5 6,12 2,8.2 7.5,7.5"/></svg>Stand Out Features</div>
             <input type="text" id="f-features" placeholder="e.g. Silver hair, glowing eyes, Cybernetic arm" />
           </div>
           <div class="field-row">
-            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><line x1="10" y1="2" x2="10" y2="18"/><line x1="4" y1="6" x2="16" y2="6"/><line x1="4" y1="10" x2="16" y2="10"/><line x1="4" y1="14" x2="16" y2="14"/></svg>Height</div>
+            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><line x1="10" y1="2" x2="10" y2="18"/><line x1="4" y1="6" x2="16" y2="6"/><line x1="4" y1="10" x2="16" y2="10"/><line x1="4" y1="14" x2="16" y2="14"/></svg>Height</div>
             <input type="text" id="f-height" placeholder="e.g. 165cm" />
           </div>
           <div class="field-row">
-            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><path d="M6 3h8M6 3v4a4 4 0 0 0 8 0V3"/><path d="M5 17h10"/><path d="M8 17v-3M12 17v-3"/></svg>Build</div>
+            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><path d="M6 3h8M6 3v4a4 4 0 0 0 8 0V3"/><path d="M5 17h10"/><path d="M8 17v-3M12 17v-3"/></svg>Build</div>
             <input type="text" id="f-build" placeholder="e.g. Athletic" />
           </div>
           <div class="field-row">
-            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><path d="M17.7 3.8a4.6 4.6 0 0 0-6.5 0L10 5l-1.2-1.2a4.6 4.6 0 0 0-6.5 6.5L10 18l7.7-7.7a4.6 4.6 0 0 0 0-6.5z"/></svg>Character</div>
+            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><path d="M17.7 3.8a4.6 4.6 0 0 0-6.5 0L10 5l-1.2-1.2a4.6 4.6 0 0 0-6.5 6.5L10 18l7.7-7.7a4.6 4.6 0 0 0 0-6.5z"/></svg>Character</div>
             <input type="text" id="f-character" placeholder="e.g. Brave, Curious, Loyal" />
           </div>
           <div class="field-row">
-            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><circle cx="10" cy="10" r="8"/><line x1="10" y1="6" x2="10" y2="10"/><circle cx="10" cy="14" r="0.5" fill="#6C5CE7"/></svg>Fears</div>
+            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><circle cx="10" cy="10" r="8"/><line x1="10" y1="6" x2="10" y2="10"/><circle cx="10" cy="14" r="0.5" fill="#00C4B4"/></svg>Fears</div>
             <input type="text" id="f-fears" placeholder="e.g. Heights, Losing friends" />
           </div>
           <div class="field-row">
-            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><polygon points="13,2 3,14 10,14 7,18 17,6 10,6"/></svg>Strengths</div>
+            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><polygon points="13,2 3,14 10,14 7,18 17,6 10,6"/></svg>Strengths</div>
             <input type="text" id="f-strengths" placeholder="e.g. Problem solving, Archery" />
           </div>
           <div class="field-row">
-            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><circle cx="10" cy="10" r="8"/><polyline points="10,6 10,10 13,12"/></svg>Interests</div>
+            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><circle cx="10" cy="10" r="8"/><polyline points="10,6 10,10 13,12"/></svg>Interests</div>
             <input type="text" id="f-interests" placeholder="e.g. Space travel, Robotics, Music" />
           </div>
           <div class="field-row" style="border-bottom:none;">
-            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><circle cx="10" cy="7" r="4"/><path d="M3 18c0-4 3.1-6 7-6s7 2 7 6"/></svg>Appearance</div>
+            <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><circle cx="10" cy="7" r="4"/><path d="M3 18c0-4 3.1-6 7-6s7 2 7 6"/></svg>Appearance</div>
             <input type="text" id="f-appearance" placeholder="e.g. Short silver hair, scar on left cheek" />
           </div>
         </div>
@@ -696,7 +696,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
             </defs>
           </svg>
           <div style="display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;">
-            <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#1E1B4B;">Character Photo</h3>
+            <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#fff;">Character Photo</h3>
             <span id="photo-change-btn" style="color:#6C5CE7;font-weight:800;font-size:12px;cursor:pointer;display:none;" onclick="document.getElementById('char-upload-input').click()">↺ Change</span>
           </div>
         </div>
@@ -721,7 +721,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
               <!-- Loading state -->
               <div id="ai-loading" style="display:none;flex-direction:column;align-items:center;gap:12px;">
                 <div class="spinner"></div>
-                <span style="color:#9E98C8;font-size:12px;font-weight:700;">Loading image…</span>
+                <span style="color:rgba(255,255,255,0.55);font-size:12px;font-weight:700;">Loading image…</span>
               </div>
               <!-- Cropped result -->
               <div id="ai-generated-output" style="display:none;width:100%;"></div>
@@ -766,7 +766,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
             <path d="M0 22 Q0 0 18 0 L72 0 Q90 0 90 22" fill="#E8E2FF"/>
           </svg>
           <div style="display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;">
-            <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#1E1B4B;">Community Spotlight</h3>
+            <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#fff;">Community Spotlight</h3>
             <span style="color:#6C5CE7;font-weight:800;font-size:12px;cursor:pointer;">View all</span>
           </div>
         </div>
@@ -784,8 +784,8 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
             </div>
             <div style="flex:1;">
               <div style="margin-bottom:3px;"><span class="popular-badge">⭐ Popular</span></div>
-              <div style="font-weight:900;font-size:13px;color:#1E1B4B;">Nova Skye</div>
-              <div style="font-size:11px;color:#9E98C8;font-weight:600;margin-bottom:4px;">By MiaRocks</div>
+              <div style="font-weight:900;font-size:13px;color:#fff;">Nova Skye</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.55);font-weight:600;margin-bottom:4px;">By MiaRocks</div>
               <div style="display:flex;align-items:center;gap:10px;font-size:11px;font-weight:700;color:#6B6B8A;">
                 <span style="display:flex;align-items:center;gap:3px;"><span style="color:#E84393;">♥</span> 245</span>
                 <span style="display:flex;align-items:center;gap:3px;"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" width="12" height="12"><path d="M12 2H2a.9.9 0 0 0-.9.9v8a.9.9 0 0 0 .9.9h2.6L7 14l2.4-2.2H12a.9.9 0 0 0 .9-.9v-8A.9.9 0 0 0 12 2z"/></svg> 32</span>
@@ -819,7 +819,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
     <div class="topbar-left-dark"></div>
     <div class="topbar-center" style="background:linear-gradient(90deg,#EEE9FC,#E8E3FA);height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-bottom:1px solid #DDD8F5;">
       <h1 style="font-family:'Bangers',cursive;font-size:28px;letter-spacing:2px;color:#fff;line-height:1.1;text-shadow:2px 2px 0 rgba(0,0,0,0.3);">Setting Bank</h1>
-      <p style="color:#7C74B8;font-size:13px;font-weight:600;">Build vivid story worlds — explore locations through all five senses!</p>
+      <p style="color:rgba(255,255,255,0.6);font-size:13px;font-weight:600;">Build vivid story worlds — explore locations through all five senses!</p>
     </div>
     <div class="topbar-right" style="background:rgba(10,5,32,0.5);height:72px;padding:0 20px;border-bottom:1px solid rgba(255,215,0,0.2);backdrop-filter:blur(8px);position:relative;">
       <div id="topbar-signedout-map" style="display:flex;align-items:center;gap:10px;">
@@ -864,7 +864,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       <!-- My Settings list -->
       <div style="background:rgba(255,255,255,0.06);border-radius:18px;padding:16px;border:1.5px solid rgba(255,255,255,0.1);">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#1E1B4B;">My Settings</h3>
+          <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#fff;">My Settings</h3>
           <span style="background:#6C5CE7;color:#fff;border-radius:99px;font-size:10px;font-weight:800;padding:2px 8px;" id="my-settings-count">0</span>
         </div>
         <div id="my-settings-mini-list" style="display:flex;flex-direction:column;gap:7px;margin-bottom:12px;">
@@ -895,7 +895,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         <!-- State: empty -->
         <div id="sb-empty-state" style="text-align:center;padding:48px 20px;color:#C0BADA;">
           <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" width="56" height="56" style="display:block;margin:0 auto 14px;"><rect x="8" y="10" width="48" height="44" rx="6"/><path d="M8 22h48"/><circle cx="22" cy="36" r="5"/><path d="M30 36h16"/><path d="M30 42h10"/></svg>
-          <div style="font-family:'Baloo 2',cursive;font-size:17px;font-weight:800;color:#9E98C8;margin-bottom:6px;">No settings yet!</div>
+          <div style="font-family:'Baloo 2',cursive;font-size:17px;font-weight:800;color:rgba(255,255,255,0.55);margin-bottom:6px;">No settings yet!</div>
           <div style="font-size:12px;margin-bottom:18px;">Create your first setting or borrow one from the community bank.</div>
           <button class="btn-purple" style="padding:11px 24px;font-size:13px;" onclick="settingBank.startNewSetting()">+ Create a Setting</button>
         </div>
@@ -903,7 +903,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         <!-- State: setting form (add/edit) — hidden by default -->
         <div id="sb-form-state" style="display:none;">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-            <button onclick="settingBank.cancelForm()" style="background:none;border:none;cursor:pointer;color:#9E98C8;font-size:20px;line-height:1;">←</button>
+            <button onclick="settingBank.cancelForm()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.55);font-size:20px;line-height:1;">←</button>
             <h2 id="sb-form-title" style="font-family:'Baloo 2',cursive;font-size:19px;font-weight:800;color:#6C5CE7;">New Setting</h2>
             <span id="sb-edit-badge" style="display:none;background:#F0ECFC;color:#6C5CE7;border-radius:99px;font-size:10px;font-weight:800;padding:2px 8px;">Editing</span>
           </div>
@@ -911,7 +911,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <!-- Setting name -->
           <div class="field-row">
             <div class="field-label">
-              <svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><path d="M10 2a8 8 0 1 0 0 16A8 8 0 0 0 10 2z"/><path d="M10 6v4l3 3"/></svg>
+              <svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><path d="M10 2a8 8 0 1 0 0 16A8 8 0 0 0 10 2z"/><path d="M10 6v4l3 3"/></svg>
               Setting Name
             </div>
             <input type="text" id="sb-setting-name" placeholder="e.g. The Old Library, Moonlit Harbour…" />
@@ -920,7 +920,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <!-- Locations within this setting -->
           <div style="margin:14px 0 8px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-              <div style="font-weight:800;font-size:13px;color:#1E1B4B;">Locations in this setting</div>
+              <div style="font-weight:800;font-size:13px;color:#fff;">Locations in this setting</div>
               <button class="btn-purple" style="padding:6px 14px;font-size:11px;" onclick="settingBank.openAddLocation()">+ Add Location</button>
             </div>
             <div id="sb-locations-list" style="display:flex;flex-direction:column;gap:8px;">
@@ -942,7 +942,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         <!-- State: settings grid -->
         <div id="sb-grid-state" style="display:none;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-            <h2 style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:800;color:#1E1B4B;">My Setting Bank</h2>
+            <h2 style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:800;color:#fff;">My Setting Bank</h2>
             <button class="btn-pink" style="padding:8px 16px;font-size:12px;" onclick="settingBank.startNewSetting()">+ New Setting</button>
           </div>
           <div id="sb-settings-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"></div>
@@ -951,10 +951,10 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         <!-- State: setting detail view -->
         <div id="sb-detail-state" style="display:none;">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-            <button onclick="settingBank.backToGrid()" style="background:none;border:none;cursor:pointer;color:#9E98C8;font-size:20px;line-height:1;">←</button>
+            <button onclick="settingBank.backToGrid()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.55);font-size:20px;line-height:1;">←</button>
             <div style="flex:1;">
-              <h2 id="sb-detail-title" style="font-family:'Baloo 2',cursive;font-size:20px;font-weight:800;color:#1E1B4B;"></h2>
-              <div id="sb-detail-meta" style="font-size:11px;color:#9E98C8;font-weight:600;"></div>
+              <h2 id="sb-detail-title" style="font-family:'Baloo 2',cursive;font-size:20px;font-weight:800;color:#fff;"></h2>
+              <div id="sb-detail-meta" style="font-size:11px;color:rgba(255,255,255,0.55);font-weight:600;"></div>
             </div>
             <button id="sb-edit-btn" onclick="settingBank.editCurrentSetting()" style="background:#F0ECFC;border:none;border-radius:99px;padding:7px 14px;font-size:12px;font-weight:800;color:#6C5CE7;cursor:pointer;">✏️ Edit</button>
           </div>
@@ -962,7 +962,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <div id="sb-detail-img-wrap" style="display:none;margin-bottom:14px;border-radius:14px;overflow:hidden;">
             <img id="sb-detail-img" style="width:100%;max-height:160px;object-fit:cover;" />
           </div>
-          <div style="font-size:12px;font-weight:700;color:#7C74B8;margin-bottom:10px;">LOCATIONS</div>
+          <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.6);margin-bottom:10px;">LOCATIONS</div>
           <div id="sb-detail-locations" style="display:flex;flex-direction:column;gap:10px;"></div>
           <div style="margin-top:14px;">
             <button class="btn-purple" style="width:100%;padding:11px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;" onclick="settingBank.openAddLocation()">
@@ -988,7 +988,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       <!-- COMMUNITY BANK TAB -->
       <div id="stab-community" style="display:none;flex:1;overflow-y:auto;padding:14px 20px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-          <h2 style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:800;color:#1E1B4B;">Community Settings</h2>
+          <h2 style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:800;color:#fff;">Community Settings</h2>
           <div style="display:flex;gap:8px;">
             <button id="sb-com-tab-all" onclick="settingBank.switchCommunityTab('all')" style="background:#6C5CE7;color:#fff;border:none;border-radius:99px;padding:6px 14px;font-size:11px;font-weight:800;cursor:pointer;">All</button>
             <button id="sb-com-tab-top" onclick="settingBank.switchCommunityTab('top')" style="background:#F0ECFC;color:#6C5CE7;border:none;border-radius:99px;padding:6px 14px;font-size:11px;font-weight:800;cursor:pointer;">⭐ Top Rated</button>
@@ -1014,7 +1014,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
             <path d="M0 22 Q0 0 18 0 L72 0 Q90 0 90 22" fill="#E8E2FF"/>
           </svg>
           <div style="display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;">
-            <h3 id="sb-loc-panel-title" style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#1E1B4B;">Add a Location</h3>
+            <h3 id="sb-loc-panel-title" style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#fff;">Add a Location</h3>
             <span class="beta-badge" style="background:#E8E2FF;color:#6C5CE7;">NEW</span>
           </div>
         </div>
@@ -1031,7 +1031,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <div id="sb-loc-form" style="display:none;">
             <div class="field-row">
               <div class="field-label">
-                <svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><path d="M10 2C6.7 2 4 4.7 4 8c0 6 6 12 6 12s6-6 6-12c0-3.3-2.7-6-6-6z"/><circle cx="10" cy="8" r="2.5"/></svg>
+                <svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><path d="M10 2C6.7 2 4 4.7 4 8c0 6 6 12 6 12s6-6 6-12c0-3.3-2.7-6-6-6z"/><circle cx="10" cy="8" r="2.5"/></svg>
                 Location Name
               </div>
               <input type="text" id="sb-loc-name" placeholder="e.g. The Old Attic, Harbour Docks…" />
@@ -1041,14 +1041,14 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 
             <div class="field-row">
               <div class="field-label" style="font-size:10px;">
-                <svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="14" height="14"><circle cx="10" cy="10" r="3"/><path d="M10 2C5.6 2 2 5.6 2 10s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8z" opacity=".3"/><path d="M6 10a4 4 0 0 1 4-4" opacity=".6"/></svg>
+                <svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="14" height="14"><circle cx="10" cy="10" r="3"/><path d="M10 2C5.6 2 2 5.6 2 10s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8z" opacity=".3"/><path d="M6 10a4 4 0 0 1 4-4" opacity=".6"/></svg>
                 What can you see?
               </div>
               <textarea id="sb-loc-see" placeholder="Describe what the senses of sight reveal…" style="min-height:52px;resize:vertical;"></textarea>
             </div>
             <div class="field-row">
               <div class="field-label" style="font-size:10px;">
-                <svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="14" height="14"><path d="M10 2v6l3 3"/><circle cx="10" cy="16" r="2"/><path d="M6 6C4 7.5 3 9.6 3 12"/></svg>
+                <svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="14" height="14"><path d="M10 2v6l3 3"/><circle cx="10" cy="16" r="2"/><path d="M6 6C4 7.5 3 9.6 3 12"/></svg>
                 What noises can you hear?
               </div>
               <textarea id="sb-loc-hear" placeholder="Sounds, music, voices, silence…" style="min-height:52px;resize:vertical;"></textarea>
@@ -1062,14 +1062,14 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
             </div>
             <div class="field-row">
               <div class="field-label" style="font-size:10px;">
-                <svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="14" height="14"><path d="M10 2c-1.7 0-3 1.3-3 3v6c0 1.7 1.3 3 3 3s3-1.3 3-3V5c0-1.7-1.3-3-3-3z"/><path d="M5 10v1a5 5 0 0 0 10 0v-1"/><line x1="10" y1="16" x2="10" y2="18"/></svg>
+                <svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="14" height="14"><path d="M10 2c-1.7 0-3 1.3-3 3v6c0 1.7 1.3 3 3 3s3-1.3 3-3V5c0-1.7-1.3-3-3-3z"/><path d="M5 10v1a5 5 0 0 0 10 0v-1"/><line x1="10" y1="16" x2="10" y2="18"/></svg>
                 Things that can be felt (touch)?
               </div>
               <textarea id="sb-loc-touch" placeholder="Rough stone walls, cold air, soft grass…" style="min-height:52px;resize:vertical;"></textarea>
             </div>
             <div class="field-row" style="border-bottom:none;">
               <div class="field-label" style="font-size:10px;">
-                <svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="14" height="14"><path d="M10 4c-3.3 0-6 1.8-6 4s2.7 4 6 4 6-1.8 6-4-2.7-4-6-4z"/><path d="M10 12c-3.3 0-6 1.8-6 4"/></svg>
+                <svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="14" height="14"><path d="M10 4c-3.3 0-6 1.8-6 4s2.7 4 6 4 6-1.8 6-4-2.7-4-6-4z"/><path d="M10 12c-3.3 0-6 1.8-6 4"/></svg>
                 What smells are there?
               </div>
               <textarea id="sb-loc-smell" placeholder="Damp earth, sea salt, baking bread…" style="min-height:52px;resize:vertical;"></textarea>
@@ -1112,18 +1112,18 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
             <path d="M0 22 Q0 0 18 0 L72 0 Q90 0 90 22" fill="#E8E2FF"/>
           </svg>
           <div style="display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;">
-            <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#1E1B4B;">How it works</h3>
+            <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#fff;">How it works</h3>
           </div>
         </div>
         <div style="background:linear-gradient(180deg,rgba(26,10,58,0.5) 0%,rgba(10,5,32,0.7) 60%);padding:12px 14px 16px;">
           <div style="display:flex;flex-direction:column;gap:8px;">
-            <div style="background:#F0ECFC;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:600;color:#4A3A8A;line-height:1.5;border-left:3px solid #6C5CE7;">
+            <div style="background:#F0ECFC;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.85);line-height:1.5;border-left:3px solid #6C5CE7;">
               📍 <strong>Create a Setting</strong> — give it a name and add locations inside it
             </div>
             <div style="background:#FFF0F6;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:600;color:#6A1A3A;line-height:1.5;border-left:3px solid #E84393;">
               🌟 <strong>Sense it</strong> — fill in what you see, hear, feel, touch and smell
             </div>
-            <div style="background:#F0ECFC;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:600;color:#4A3A8A;line-height:1.5;border-left:3px solid #6C5CE7;">
+            <div style="background:#F0ECFC;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.85);line-height:1.5;border-left:3px solid #6C5CE7;">
               👀 <strong>Borrow</strong> — click any community setting to add it to yours
             </div>
             <div style="background:#FFF0F6;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:600;color:#6A1A3A;line-height:1.5;border-left:3px solid #E84393;">
@@ -1238,7 +1238,7 @@ function renderMyCharMiniGrid(chars) {
       + imgHtml
       + '</div>'
       + '<div style="padding:5px 6px;text-align:center;">'
-      + '<div style="font-weight:800;font-size:11px;color:#1E1B4B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + firstName + '</div>'
+      + '<div style="font-weight:800;font-size:11px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + firstName + '</div>'
       + '</div>'
       + '</div>';
   }).join('');
@@ -1602,7 +1602,7 @@ async function generateMapDescription() {
     });
     const data = await res.json();
     const text = data.content?.map(i => i.text || '').join('') || 'Could not generate description.';
-    descArea.innerHTML = `<span style="color:#4A3A8A;font-style:italic;">"${text}"</span>`;
+    descArea.innerHTML = `<span style="color:rgba(255,255,255,0.85);font-style:italic;">"${text}"</span>`;
     // Also populate writing prompts
     generateWritingPrompts();
   } catch(err) {
@@ -1641,7 +1641,7 @@ async function generateWritingPrompts() {
     const emojis = ['✏️','🌟','🔍'];
     promptsArea.innerHTML = '<div style="display:flex;flex-direction:column;gap:8px;">' +
       prompts.map((p,i) => `
-        <div style="background:#F5F2FF;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:600;color:#4A3A8A;line-height:1.5;border-left:3px solid #6C5CE7;">
+        <div style="background:#F5F2FF;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.85);line-height:1.5;border-left:3px solid #6C5CE7;">
           ${emojis[i]||'📍'} ${p}
         </div>`).join('') + '</div>';
   } catch(err) {
@@ -2445,7 +2445,8 @@ function downloadWorksheetPDF() {
 const SUPABASE_URL      = 'https://nwhaliuajvovesnrdfrr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53aGFsaXVhanZvdmVzbnJkZnJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDUyMzEsImV4cCI6MjA5NTQ4MTIzMX0.cGZ_yqeTyQYyyUAIc1CrV-M6iwN34CtSzjYBF_nG9xE';
 
-const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.__aurabot_sb = window.__aurabot_sb || supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const _sb = window.__aurabot_sb;
 window._sb = _sb; // expose for settingBank
 
 // ── PORTAL AUTH GUARD ─────────────────────────────────────────
@@ -2767,7 +2768,7 @@ function _renderCommunityGrid(items, append) {
       </div>
       <div style="padding:10px 12px 12px;">
         <div style="font-weight:900;font-size:14px;color:#fff;margin-bottom:2px;">${_esc(item.name || 'Unnamed')}</div>
-        <div style="font-size:11px;color:#9E98C8;font-weight:700;margin-bottom:8px;">by ${_esc(item.display_name || item.username)}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.55);font-weight:700;margin-bottom:8px;">by ${_esc(item.display_name || item.username)}</div>
         <div style="display:flex;align-items:center;justify-content:space-between;">
           <button class="star-btn ${isStarred ? 'starred' : ''}" id="star-btn-${item.id}" onclick="handleStarToggle('${item.id}',this)">
             ${isStarred ? '⭐' : '☆'} <span id="star-count-${item.id}">${item.star_count}</span>
@@ -2935,7 +2936,7 @@ window.addEventListener('load', () => {
     <div class="topbar-left-dark"></div>
     <div class="topbar-center" style="background:linear-gradient(90deg,#EEE9FC,#E8E3FA);height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-bottom:1px solid #DDD8F5;">
       <h1 style="font-family:'Baloo 2',cursive;font-size:27px;font-weight:800;color:#fff;line-height:1.1;">Community Bank</h1>
-      <p style="color:#7C74B8;font-size:13px;font-weight:600;">Explore and star amazing creations from other students!</p>
+      <p style="color:rgba(255,255,255,0.6);font-size:13px;font-weight:600;">Explore and star amazing creations from other students!</p>
     </div>
     <div class="topbar-right" style="background:rgba(10,5,32,0.5);height:72px;padding:0 20px;border-bottom:1px solid rgba(255,215,0,0.2);backdrop-filter:blur(8px);"></div>
   </header>
@@ -2943,7 +2944,7 @@ window.addEventListener('load', () => {
   <div style="flex:1;overflow-y:auto;padding:20px 24px;position:relative;z-index:2;">
     <!-- Sort bar -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <div style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:800;color:#1E1B4B;">All Creations</div>
+      <div style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:800;color:#fff;">All Creations</div>
       <div style="display:flex;gap:8px;">
         <button onclick="loadCommunity('stars')" id="sort-stars-btn" class="btn-purple" style="padding:7px 16px;font-size:12px;">⭐ Most Starred</button>
         <button onclick="loadCommunity('newest')" id="sort-newest-btn" class="btn-outline" style="padding:7px 16px;font-size:12px;">🆕 Newest</button>
@@ -2960,7 +2961,7 @@ window.addEventListener('load', () => {
     <div id="community-empty" style="display:none;text-align:center;padding:48px 24px;">
       <div style="font-size:48px;margin-bottom:12px;">🎨</div>
       <div style="font-family:'Baloo 2',cursive;font-size:20px;font-weight:800;color:#fff;margin-bottom:8px;">Be the first to share!</div>
-      <div style="color:#9E98C8;font-size:14px;font-weight:600;">Create a character, toggle "Share with community" and save it to see it here.</div>
+      <div style="color:rgba(255,255,255,0.55);font-size:14px;font-weight:600;">Create a character, toggle "Share with community" and save it to see it here.</div>
     </div>
 
     <!-- Grid -->
@@ -2986,7 +2987,7 @@ window.addEventListener('load', () => {
     <div class="topbar-left-dark"></div>
     <div class="topbar-center" style="background:linear-gradient(90deg,#EEE9FC,#E8E3FA);height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-bottom:1px solid #DDD8F5;">
       <h1 style="font-family:'Baloo 2',cursive;font-size:27px;font-weight:800;color:#fff;line-height:1.1;">My Profile</h1>
-      <p style="color:#7C74B8;font-size:13px;font-weight:600;">Your saved characters and star collection</p>
+      <p style="color:rgba(255,255,255,0.6);font-size:13px;font-weight:600;">Your saved characters and star collection</p>
     </div>
     <div class="topbar-right" style="background:rgba(10,5,32,0.5);height:72px;padding:0 20px;border-bottom:1px solid rgba(255,215,0,0.2);backdrop-filter:blur(8px);"></div>
   </header>
@@ -2998,20 +2999,20 @@ window.addEventListener('load', () => {
         <svg viewBox="0 0 40 40" fill="none" width="40" height="40"><circle cx="20" cy="15" r="8" fill="rgba(255,255,255,0.9)"/><ellipse cx="20" cy="34" rx="13" ry="10" fill="rgba(255,255,255,0.7)"/></svg>
       </div>
       <div style="flex:1;">
-        <div id="profile-display-name" style="font-family:'Baloo 2',cursive;font-size:22px;font-weight:800;color:#1E1B4B;"></div>
-        <div id="profile-username" style="color:#9E98C8;font-size:13px;font-weight:700;"></div>
+        <div id="profile-display-name" style="font-family:'Baloo 2',cursive;font-size:22px;font-weight:800;color:#fff;"></div>
+        <div id="profile-username" style="color:rgba(255,255,255,0.55);font-size:13px;font-weight:700;"></div>
       </div>
       <div style="text-align:center;background:#FFF8E0;border-radius:16px;padding:12px 20px;">
         <div style="font-size:28px;line-height:1;">⭐</div>
-        <div id="profile-star-points" style="font-weight:900;font-size:20px;color:#1E1B4B;">0</div>
-        <div style="font-size:10px;color:#9E98C8;font-weight:700;">Star Points</div>
+        <div id="profile-star-points" style="font-weight:900;font-size:20px;color:#fff;">0</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.55);font-weight:700;">Star Points</div>
       </div>
     </div>
 
     <!-- Saved characters -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <div style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:800;color:#1E1B4B;">My Characters</div>
-      <span id="profile-char-count" style="color:#9E98C8;font-size:13px;font-weight:700;">0 saved</span>
+      <div style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:800;color:#fff;">My Characters</div>
+      <span id="profile-char-count" style="color:rgba(255,255,255,0.55);font-size:13px;font-weight:700;">0 saved</span>
     </div>
 
     <div id="profile-loading" style="display:flex;align-items:center;justify-content:center;padding:32px;gap:12px;">
@@ -3021,8 +3022,8 @@ window.addEventListener('load', () => {
 
     <div id="profile-empty" style="display:none;text-align:center;padding:32px;">
       <div style="font-size:40px;margin-bottom:10px;">✏️</div>
-      <div style="font-weight:800;color:#1E1B4B;font-size:16px;margin-bottom:6px;">No characters saved yet</div>
-      <div style="color:#9E98C8;font-size:13px;">Create a character and click "Save to My Profile"!</div>
+      <div style="font-weight:800;color:#fff;font-size:16px;margin-bottom:6px;">No characters saved yet</div>
+      <div style="color:rgba(255,255,255,0.55);font-size:13px;">Create a character and click "Save to My Profile"!</div>
       <button onclick="switchSection('character')" class="btn-purple" style="margin-top:14px;padding:10px 24px;font-size:13px;">Create a Character</button>
     </div>
 
@@ -3041,7 +3042,7 @@ window.addEventListener('load', () => {
     <div id="auth-signup-form">
       <div style="text-align:center;margin-bottom:22px;">
         <div style="font-family:'Baloo 2',cursive;font-size:24px;font-weight:800;color:#fff;margin-bottom:4px;">Join Aurabot! 🤖</div>
-        <div style="color:#9E98C8;font-size:13px;font-weight:600;">Create your free student account</div>
+        <div style="color:rgba(255,255,255,0.55);font-size:13px;font-weight:600;">Create your free student account</div>
       </div>
       <input class="auth-input" id="signup-displayname" type="text" placeholder="Your name (e.g. Lily)" />
       <input class="auth-input" id="signup-username"    type="text" placeholder="Username (e.g. lily_creates)" />
@@ -3051,7 +3052,7 @@ window.addEventListener('load', () => {
       <button id="signup-submit-btn" onclick="handleSignUp()" class="btn-purple" style="width:100%;padding:13px;font-size:14px;margin-top:4px;">
         Create Account ✨
       </button>
-      <div style="text-align:center;margin-top:14px;font-size:13px;color:#9E98C8;font-weight:600;">
+      <div style="text-align:center;margin-top:14px;font-size:13px;color:rgba(255,255,255,0.55);font-weight:600;">
         Already have an account? <span onclick="openAuthModal('signin')" style="color:#6C5CE7;cursor:pointer;font-weight:800;">Sign in</span>
       </div>
     </div>
@@ -3060,7 +3061,7 @@ window.addEventListener('load', () => {
     <div id="auth-signin-form" style="display:none;">
       <div style="text-align:center;margin-bottom:22px;">
         <div style="font-family:'Baloo 2',cursive;font-size:24px;font-weight:800;color:#fff;margin-bottom:4px;">Welcome back! 👋</div>
-        <div style="color:#9E98C8;font-size:13px;font-weight:600;">Sign in to your account</div>
+        <div style="color:rgba(255,255,255,0.55);font-size:13px;font-weight:600;">Sign in to your account</div>
       </div>
       <input class="auth-input" id="signin-email"    type="email"    placeholder="Email address" />
       <input class="auth-input" id="signin-password" type="password" placeholder="Password" />
@@ -3068,7 +3069,7 @@ window.addEventListener('load', () => {
       <button id="signin-submit-btn" onclick="handleSignIn()" class="btn-purple" style="width:100%;padding:13px;font-size:14px;margin-top:4px;">
         Sign In →
       </button>
-      <div style="text-align:center;margin-top:14px;font-size:13px;color:#9E98C8;font-weight:600;">
+      <div style="text-align:center;margin-top:14px;font-size:13px;color:rgba(255,255,255,0.55);font-weight:600;">
         New here? <span onclick="openAuthModal('signup')" style="color:#6C5CE7;cursor:pointer;font-weight:800;">Create free account</span>
       </div>
     </div>
@@ -3088,10 +3089,10 @@ window.addEventListener('load', () => {
     <!-- Header -->
     <div style="background:linear-gradient(135deg,#EEE9FC,#E8E3FA);padding:18px 20px 14px;border-radius:22px 22px 0 0;display:flex;align-items:center;justify-content:space-between;">
       <div>
-        <h3 id="cdm-name" style="font-family:'Baloo 2',cursive;font-size:20px;font-weight:900;color:#1E1B4B;"></h3>
-        <div id="cdm-meta" style="font-size:11px;color:#9E98C8;font-weight:600;margin-top:2px;"></div>
+        <h3 id="cdm-name" style="font-family:'Baloo 2',cursive;font-size:20px;font-weight:900;color:#fff;"></h3>
+        <div id="cdm-meta" style="font-size:11px;color:rgba(255,255,255,0.55);font-weight:600;margin-top:2px;"></div>
       </div>
-      <button onclick="closeCharModal()" style="background:none;border:none;cursor:pointer;color:#9E98C8;font-size:24px;line-height:1;padding:4px;">×</button>
+      <button onclick="closeCharModal()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.55);font-size:24px;line-height:1;padding:4px;">×</button>
     </div>
 
     <!-- Image -->
@@ -3151,7 +3152,7 @@ window.addEventListener('load', () => {
     <div style="font-size:40px;margin-bottom:10px;">⚠️</div>
     <h3 style="font-family:'Baloo 2',cursive;font-size:20px;font-weight:900;color:#fff;margin-bottom:8px;">Delete Character?</h3>
     <p id="cdm-delete-name" style="font-size:14px;font-weight:700;color:#6C5CE7;margin-bottom:10px;"></p>
-    <p style="font-size:13px;color:#7C74B8;margin-bottom:20px;line-height:1.5;">This will permanently remove this character from your bank and the community. <strong>This cannot be undone.</strong></p>
+    <p style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:20px;line-height:1.5;">This will permanently remove this character from your bank and the community. <strong>This cannot be undone.</strong></p>
     <div style="display:flex;gap:10px;">
       <button onclick="closeDeleteModal()" style="flex:1;padding:12px;font-size:13px;font-weight:800;border:2px solid #E5E0FA;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;background:#fff;color:#6C5CE7;">Cancel</button>
       <button onclick="executeDeleteChar()" style="flex:1;padding:12px;font-size:13px;font-weight:800;border:none;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;background:linear-gradient(90deg,#E84393,#C0392B);color:#fff;">Yes, Delete</button>
@@ -3165,13 +3166,13 @@ window.addEventListener('load', () => {
 <div id="sb-loc-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(26,29,58,0.55);align-items:center;justify-content:center;">
   <div style="background:#fff;border-radius:20px;width:520px;max-width:96vw;max-height:90vh;overflow-y:auto;box-shadow:0 16px 60px rgba(108,92,231,0.25);">
     <div style="background:linear-gradient(135deg,#EEE9FC,#E8E3FA);padding:18px 20px 14px;border-radius:20px 20px 0 0;display:flex;align-items:center;justify-content:space-between;">
-      <h3 id="sb-modal-title" style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:800;color:#1E1B4B;">Add Location</h3>
-      <button onclick="settingBank.closeLocModal()" style="background:none;border:none;cursor:pointer;color:#9E98C8;font-size:22px;line-height:1;">×</button>
+      <h3 id="sb-modal-title" style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:800;color:#fff;">Add Location</h3>
+      <button onclick="settingBank.closeLocModal()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.55);font-size:22px;line-height:1;">×</button>
     </div>
     <div style="padding:16px 20px 20px;">
       <div class="field-row">
         <div class="field-label">
-          <svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="16" height="16"><path d="M10 2C6.7 2 4 4.7 4 8c0 6 6 12 6 12s6-6 6-12c0-3.3-2.7-6-6-6z"/><circle cx="10" cy="8" r="2.5"/></svg>
+          <svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><path d="M10 2C6.7 2 4 4.7 4 8c0 6 6 12 6 12s6-6 6-12c0-3.3-2.7-6-6-6z"/><circle cx="10" cy="8" r="2.5"/></svg>
           Location Name
         </div>
         <input type="text" id="sb-modal-loc-name" placeholder="e.g. The Old Attic, Harbour Docks…" />
@@ -3305,7 +3306,7 @@ async function downloadCharModalPDF() {
     + '.portrait img { width:42mm; height:52mm; object-fit:cover; border:0.5mm solid #c8b896; border-radius:1mm; display:block; }'
     + '.portrait-placeholder { width:42mm; height:52mm; background:#ede4d4; border:0.5mm dashed #c8b896; border-radius:1mm; display:flex; align-items:center; justify-content:center; color:#a89880; font-size:8pt; font-style:italic; }'
     + '.fields-table { width:100%; border-collapse:collapse; }'
-    + '.label-cell { font-weight:700; color:#5a3a10; font-size:8pt; width:38mm; padding:1.5mm 2mm 1.5mm 0; border-bottom:0.25mm dotted #c8b896; vertical-align:top; line-height:1.4; }'
+    + '.label-cell { font-weight:700; color:#FFD700; font-size:8pt; width:38mm; padding:1.5mm 2mm 1.5mm 0; border-bottom:0.25mm dotted #c8b896; vertical-align:top; line-height:1.4; }'
     + '.value-cell { font-size:8pt; color:#2a1a08; padding:1.5mm 0; border-bottom:0.25mm dotted #c8b896; vertical-align:top; line-height:1.4; }'
     + ".stamp { position:absolute; bottom:10mm; right:8mm; border:0.7mm solid #E84393; color:#E84393; font-family:'Special Elite',serif; font-size:11pt; font-weight:bold; padding:1.5mm 4mm; border-radius:1mm; letter-spacing:3px; opacity:0.75; transform:rotate(-12deg); text-transform:uppercase; }"
     + '.footer-note { font-size:6.5pt; color:#7a6040; font-style:italic; margin-top:3mm; }'
@@ -3416,7 +3417,7 @@ function openCharDetail(char) {
   var fieldsHtml = fieldDefs.filter(function(f){ return f[1]; }).map(function(f) {
     return '<div class="field-row" style="padding:8px 0;">'
       + '<div class="field-label" style="font-size:11px;">' + f[0] + '</div>'
-      + '<div style="font-size:13px;color:#2A1A08;font-weight:600;padding:4px 0;">' + f[1] + '</div>'
+      + '<div style="font-size:13px;color:#fff;font-weight:600;padding:4px 0;">' + f[1] + '</div>'
       + '</div>';
   }).join('');
   document.getElementById('cdm-fields').innerHTML = fieldsHtml || '<div style="color:#C0BADA;font-style:italic;font-size:13px;padding:8px 0;">No details filled in yet.</div>';
@@ -3805,10 +3806,10 @@ const settingBank = (() => {
     }
     list.innerHTML = locs.map((loc, i) => `
       <div style="background:#F8F5FF;border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
-        ${loc.imageDataUrl ? `<img src="${loc.imageDataUrl}" style="width:38px;height:38px;border-radius:8px;object-fit:cover;flex-shrink:0;" />` : '<div style="width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,#EDE0FF,#D8CBFF);flex-shrink:0;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 20 20" fill="none" stroke="#6C5CE7" stroke-width="2" width="14" height="14"><path d="M10 2C6.7 2 4 4.7 4 8c0 6 6 12 6 12s6-6 6-12c0-3.3-2.7-6-6-6z"/><circle cx="10" cy="8" r="2.5"/></svg></div>'}
+        ${loc.imageDataUrl ? `<img src="${loc.imageDataUrl}" style="width:38px;height:38px;border-radius:8px;object-fit:cover;flex-shrink:0;" />` : '<div style="width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,#EDE0FF,#D8CBFF);flex-shrink:0;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="14" height="14"><path d="M10 2C6.7 2 4 4.7 4 8c0 6 6 12 6 12s6-6 6-12c0-3.3-2.7-6-6-6z"/><circle cx="10" cy="8" r="2.5"/></svg></div>'}
         <div style="flex:1;min-width:0;">
-          <div style="font-weight:800;font-size:12px;color:#1E1B4B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(loc.name)}</div>
-          ${loc.see ? `<div style="font-size:10px;color:#9E98C8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">👁 ${escHtml(loc.see)}</div>` : ''}
+          <div style="font-weight:800;font-size:12px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(loc.name)}</div>
+          ${loc.see ? `<div style="font-size:10px;color:rgba(255,255,255,0.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">👁 ${escHtml(loc.see)}</div>` : ''}
         </div>
         <button onclick="settingBank.editLocation(${i})" style="background:none;border:none;cursor:pointer;color:#A29BFE;font-size:12px;padding:4px;" title="Edit">✏️</button>
         <button onclick="settingBank.removeLocation(${i})" style="background:none;border:none;cursor:pointer;color:#E84393;font-size:12px;padding:4px;" title="Remove">×</button>
@@ -3828,10 +3829,10 @@ const settingBank = (() => {
         ${loc.imageDataUrl ? `<img src="${loc.imageDataUrl}" style="width:100%;height:100px;object-fit:cover;display:block;" />` : ''}
         <div style="padding:10px 12px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:14px;color:#1E1B4B;">📍 ${escHtml(loc.name)}</div>
+            <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:14px;color:#fff;">📍 ${escHtml(loc.name)}</div>
             <button onclick="settingBank.editLocation(${i})" style="background:#EDE8FA;border:none;border-radius:99px;padding:4px 10px;font-size:10px;font-weight:800;color:#6C5CE7;cursor:pointer;">Edit</button>
           </div>
-          ${loc.borrowedFrom ? `<div style="font-size:10px;color:#9E98C8;font-style:italic;margin-bottom:6px;">Borrowed from <strong>${escHtml(loc.borrowedFrom)}</strong></div>` : ''}
+          ${loc.borrowedFrom ? `<div style="font-size:10px;color:rgba(255,255,255,0.55);font-style:italic;margin-bottom:6px;">Borrowed from <strong>${escHtml(loc.borrowedFrom)}</strong></div>` : ''}
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
             ${loc.see ? sensingChip('👁','See', loc.see) : ''}
             ${loc.hear ? sensingChip('👂','Hear', loc.hear) : ''}
@@ -3845,8 +3846,8 @@ const settingBank = (() => {
 
   function sensingChip(emoji, label, text) {
     return `<div style="background:#fff;border-radius:8px;padding:6px 8px;border:1px solid #EDE8FA;">
-      <div style="font-size:9px;font-weight:800;color:#9E98C8;margin-bottom:2px;">${emoji} ${label.toUpperCase()}</div>
-      <div style="font-size:11px;font-weight:600;color:#4A3A8A;line-height:1.4;">${escHtml(text)}</div>
+      <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.55);margin-bottom:2px;">${emoji} ${label.toUpperCase()}</div>
+      <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.85);line-height:1.4;">${escHtml(text)}</div>
     </div>`;
   }
 
@@ -3896,8 +3897,8 @@ const settingBank = (() => {
         onmouseover="this.style.background='#EDE8FA'" onmouseout="this.style.background='#F8F5FF'">
         <div style="width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#EDE0FF,#D8CBFF);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;">📍</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-weight:800;font-size:11px;color:#1E1B4B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(s.name)}</div>
-          <div style="font-size:10px;color:#9E98C8;">${s.locations?.length || 0} location${s.locations?.length === 1 ? '' : 's'}</div>
+          <div style="font-weight:800;font-size:11px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(s.name)}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.55);">${s.locations?.length || 0} location${s.locations?.length === 1 ? '' : 's'}</div>
         </div>
       </div>`).join('');
   }
@@ -3913,14 +3914,14 @@ const settingBank = (() => {
         <div style="height:80px;background:linear-gradient(135deg,#EDE0FF,#C8BCFF);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
           ${s.locations?.[0]?.imageDataUrl
             ? `<img src="${s.locations[0].imageDataUrl}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;" />`
-            : `<svg viewBox="0 0 60 60" fill="none" width="48" height="48"><path d="M30 8C19.5 8 11 16.5 11 27c0 14.5 19 32 19 32s19-17.5 19-32c0-10.5-8.5-19-19-19z" fill="rgba(108,92,231,0.25)"/><circle cx="30" cy="27" r="6" fill="#6C5CE7" opacity="0.7"/></svg>`}
+            : `<svg viewBox="0 0 60 60" fill="none" width="48" height="48"><path d="M30 8C19.5 8 11 16.5 11 27c0 14.5 19 32 19 32s19-17.5 19-32c0-10.5-8.5-19-19-19z" fill="rgba(108,92,231,0.25)"/><circle cx="30" cy="27" r="6" fill="#00C4B4" opacity="0.7"/></svg>`}
           <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(30,27,75,0.6));padding:14px 8px 6px;"></div>
           <div style="position:absolute;top:6px;right:6px;background:rgba(108,92,231,0.85);color:#fff;border-radius:99px;font-size:8px;font-weight:800;padding:2px 7px;">${s.locations?.length || 0} loc${s.locations?.length === 1 ? '' : 's'}</div>
         </div>
         <div style="padding:9px 10px;">
           <div style="font-weight:900;font-size:12px;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(s.name)}</div>
           <div style="display:flex;gap:6px;align-items:center;">
-            <span style="font-size:10px;color:#9E98C8;font-weight:600;">${s.locations?.length || 0} location${s.locations?.length === 1 ? '' : 's'}</span>
+            <span style="font-size:10px;color:rgba(255,255,255,0.55);font-weight:600;">${s.locations?.length || 0} location${s.locations?.length === 1 ? '' : 's'}</span>
             ${s.borrowedFrom ? `<span style="font-size:9px;color:#E84393;font-weight:700;">borrowed</span>` : ''}
           </div>
         </div>
@@ -3944,14 +3945,14 @@ const settingBank = (() => {
         ${firstImg ? `<img src="${firstImg}" style="width:100%;height:80px;object-fit:cover;display:block;" />` : ''}
         <div style="padding:10px 12px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-            <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:14px;color:#1E1B4B;">${escHtml(s.name || 'Untitled')}</div>
+            <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:14px;color:#fff;">${escHtml(s.name || 'Untitled')}</div>
             <button onclick="settingBank.starSetting('${s.id}')" style="background:#FFF0F6;border:1px solid #FCCDE8;border-radius:99px;padding:4px 10px;font-size:11px;font-weight:800;color:#E84393;cursor:pointer;">⭐ ${s.star_count || 0}</button>
           </div>
-          <div style="font-size:10px;color:#9E98C8;font-weight:600;margin-bottom:8px;">By ${escHtml(author)} · ${locCount} location${locCount === 1 ? '' : 's'}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.55);font-weight:600;margin-bottom:8px;">By ${escHtml(author)} · ${locCount} location${locCount === 1 ? '' : 's'}</div>
           ${locCount > 0 && Array.isArray(s.locations) ? `
             <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">
               ${s.locations.slice(0,3).map(loc => `<span style="background:#EDE8FA;color:#6C5CE7;border-radius:99px;font-size:9px;font-weight:800;padding:2px 8px;">📍 ${escHtml(loc.name)}</span>`).join('')}
-              ${locCount > 3 ? `<span style="background:#EDE8FA;color:#9E98C8;border-radius:99px;font-size:9px;font-weight:800;padding:2px 8px;">+${locCount-3} more</span>` : ''}
+              ${locCount > 3 ? `<span style="background:#EDE8FA;color:rgba(255,255,255,0.55);border-radius:99px;font-size:9px;font-weight:800;padding:2px 8px;">+${locCount-3} more</span>` : ''}
             </div>` : ''}
           <div style="display:flex;gap:8px;">
             <button onclick="settingBank.borrowSetting(${JSON.stringify(s).replace(/"/g,'&quot;')})" style="flex:1;background:linear-gradient(90deg,#6C5CE7,#9B59B6);color:#fff;border:none;border-radius:99px;padding:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;">
@@ -4289,7 +4290,7 @@ const settingBank = (() => {
       <div class="loc-block">
         <div class="loc-header">
           <span class="loc-num">${n}</span>
-          <span class="loc-name-line"><span style="font-size:7.5pt;color:#5a3a10;font-weight:700;">Location Name:&nbsp;</span>${writeLines(1)}</span>
+          <span class="loc-name-line"><span style="font-size:7.5pt;color:#FFD700;font-weight:700;">Location Name:&nbsp;</span>${writeLines(1)}</span>
         </div>
         <div class="senses-grid">
           ${sensePrompts.map(p => `
