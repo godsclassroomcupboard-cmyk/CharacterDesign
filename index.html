@@ -8,11 +8,11 @@
 <script src="https://cdn.jsdelivr.net/npm/docx@9.7.0/dist/index.iife.js"></script>
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800&family=Bangers&family=Fredoka+One&display=swap" rel="stylesheet" />
 <script src="site-theme.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Nunito', sans-serif; background: #EAE7FC; min-height: 100vh; overflow: hidden; }
+body { font-family: 'Nunito', sans-serif; background: #0A0520; min-height: 100vh; overflow: hidden; }
 
 /* ══════════════════════════════════════════
    SIDEBAR — narrow dark strip
@@ -46,20 +46,20 @@ body { font-family: 'Nunito', sans-serif; background: #EAE7FC; min-height: 100vh
   gap: 4px; padding: 9px 6px;
   border-radius: 10px;
   cursor: pointer;
-  color: #5C618A;
+  color: rgba(255,255,255,0.45);
   font-size: 10px; font-weight: 700;
   text-align: center; line-height: 1.2;
   transition: background 0.18s, color 0.18s;
   background: rgba(255,255,255,0.02);
   border: 1px solid transparent;
 }
-.nav-tab:hover { background: rgba(162,155,254,0.10); color: #A29BFE; border-color: rgba(162,155,254,0.12); }
+.nav-tab:hover { background: rgba(255,45,120,0.12); color: #FF6EB4; border-color: rgba(255,45,120,0.2); }
 .nav-tab.active {
-  background: rgba(108,92,231,0.18);
+  background: rgba(255,45,120,0.2);
   color: #fff;
-  border-color: rgba(162,155,254,0.20);
+  border-color: rgba(255,45,120,0.3);
 }
-.nav-tab.active .nav-icon { color: #E84393; }
+.nav-tab.active .nav-icon { color: #FF2D78; }
 .nav-tab svg { width: 20px; height: 20px; }
 .sidebar-bottom { padding: 10px 8px 18px; width: 100%; display:flex; justify-content:center; }
 
@@ -75,7 +75,7 @@ body { font-family: 'Nunito', sans-serif; background: #EAE7FC; min-height: 100vh
   flex-direction: column;
   overflow: hidden;
   position: relative;
-  background: #EAE7FC;
+  background: #0A0520;
 }
 
 /* The dark folder tab — wider so it extends further before the S-curve rises */
@@ -513,12 +513,12 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
          This dark band is purely the folder-tab shape continuation. -->
     <div class="topbar-left-dark"></div>
     <!-- Centre: title on light purple background -->
-    <div class="topbar-center" style="background:linear-gradient(90deg,#EEE9FC,#E8E3FA);height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-bottom:1px solid #DDD8F5;">
-      <h1 style="font-family:'Baloo 2',cursive;font-size:27px;font-weight:800;color:#1E1B4B;line-height:1.1;">Character Bank</h1>
-      <p style="color:#7C74B8;font-size:13px;font-weight:600;">Create, customise and collect amazing characters for your stories!</p>
+    <div class="topbar-center" style="background:linear-gradient(90deg,rgba(123,47,190,0.5),rgba(74,26,138,0.4));height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-bottom:1px solid rgba(255,215,0,0.2);backdrop-filter:blur(8px);">
+      <h1 style="font-family:'Bangers',cursive;font-size:28px;letter-spacing:2px;color:#fff;line-height:1.1;text-shadow:2px 2px 0 rgba(0,0,0,0.3);">Character Bank</h1>
+      <p style="color:rgba(255,255,255,0.65);font-size:12px;font-weight:700;font-family:'Fredoka One',cursive;letter-spacing:0.5px;">Create, customise and collect amazing characters for your stories!</p>
     </div>
     <!-- Right: user info on light purple -->
-    <div class="topbar-right" style="background:linear-gradient(90deg,#E8E3FA,#E4DFFA);height:72px;padding:0 20px;border-bottom:1px solid #DDD8F5;position:relative;">
+    <div class="topbar-right" style="background:rgba(10,5,32,0.5);height:72px;padding:0 20px;border-bottom:1px solid rgba(255,215,0,0.2);backdrop-filter:blur(8px);position:relative;">
       <!-- Signed-out state (guard redirects before this is visible) -->
       <div id="topbar-signedout" style="display:flex;align-items:center;gap:10px;">
         <a href="portal.html" class="btn-outline" style="padding:8px 18px;font-size:13px;text-decoration:none;color:inherit;">← Portal</a>
@@ -526,13 +526,13 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       <!-- Signed-in state (hidden until auth resolves) -->
       <div id="topbar-signedin" style="display:none;align-items:center;gap:10px;">
         <div style="text-align:right;">
-          <div style="font-size:10px;color:#9E98C8;font-weight:700;">Welcome,</div>
-          <div id="topbar-username" style="font-size:14px;font-weight:900;color:#1E1B4B;"></div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);font-weight:700;font-family:'Fredoka One',cursive;letter-spacing:0.5px;">Welcome,</div>
+          <div id="topbar-username" style="font-family:'Fredoka One',cursive;font-size:14px;font-weight:900;color:#fff;"></div>
         </div>
         <div id="topbar-avatar" onclick="toggleProfileDropdown()" style="width:38px;height:38px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 10px rgba(108,92,231,0.20);overflow:hidden;background:#C4A8DC;display:flex;align-items:center;justify-content:center;cursor:pointer;">
           <svg viewBox="0 0 40 40" fill="none" width="38" height="38"><circle cx="20" cy="20" r="20" fill="#D4B8E0"/><circle cx="20" cy="15" r="7" fill="#A87CC8"/><ellipse cx="20" cy="34" rx="11" ry="9" fill="#C4A0DC"/></svg>
         </div>
-        <div id="topbar-stars" style="background:#fff;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:5px;box-shadow:0 2px 10px rgba(108,92,231,0.10);font-weight:800;font-size:14px;color:#1E1B4B;">
+        <div id="topbar-stars" style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:5px;font-family:'Bangers',cursive;font-size:15px;color:#FFD700;letter-spacing:1px;">
           <span style="font-size:15px;">⭐</span> <span id="topbar-star-count">0</span>
         </div>
         <!-- Profile dropdown -->
@@ -585,7 +585,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       <input type="file" id="mascot-file-input" accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;" onchange="loadMascotFile(event)" />
 
       <!-- My Characters — live list -->
-      <div style="background:#fff;border-radius:18px;padding:16px;box-shadow:0 3px 18px rgba(108,92,231,0.08);">
+      <div style="background:rgba(255,255,255,0.06);border-radius:18px;padding:16px;border:1.5px solid rgba(255,255,255,0.1);">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#1E1B4B;">My Characters</h3>
           <span id="my-char-count" style="background:#6C5CE7;color:#fff;border-radius:99px;font-size:10px;font-weight:800;padding:2px 8px;">0</span>
@@ -604,7 +604,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
     </div>
 
     <!-- ── MIDDLE ── -->
-    <div style="background:#fff;border-radius:20px;box-shadow:0 4px 22px rgba(108,92,231,0.08);display:flex;flex-direction:column;overflow:hidden;">
+    <div style="background:rgba(255,255,255,0.05);border-radius:20px;border:1.5px solid rgba(255,255,255,0.1);backdrop-filter:blur(4px);display:flex;flex-direction:column;overflow:hidden;">
 
 
       <div style="flex:1;overflow-y:auto;padding:14px 20px;" id="tab-create-content">
@@ -649,7 +649,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         </div>
 
         <div style="margin-top:18px;">
-          <div style="font-weight:800;font-size:13px;color:#1E1B4B;margin-bottom:8px;">Character Image</div>
+          <div style="font-weight:800;font-size:13px;color:#fff;margin-bottom:8px;">Character Image</div>
           <!-- Upload drop zone -->
           <div id="upload-zone"
             onclick="document.getElementById('char-upload-input').click()"
@@ -684,7 +684,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       <!-- Photo Preview — folder-tab curved top, light purple→white gradient -->
       <div class="folder-notch-card" style="flex-shrink:0;">
         <!-- Folder tab shaped header band -->
-        <div style="position:relative;background:linear-gradient(180deg,#E8E2FF 0%,#F0ECFF 40%,#F9F7FF 100%);border-radius:20px 20px 0 0;padding:16px 16px 10px;">
+        <div style="position:relative;background:linear-gradient(180deg,rgba(123,47,190,0.6) 0%,rgba(74,26,138,0.4) 40%,rgba(26,10,58,0.6) 100%);border-radius:20px 20px 0 0;padding:16px 16px 10px;">
           <svg style="position:absolute;top:0;left:0;pointer-events:none;" width="90" height="22" viewBox="0 0 90 22" fill="none">
             <path d="M0 22 Q0 0 18 0 L72 0 Q90 0 90 22" fill="#E8E2FF"/>
             <path d="M0 22 Q0 0 18 0 L72 0 Q90 0 90 22" fill="url(#folderGrad)"/>
@@ -761,7 +761,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 
       <!-- Community Spotlight — also folder-notch style -->
       <div class="folder-notch-card">
-        <div style="position:relative;background:linear-gradient(180deg,#E8E2FF 0%,#F0ECFF 40%,#F9F7FF 100%);border-radius:20px 20px 0 0;padding:14px 16px 10px;">
+        <div style="position:relative;background:linear-gradient(180deg,rgba(123,47,190,0.6) 0%,rgba(74,26,138,0.4) 40%,rgba(26,10,58,0.6) 100%);border-radius:20px 20px 0 0;padding:14px 16px 10px;">
           <svg style="position:absolute;top:0;left:0;pointer-events:none;" width="90" height="22" viewBox="0 0 90 22" fill="none">
             <path d="M0 22 Q0 0 18 0 L72 0 Q90 0 90 22" fill="#E8E2FF"/>
           </svg>
@@ -770,7 +770,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
             <span style="color:#6C5CE7;font-weight:800;font-size:12px;cursor:pointer;">View all</span>
           </div>
         </div>
-        <div style="background:linear-gradient(180deg,#F5F2FF 0%,#ffffff 60%);padding:10px 14px 14px;">
+        <div style="background:linear-gradient(180deg,rgba(26,10,58,0.5) 0%,rgba(10,5,32,0.7) 60%);padding:10px 14px 14px;">
           <div class="community-card">
             <div style="width:58px;height:58px;border-radius:11px;background:linear-gradient(135deg,#C8E6FF,#8EC5FF);flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
               <svg viewBox="0 0 50 50" fill="none" width="52" height="52">
@@ -818,22 +818,22 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
   <header class="topbar">
     <div class="topbar-left-dark"></div>
     <div class="topbar-center" style="background:linear-gradient(90deg,#EEE9FC,#E8E3FA);height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-bottom:1px solid #DDD8F5;">
-      <h1 style="font-family:'Baloo 2',cursive;font-size:27px;font-weight:800;color:#1E1B4B;line-height:1.1;">Setting Bank</h1>
+      <h1 style="font-family:'Bangers',cursive;font-size:28px;letter-spacing:2px;color:#fff;line-height:1.1;text-shadow:2px 2px 0 rgba(0,0,0,0.3);">Setting Bank</h1>
       <p style="color:#7C74B8;font-size:13px;font-weight:600;">Build vivid story worlds — explore locations through all five senses!</p>
     </div>
-    <div class="topbar-right" style="background:linear-gradient(90deg,#E8E3FA,#E4DFFA);height:72px;padding:0 20px;border-bottom:1px solid #DDD8F5;position:relative;">
+    <div class="topbar-right" style="background:rgba(10,5,32,0.5);height:72px;padding:0 20px;border-bottom:1px solid rgba(255,215,0,0.2);backdrop-filter:blur(8px);position:relative;">
       <div id="topbar-signedout-map" style="display:flex;align-items:center;gap:10px;">
         <a href="portal.html" class="btn-outline" style="padding:8px 18px;font-size:13px;text-decoration:none;color:inherit;">← Portal</a>
       </div>
       <div id="topbar-signedin-map" style="display:none;align-items:center;gap:10px;">
         <div style="text-align:right;">
-          <div style="font-size:10px;color:#9E98C8;font-weight:700;">Welcome,</div>
-          <div id="topbar-username-map" style="font-size:14px;font-weight:900;color:#1E1B4B;"></div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);font-weight:700;font-family:'Fredoka One',cursive;letter-spacing:0.5px;">Welcome,</div>
+          <div id="topbar-username-map" style="font-family:'Fredoka One',cursive;font-size:14px;font-weight:900;color:#fff;"></div>
         </div>
         <div style="width:38px;height:38px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 10px rgba(108,92,231,0.20);overflow:hidden;background:#C4A8DC;display:flex;align-items:center;justify-content:center;">
           <svg viewBox="0 0 40 40" fill="none" width="38" height="38"><circle cx="20" cy="20" r="20" fill="#D4B8E0"/><circle cx="20" cy="15" r="7" fill="#A87CC8"/><ellipse cx="20" cy="34" rx="11" ry="9" fill="#C4A0DC"/></svg>
         </div>
-        <div id="topbar-stars-map" style="background:#fff;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:5px;box-shadow:0 2px 10px rgba(108,92,231,0.10);font-weight:800;font-size:14px;color:#1E1B4B;">
+        <div id="topbar-stars-map" style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:5px;font-family:'Bangers',cursive;font-size:15px;color:#FFD700;letter-spacing:1px;">
           <span style="font-size:15px;">⭐</span> <span id="topbar-star-count-map">0</span>
         </div>
       </div>
@@ -862,7 +862,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       </div>
 
       <!-- My Settings list -->
-      <div style="background:#fff;border-radius:18px;padding:16px;box-shadow:0 3px 18px rgba(108,92,231,0.08);">
+      <div style="background:rgba(255,255,255,0.06);border-radius:18px;padding:16px;border:1.5px solid rgba(255,255,255,0.1);">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#1E1B4B;">My Settings</h3>
           <span style="background:#6C5CE7;color:#fff;border-radius:99px;font-size:10px;font-weight:800;padding:2px 8px;" id="my-settings-count">0</span>
@@ -881,7 +881,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
     </div>
 
     <!-- ── CENTRE: Main tabs ── -->
-    <div style="background:#fff;border-radius:20px;box-shadow:0 4px 22px rgba(108,92,231,0.08);display:flex;flex-direction:column;overflow:hidden;">
+    <div style="background:rgba(255,255,255,0.05);border-radius:20px;border:1.5px solid rgba(255,255,255,0.1);backdrop-filter:blur(4px);display:flex;flex-direction:column;overflow:hidden;">
 
       <!-- Tab bar -->
       <div class="tab-bar">
@@ -1009,7 +1009,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 
       <!-- Location builder panel (default: idle) -->
       <div class="folder-notch-card" id="sb-location-panel">
-        <div style="position:relative;background:linear-gradient(180deg,#E8E2FF 0%,#F0ECFF 40%,#F9F7FF 100%);border-radius:20px 20px 0 0;padding:16px 16px 10px;">
+        <div style="position:relative;background:linear-gradient(180deg,rgba(123,47,190,0.6) 0%,rgba(74,26,138,0.4) 40%,rgba(26,10,58,0.6) 100%);border-radius:20px 20px 0 0;padding:16px 16px 10px;">
           <svg style="position:absolute;top:0;left:0;pointer-events:none;" width="90" height="22" viewBox="0 0 90 22" fill="none">
             <path d="M0 22 Q0 0 18 0 L72 0 Q90 0 90 22" fill="#E8E2FF"/>
           </svg>
@@ -1018,7 +1018,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
             <span class="beta-badge" style="background:#E8E2FF;color:#6C5CE7;">NEW</span>
           </div>
         </div>
-        <div style="background:linear-gradient(180deg,#F5F2FF 0%,#ffffff 60%);padding:12px 14px 16px;" id="sb-loc-panel-body">
+        <div style="background:linear-gradient(180deg,rgba(26,10,58,0.5) 0%,rgba(10,5,32,0.7) 60%);padding:12px 14px 16px;" id="sb-loc-panel-body">
 
           <!-- Idle state -->
           <div id="sb-loc-idle" style="text-align:center;padding:28px 10px;">
@@ -1077,7 +1077,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 
             <!-- Image upload -->
             <div style="margin-top:12px;">
-              <div style="font-weight:800;font-size:12px;color:#1E1B4B;margin-bottom:6px;">📷 Location Image <span style="color:#C0BADA;font-weight:600;">(optional)</span></div>
+              <div style="font-weight:800;font-size:12px;color:#fff;margin-bottom:6px;">📷 Location Image <span style="color:#C0BADA;font-weight:600;">(optional)</span></div>
               <div id="sb-loc-upload-zone"
                 onclick="document.getElementById('sb-loc-upload-input').click()"
                 ondragover="event.preventDefault();this.style.borderColor='#6C5CE7';"
@@ -1107,7 +1107,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 
       <!-- Community spotlight (shown when in community tab) -->
       <div class="folder-notch-card" id="sb-spotlight-card">
-        <div style="position:relative;background:linear-gradient(180deg,#E8E2FF 0%,#F0ECFF 40%,#F9F7FF 100%);border-radius:20px 20px 0 0;padding:14px 16px 10px;">
+        <div style="position:relative;background:linear-gradient(180deg,rgba(123,47,190,0.6) 0%,rgba(74,26,138,0.4) 40%,rgba(26,10,58,0.6) 100%);border-radius:20px 20px 0 0;padding:14px 16px 10px;">
           <svg style="position:absolute;top:0;left:0;pointer-events:none;" width="90" height="22" viewBox="0 0 90 22" fill="none">
             <path d="M0 22 Q0 0 18 0 L72 0 Q90 0 90 22" fill="#E8E2FF"/>
           </svg>
@@ -1115,7 +1115,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
             <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#1E1B4B;">How it works</h3>
           </div>
         </div>
-        <div style="background:linear-gradient(180deg,#F5F2FF 0%,#ffffff 60%);padding:12px 14px 16px;">
+        <div style="background:linear-gradient(180deg,rgba(26,10,58,0.5) 0%,rgba(10,5,32,0.7) 60%);padding:12px 14px 16px;">
           <div style="display:flex;flex-direction:column;gap:8px;">
             <div style="background:#F0ECFC;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:600;color:#4A3A8A;line-height:1.5;border-left:3px solid #6C5CE7;">
               📍 <strong>Create a Setting</strong> — give it a name and add locations inside it
@@ -2766,7 +2766,7 @@ function _renderCommunityGrid(items, append) {
         <div style="position:absolute;top:8px;right:8px;background:rgba(108,92,231,0.85);color:#fff;font-size:9px;font-weight:900;padding:2px 8px;border-radius:99px;text-transform:uppercase;">${item.art_style || 'art'}</div>
       </div>
       <div style="padding:10px 12px 12px;">
-        <div style="font-weight:900;font-size:14px;color:#1E1B4B;margin-bottom:2px;">${_esc(item.name || 'Unnamed')}</div>
+        <div style="font-weight:900;font-size:14px;color:#fff;margin-bottom:2px;">${_esc(item.name || 'Unnamed')}</div>
         <div style="font-size:11px;color:#9E98C8;font-weight:700;margin-bottom:8px;">by ${_esc(item.display_name || item.username)}</div>
         <div style="display:flex;align-items:center;justify-content:space-between;">
           <button class="star-btn ${isStarred ? 'starred' : ''}" id="star-btn-${item.id}" onclick="handleStarToggle('${item.id}',this)">
@@ -2845,7 +2845,7 @@ async function loadProfile() {
         ${item.is_public ? `<div style="position:absolute;top:8px;left:8px;background:rgba(46,204,113,0.9);color:#fff;font-size:8px;font-weight:900;padding:2px 7px;border-radius:99px;">PUBLIC</div>` : ''}
       </div>
       <div style="padding:10px 12px 12px;">
-        <div style="font-weight:900;font-size:13px;color:#1E1B4B;margin-bottom:6px;">${_esc(item.name || 'Unnamed')}</div>
+        <div style="font-weight:900;font-size:13px;color:#fff;margin-bottom:6px;">${_esc(item.name || 'Unnamed')}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
           <button onclick="deleteProfileChar('${item.id}',this)" style="background:none;border:1.5px solid #F9A8D4;border-radius:8px;padding:4px 10px;font-size:10px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;color:#E84393;">Delete</button>
           <button onclick="togglePublicChar('${item.id}',${item.is_public},this)" style="background:none;border:1.5px solid #A29BFE;border-radius:8px;padding:4px 10px;font-size:10px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;color:#6C5CE7;">${item.is_public ? 'Make private' : 'Share'}</button>
@@ -2934,10 +2934,10 @@ window.addEventListener('load', () => {
   <header class="topbar">
     <div class="topbar-left-dark"></div>
     <div class="topbar-center" style="background:linear-gradient(90deg,#EEE9FC,#E8E3FA);height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-bottom:1px solid #DDD8F5;">
-      <h1 style="font-family:'Baloo 2',cursive;font-size:27px;font-weight:800;color:#1E1B4B;line-height:1.1;">Community Bank</h1>
+      <h1 style="font-family:'Baloo 2',cursive;font-size:27px;font-weight:800;color:#fff;line-height:1.1;">Community Bank</h1>
       <p style="color:#7C74B8;font-size:13px;font-weight:600;">Explore and star amazing creations from other students!</p>
     </div>
-    <div class="topbar-right" style="background:linear-gradient(90deg,#E8E3FA,#E4DFFA);height:72px;padding:0 20px;border-bottom:1px solid #DDD8F5;"></div>
+    <div class="topbar-right" style="background:rgba(10,5,32,0.5);height:72px;padding:0 20px;border-bottom:1px solid rgba(255,215,0,0.2);backdrop-filter:blur(8px);"></div>
   </header>
 
   <div style="flex:1;overflow-y:auto;padding:20px 24px;position:relative;z-index:2;">
@@ -2959,7 +2959,7 @@ window.addEventListener('load', () => {
     <!-- Empty state -->
     <div id="community-empty" style="display:none;text-align:center;padding:48px 24px;">
       <div style="font-size:48px;margin-bottom:12px;">🎨</div>
-      <div style="font-family:'Baloo 2',cursive;font-size:20px;font-weight:800;color:#1E1B4B;margin-bottom:8px;">Be the first to share!</div>
+      <div style="font-family:'Baloo 2',cursive;font-size:20px;font-weight:800;color:#fff;margin-bottom:8px;">Be the first to share!</div>
       <div style="color:#9E98C8;font-size:14px;font-weight:600;">Create a character, toggle "Share with community" and save it to see it here.</div>
     </div>
 
@@ -2985,10 +2985,10 @@ window.addEventListener('load', () => {
   <header class="topbar">
     <div class="topbar-left-dark"></div>
     <div class="topbar-center" style="background:linear-gradient(90deg,#EEE9FC,#E8E3FA);height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-bottom:1px solid #DDD8F5;">
-      <h1 style="font-family:'Baloo 2',cursive;font-size:27px;font-weight:800;color:#1E1B4B;line-height:1.1;">My Profile</h1>
+      <h1 style="font-family:'Baloo 2',cursive;font-size:27px;font-weight:800;color:#fff;line-height:1.1;">My Profile</h1>
       <p style="color:#7C74B8;font-size:13px;font-weight:600;">Your saved characters and star collection</p>
     </div>
-    <div class="topbar-right" style="background:linear-gradient(90deg,#E8E3FA,#E4DFFA);height:72px;padding:0 20px;border-bottom:1px solid #DDD8F5;"></div>
+    <div class="topbar-right" style="background:rgba(10,5,32,0.5);height:72px;padding:0 20px;border-bottom:1px solid rgba(255,215,0,0.2);backdrop-filter:blur(8px);"></div>
   </header>
 
   <div style="flex:1;overflow-y:auto;padding:20px 24px;position:relative;z-index:2;">
@@ -3040,7 +3040,7 @@ window.addEventListener('load', () => {
     <!-- Signup form -->
     <div id="auth-signup-form">
       <div style="text-align:center;margin-bottom:22px;">
-        <div style="font-family:'Baloo 2',cursive;font-size:24px;font-weight:800;color:#1E1B4B;margin-bottom:4px;">Join Aurabot! 🤖</div>
+        <div style="font-family:'Baloo 2',cursive;font-size:24px;font-weight:800;color:#fff;margin-bottom:4px;">Join Aurabot! 🤖</div>
         <div style="color:#9E98C8;font-size:13px;font-weight:600;">Create your free student account</div>
       </div>
       <input class="auth-input" id="signup-displayname" type="text" placeholder="Your name (e.g. Lily)" />
@@ -3059,7 +3059,7 @@ window.addEventListener('load', () => {
     <!-- Signin form -->
     <div id="auth-signin-form" style="display:none;">
       <div style="text-align:center;margin-bottom:22px;">
-        <div style="font-family:'Baloo 2',cursive;font-size:24px;font-weight:800;color:#1E1B4B;margin-bottom:4px;">Welcome back! 👋</div>
+        <div style="font-family:'Baloo 2',cursive;font-size:24px;font-weight:800;color:#fff;margin-bottom:4px;">Welcome back! 👋</div>
         <div style="color:#9E98C8;font-size:13px;font-weight:600;">Sign in to your account</div>
       </div>
       <input class="auth-input" id="signin-email"    type="email"    placeholder="Email address" />
@@ -3149,7 +3149,7 @@ window.addEventListener('load', () => {
 <div id="char-delete-modal" style="display:none;position:fixed;inset:0;z-index:1010;background:rgba(26,29,58,0.7);align-items:center;justify-content:center;">
   <div style="background:#fff;border-radius:20px;width:360px;max-width:94vw;padding:28px 24px;box-shadow:0 16px 60px rgba(232,67,147,0.25);text-align:center;">
     <div style="font-size:40px;margin-bottom:10px;">⚠️</div>
-    <h3 style="font-family:'Baloo 2',cursive;font-size:20px;font-weight:900;color:#1E1B4B;margin-bottom:8px;">Delete Character?</h3>
+    <h3 style="font-family:'Baloo 2',cursive;font-size:20px;font-weight:900;color:#fff;margin-bottom:8px;">Delete Character?</h3>
     <p id="cdm-delete-name" style="font-size:14px;font-weight:700;color:#6C5CE7;margin-bottom:10px;"></p>
     <p style="font-size:13px;color:#7C74B8;margin-bottom:20px;line-height:1.5;">This will permanently remove this character from your bank and the community. <strong>This cannot be undone.</strong></p>
     <div style="display:flex;gap:10px;">
@@ -3198,7 +3198,7 @@ window.addEventListener('load', () => {
         <textarea id="sb-modal-smell" placeholder="Damp earth, sea salt, baking bread…" style="min-height:52px;resize:vertical;"></textarea>
       </div>
       <div style="margin-top:14px;">
-        <div style="font-weight:800;font-size:12px;color:#1E1B4B;margin-bottom:6px;">📷 Location Image <span style="color:#C0BADA;font-weight:600;">(optional)</span></div>
+        <div style="font-weight:800;font-size:12px;color:#fff;margin-bottom:6px;">📷 Location Image <span style="color:#C0BADA;font-weight:600;">(optional)</span></div>
         <div id="sb-modal-upload-zone"
           onclick="document.getElementById('sb-modal-upload-input').click()"
           ondragover="event.preventDefault();this.style.borderColor='#6C5CE7';"
@@ -3824,7 +3824,7 @@ const settingBank = (() => {
       return;
     }
     container.innerHTML = locs.map((loc, i) => `
-      <div style="background:#F8F5FF;border-radius:14px;overflow:hidden;border:1px solid #EDE8FA;">
+      <div style="background:rgba(255,255,255,0.06);border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);">
         ${loc.imageDataUrl ? `<img src="${loc.imageDataUrl}" style="width:100%;height:100px;object-fit:cover;display:block;" />` : ''}
         <div style="padding:10px 12px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
@@ -3918,7 +3918,7 @@ const settingBank = (() => {
           <div style="position:absolute;top:6px;right:6px;background:rgba(108,92,231,0.85);color:#fff;border-radius:99px;font-size:8px;font-weight:800;padding:2px 7px;">${s.locations?.length || 0} loc${s.locations?.length === 1 ? '' : 's'}</div>
         </div>
         <div style="padding:9px 10px;">
-          <div style="font-weight:900;font-size:12px;color:#1E1B4B;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(s.name)}</div>
+          <div style="font-weight:900;font-size:12px;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(s.name)}</div>
           <div style="display:flex;gap:6px;align-items:center;">
             <span style="font-size:10px;color:#9E98C8;font-weight:600;">${s.locations?.length || 0} location${s.locations?.length === 1 ? '' : 's'}</span>
             ${s.borrowedFrom ? `<span style="font-size:9px;color:#E84393;font-weight:700;">borrowed</span>` : ''}
@@ -3940,7 +3940,7 @@ const settingBank = (() => {
       const locCount = Array.isArray(s.locations) ? s.locations.length : 0;
       const firstImg = Array.isArray(s.locations) && s.locations[0]?.imageDataUrl ? s.locations[0].imageDataUrl : null;
       return `
-      <div style="background:#F8F5FF;border-radius:14px;overflow:hidden;border:1px solid #EDE8FA;">
+      <div style="background:rgba(255,255,255,0.06);border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);">
         ${firstImg ? `<img src="${firstImg}" style="width:100%;height:80px;object-fit:cover;display:block;" />` : ''}
         <div style="padding:10px 12px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
