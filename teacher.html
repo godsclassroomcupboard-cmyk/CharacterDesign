@@ -74,8 +74,8 @@ html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--cosmi
 .img-overlay-btn:hover{transform:scale(1.05);}
 .img-overlay-hint{font-family:'Fredoka One',cursive;font-size:12px;color:rgba(255,255,255,0.7);letter-spacing:0.5px;}
 .prompt-date-badge{position:absolute;top:10px;left:10px;background:var(--yellow);color:var(--ink);font-family:'Bangers',cursive;font-size:13px;letter-spacing:1px;padding:4px 12px;border-radius:3px;box-shadow:2px 2px 0 rgba(0,0,0,0.3);z-index:3;}
-.prompt-img-title-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;padding:20px;pointer-events:none;}
-.prompt-img-title-overlay h2{font-family:'Bangers',cursive;font-size:clamp(24px,4vw,48px);color:#fff;text-align:center;letter-spacing:2px;line-height:1.1;text-shadow:2px 2px 0 #000,0 0 30px rgba(255,45,120,0.5);}
+.prompt-img-title-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.72) 60%);padding:28px 16px 14px;z-index:2;pointer-events:none;}
+.prompt-img-title-overlay h2{font-family:'Bangers',cursive;font-size:clamp(20px,3vw,36px);color:#fff;text-align:left;letter-spacing:2px;line-height:1.1;text-shadow:1px 1px 0 rgba(0,0,0,0.8);}
 
 /* Notepad / questions area */
 .prompt-notepad{background:var(--cream,#FFFBF0);color:var(--ink);position:relative;padding:18px 18px 16px;}
@@ -156,6 +156,33 @@ html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--cosmi
 textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',cursive;font-size:14px;line-height:1.6;}
 .field-hint{font-size:10px;color:rgba(255,255,255,0.35);margin-top:3px;font-style:italic;}
 
+/* Image upload zone */
+/* Zoom / rotate controls */
+.img-controls{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:10px 14px;background:rgba(0,0,0,0.3);
+  border-top:1px solid rgba(255,255,255,0.1);
+}
+.img-ctrl-label{font-family:'Fredoka One',cursive;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-right:4px;}
+.img-ctrl-btn{
+  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);
+  border-radius:6px;padding:5px 10px;color:#fff;
+  font-family:'Fredoka One',cursive;font-size:11px;cursor:pointer;
+  transition:all 0.15s;letter-spacing:0.3px;
+}
+.img-ctrl-btn:hover{background:rgba(255,45,120,0.2);border-color:var(--pink);}
+.img-ctrl-btn:active{transform:scale(0.95);}
+.img-ctrl-slider{
+  -webkit-appearance:none;appearance:none;
+  width:100px;height:4px;border-radius:2px;
+  background:rgba(255,255,255,0.2);outline:none;cursor:pointer;
+}
+.img-ctrl-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:var(--pink);cursor:pointer;
+}
+.img-ctrl-value{font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,0.5);width:36px;text-align:right;}
+.img-ctrl-reset{background:rgba(255,215,0,0.15);border-color:rgba(255,215,0,0.4);color:var(--yellow);}
 /* Image upload zone */
 .img-upload-zone{border:2px dashed rgba(255,255,255,0.2);border-radius:10px;padding:0;cursor:pointer;transition:border-color 0.15s;overflow:hidden;position:relative;}
 .img-upload-zone:hover{border-color:var(--pink);}
@@ -333,6 +360,20 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
           <button class="img-change-btn" id="img-change-btn" onclick="event.stopPropagation();document.getElementById('img-file-input').click();">🔄 Change Image</button>
         </div>
         <input type="file" id="img-file-input" accept="image/*" style="display:none;" onchange="handleImgUpload(event)"/>
+        <!-- Zoom / Rotate controls — only shown once image loaded -->
+        <div class="img-controls" id="img-controls" style="display:none;">
+          <span class="img-ctrl-label">Zoom</span>
+          <button class="img-ctrl-btn" onclick="adjustZoom(-10)">−</button>
+          <input class="img-ctrl-slider" id="zoom-slider" type="range" min="60" max="200" value="100" oninput="onZoom(this.value)"/>
+          <button class="img-ctrl-btn" onclick="adjustZoom(10)">+</button>
+          <span class="img-ctrl-value" id="zoom-val">100%</span>
+          <div style="width:1px;height:16px;background:rgba(255,255,255,0.15);margin:0 4px;"></div>
+          <span class="img-ctrl-label">Rotate</span>
+          <button class="img-ctrl-btn" onclick="adjustRotate(-90)">↺ 90°</button>
+          <button class="img-ctrl-btn" onclick="adjustRotate(90)">↻ 90°</button>
+          <div style="width:1px;height:16px;background:rgba(255,255,255,0.15);margin:0 4px;"></div>
+          <button class="img-ctrl-btn img-ctrl-reset" onclick="resetTransform()">↺ Reset</button>
+        </div>
         <div class="field-hint" style="margin-top:8px;">This image appears full-bleed on the student dashboard. Evocative, slightly mysterious images work best — like Pobble 365.</div>
       </div>
     </div>
@@ -554,19 +595,7 @@ function loadImgFile(f) {
   r.onload = function(ev) { _newImgDataUrl = ev.target.result; showImgPreview(ev.target.result); };
   r.readAsDataURL(f);
 }
-function showImgPreview(src) {
-  var prev = document.getElementById('img-preview');
-  prev.src = src; prev.style.display = 'block';
-  document.getElementById('img-placeholder').style.display = 'none';
-  document.getElementById('img-change-btn').style.display = 'block';
-}
-function resetImgZone() {
-  _newImgDataUrl = null;
-  var prev = document.getElementById('img-preview');
-  prev.style.display = 'none'; prev.src = '';
-  document.getElementById('img-placeholder').style.display = 'block';
-  document.getElementById('img-change-btn').style.display = 'none';
-}
+// showImgPreview and resetImgZone defined above with zoom/rotate support
 
 // ── Save prompt ──
 async function savePrompt() {
@@ -738,6 +767,57 @@ async function loadStats() {
 }
 
 // ── Utils ──
+// ── Image zoom / rotate ──
+var _imgTransform = {zoom: 100, rotate: 0};
+
+function onZoom(val) {
+  _imgTransform.zoom = parseInt(val);
+  document.getElementById('zoom-val').textContent = val + '%';
+  applyTransform();
+}
+function adjustZoom(delta) {
+  var newVal = Math.min(200, Math.max(60, _imgTransform.zoom + delta));
+  _imgTransform.zoom = newVal;
+  document.getElementById('zoom-slider').value = newVal;
+  document.getElementById('zoom-val').textContent = newVal + '%';
+  applyTransform();
+}
+function adjustRotate(delta) {
+  _imgTransform.rotate = (_imgTransform.rotate + delta + 360) % 360;
+  applyTransform();
+}
+function resetTransform() {
+  _imgTransform = {zoom: 100, rotate: 0};
+  document.getElementById('zoom-slider').value = 100;
+  document.getElementById('zoom-val').textContent = '100%';
+  applyTransform();
+}
+function applyTransform() {
+  var prev = document.getElementById('img-preview');
+  if (prev && prev.style.display !== 'none') {
+    prev.style.transform = 'scale(' + (_imgTransform.zoom/100) + ') rotate(' + _imgTransform.rotate + 'deg)';
+    prev.style.transformOrigin = 'center center';
+  }
+}
+function showImgPreview(src) {
+  var prev = document.getElementById('img-preview');
+  prev.src = src; prev.style.display = 'block';
+  document.getElementById('img-placeholder').style.display = 'none';
+  document.getElementById('img-change-btn').style.display = 'block';
+  document.getElementById('img-controls').style.display = 'flex';
+}
+function resetImgZone() {
+  _newImgDataUrl = null;
+  _imgTransform = {zoom:100,rotate:0};
+  var prev = document.getElementById('img-preview');
+  prev.style.display = 'none'; prev.src = ''; prev.style.transform = '';
+  document.getElementById('img-placeholder').style.display = 'block';
+  document.getElementById('img-change-btn').style.display = 'none';
+  document.getElementById('img-controls').style.display = 'none';
+  document.getElementById('zoom-slider').value = 100;
+  document.getElementById('zoom-val').textContent = '100%';
+}
+
 function formatDate(d) { if(!d)return'TODAY'; var dt=new Date(d+'T12:00:00'); return dt.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'}).toUpperCase(); }
 function toast(msg) { var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},2600); }
 function escHtml(s) { if(!s)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }

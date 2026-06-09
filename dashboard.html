@@ -182,19 +182,20 @@ html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--cosmi
 }
 /* Big image title overlay */
 .prompt-img-title{
-  position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;z-index:2;
-  padding:20px;pointer-events:none;
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,0.72) 60%);
+  padding:28px 16px 14px;
+  z-index:2;pointer-events:none;
 }
 .prompt-img-title h2{
-  font-family:'Bangers',cursive;font-size:clamp(28px,4vw,52px);
-  color:#fff;text-align:center;letter-spacing:2px;line-height:1.1;
-  text-shadow:2px 2px 0 #000,0 0 30px rgba(255,45,120,0.6);
+  font-family:'Bangers',cursive;font-size:clamp(20px,3vw,36px);
+  color:#fff;text-align:left;letter-spacing:2px;line-height:1.1;
+  text-shadow:1px 1px 0 rgba(0,0,0,0.8);
 }
 .prompt-img-tagline{
-  font-family:'Fredoka One',cursive;font-size:14px;
-  color:var(--yellow);letter-spacing:2px;text-transform:uppercase;
-  margin-top:6px;text-shadow:1px 1px 0 #000;
+  font-family:'Fredoka One',cursive;font-size:12px;
+  color:var(--yellow);letter-spacing:1.5px;text-transform:uppercase;
+  margin-top:4px;
 }
 /* Paper notepad section */
 .prompt-notepad{
@@ -694,7 +695,6 @@ async function loadPrompt(){
     +imgHtml
     +'<div class="prompt-img-title">'
     +'<h2>'+escHtml(p.title||'Story Prompt')+'</h2>'
-    +(p.caption?'<div class="prompt-img-tagline">USE YOUR IMAGINATION</div>':'')
     +'</div></div>'
     +'<div class="prompt-notepad">'
     +'<div class="notepad-rings"><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div></div>'
