@@ -157,16 +157,22 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
 .field-hint{font-size:10px;color:rgba(255,255,255,0.35);margin-top:3px;font-style:italic;}
 
 /* Image upload zone */
-/* Zoom / rotate controls */
+/* Image crop toolbar */
 .img-controls{
-  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-  padding:10px 14px;background:rgba(0,0,0,0.3);
+  display:none;flex-direction:column;gap:0;
+  background:rgba(0,0,0,0.5);
   border-top:1px solid rgba(255,255,255,0.1);
+  border-radius:0 0 8px 8px;
 }
-.img-ctrl-label{font-family:'Fredoka One',cursive;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-right:4px;}
+.img-ctrl-row{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:9px 13px;border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.img-ctrl-row:last-child{border-bottom:none;}
+.img-ctrl-label{font-family:'Fredoka One',cursive;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.4);width:40px;flex-shrink:0;}
 .img-ctrl-btn{
-  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);
-  border-radius:6px;padding:5px 10px;color:#fff;
+  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);
+  border-radius:6px;padding:5px 11px;color:#fff;
   font-family:'Fredoka One',cursive;font-size:11px;cursor:pointer;
   transition:all 0.15s;letter-spacing:0.3px;
 }
@@ -174,19 +180,61 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
 .img-ctrl-btn:active{transform:scale(0.95);}
 .img-ctrl-slider{
   -webkit-appearance:none;appearance:none;
-  width:100px;height:4px;border-radius:2px;
-  background:rgba(255,255,255,0.2);outline:none;cursor:pointer;
+  flex:1;min-width:80px;height:4px;border-radius:2px;
+  background:rgba(255,255,255,0.15);outline:none;cursor:pointer;
 }
 .img-ctrl-slider::-webkit-slider-thumb{
   -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
-  background:var(--pink);cursor:pointer;
+  background:var(--pink);cursor:pointer;box-shadow:0 0 6px rgba(255,45,120,0.5);
 }
-.img-ctrl-value{font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,0.5);width:36px;text-align:right;}
-.img-ctrl-reset{background:rgba(255,215,0,0.15);border-color:rgba(255,215,0,0.4);color:var(--yellow);}
+.img-ctrl-value{font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,0.5);width:38px;text-align:right;flex-shrink:0;}
+.img-ctrl-reset{background:rgba(255,215,0,0.1);border-color:rgba(255,215,0,0.35);color:var(--yellow);}
+/* Big crop button */
+.btn-crop{
+  flex:1;padding:9px;background:linear-gradient(90deg,var(--teal),#00A896);
+  border:none;border-radius:6px;color:var(--ink);
+  font-family:'Bangers',cursive;font-size:16px;letter-spacing:2px;
+  cursor:pointer;transition:opacity 0.15s;
+}
+.btn-crop:hover{opacity:0.9;}
+/* Cropped preview strip */
+.crop-result-wrap{display:none;position:relative;}
+.crop-result-img{width:100%;height:260px;object-fit:cover;display:block;border-radius:8px 8px 0 0;}
+.crop-result-overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,0);
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  opacity:0;transition:all 0.2s;border-radius:8px 8px 0 0;
+}
+.crop-result-wrap:hover .crop-result-overlay{background:rgba(0,0,0,0.5);opacity:1;}
+.crop-result-btn{
+  background:var(--yellow);color:var(--ink);border:none;border-radius:6px;
+  padding:8px 18px;font-family:'Bangers',cursive;font-size:15px;letter-spacing:1px;cursor:pointer;
+}
 /* Image upload zone */
 .img-upload-zone{border:2px dashed rgba(255,255,255,0.2);border-radius:10px;padding:0;cursor:pointer;transition:border-color 0.15s;overflow:hidden;position:relative;}
 .img-upload-zone:hover{border-color:var(--pink);}
-.img-upload-preview{width:100%;max-height:260px;object-fit:cover;display:none;border-radius:8px;}
+.img-upload-preview{display:none;}  /* hidden once loaded into crop viewport */
+/* Crop viewport - fixed height container, image moves freely inside */
+.crop-viewport{
+  position:relative;width:100%;height:280px;overflow:hidden;
+  background:#0A0520;cursor:grab;display:none;
+  border-radius:8px 8px 0 0;user-select:none;
+}
+.crop-viewport.dragging{cursor:grabbing;}
+.crop-img{
+  position:absolute;transform-origin:center center;
+  max-width:none;  /* allow image to be bigger than container */
+  pointer-events:none;
+}
+/* crop frame overlay */
+.crop-frame{
+  position:absolute;inset:0;pointer-events:none;z-index:4;
+  box-shadow:0 0 0 9999px rgba(0,0,0,0.45);
+}
+.crop-crosshair{
+  position:absolute;inset:0;pointer-events:none;z-index:5;
+  border:2px dashed rgba(255,215,0,0.7);
+}
 .img-upload-placeholder{padding:28px;text-align:center;}
 .img-upload-icon{font-size:36px;display:block;margin-bottom:8px;opacity:0.4;}
 .img-upload-text{font-family:'Fredoka One',cursive;font-size:13px;color:rgba(255,255,255,0.5);letter-spacing:0.5px;}
@@ -349,32 +397,72 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
     <div class="editor-section">
       <div class="editor-section-hdr">🖼 PROMPT IMAGE</div>
       <div class="editor-body">
-        <div class="img-upload-zone" id="img-upload-zone" onclick="document.getElementById('img-file-input').click()"
-             ondragover="event.preventDefault();this.style.borderColor='var(--pink)'" ondragleave="this.style.borderColor=''" ondrop="handleImgDrop(event)">
+        <!-- Upload drop zone (shown before image) -->
+        <div class="img-upload-zone" id="img-upload-zone"
+             onclick="document.getElementById('img-file-input').click()"
+             ondragover="event.preventDefault();this.style.borderColor='var(--pink)'"
+             ondragleave="this.style.borderColor=''"
+             ondrop="handleImgDrop(event)">
           <img id="img-preview" class="img-upload-preview"/>
           <div class="img-upload-placeholder" id="img-placeholder">
             <span class="img-upload-icon">🖼️</span>
             <div class="img-upload-text">CLICK OR DRAG &amp; DROP TO UPLOAD</div>
             <div class="img-upload-hint">JPG or PNG — ideally mysterious or atmospheric</div>
           </div>
-          <button class="img-change-btn" id="img-change-btn" onclick="event.stopPropagation();document.getElementById('img-file-input').click();">🔄 Change Image</button>
         </div>
+
+        <!-- Crop editor (shown after upload, before crop is confirmed) -->
+        <div id="crop-editor" style="display:none;border:2px solid var(--teal);border-radius:10px;overflow:hidden;">
+          <!-- Viewport where full image is visible and pannable -->
+          <div class="crop-viewport" id="crop-viewport"
+               onmousedown="startDrag(event)" ontouchstart="startDragTouch(event)">
+            <img id="crop-img" class="crop-img" alt=""/>
+            <div class="crop-frame"></div>
+            <div class="crop-crosshair"></div>
+          </div>
+          <!-- Controls toolbar -->
+          <div class="img-controls" id="img-controls" style="display:flex;">
+            <div class="img-ctrl-row">
+              <span class="img-ctrl-label">Zoom</span>
+              <button class="img-ctrl-btn" onclick="adjustZoom(-15)">−</button>
+              <input class="img-ctrl-slider" id="zoom-slider" type="range" min="20" max="300" value="100" oninput="onZoom(this.value)"/>
+              <button class="img-ctrl-btn" onclick="adjustZoom(15)">+</button>
+              <span class="img-ctrl-value" id="zoom-val">100%</span>
+              <div style="flex:1;"></div>
+              <button class="img-ctrl-btn img-ctrl-reset" onclick="resetTransform()">↺ Reset</button>
+            </div>
+            <div class="img-ctrl-row">
+              <span class="img-ctrl-label">Rotate</span>
+              <button class="img-ctrl-btn" onclick="adjustRotate(-90)">↺ 90°</button>
+              <button class="img-ctrl-btn" onclick="adjustRotate(-1)">↺ 1°</button>
+              <input class="img-ctrl-slider" id="rotate-slider" type="range" min="-180" max="180" value="0" oninput="onRotate(this.value)"/>
+              <button class="img-ctrl-btn" onclick="adjustRotate(1)">↻ 1°</button>
+              <button class="img-ctrl-btn" onclick="adjustRotate(90)">↻ 90°</button>
+              <span class="img-ctrl-value" id="rotate-val">0°</span>
+            </div>
+            <div class="img-ctrl-row">
+              <span style="font-family:'Fredoka One',cursive;font-size:11px;color:rgba(255,255,255,0.5);flex:1;">
+                Drag to reposition · Zoom/rotate to compose · then Crop
+              </span>
+              <button class="img-ctrl-btn" style="background:rgba(255,45,120,0.2);border-color:var(--pink);color:var(--pink2);"
+                      onclick="cancelCrop()">✕ Cancel</button>
+              <button class="btn-crop" onclick="applyCrop()">✂ CROP &amp; USE</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cropped result preview (shown after crop confirmed) -->
+        <div class="crop-result-wrap" id="crop-result-wrap">
+          <img id="crop-result-img" class="crop-result-img" alt="Cropped prompt image"/>
+          <div class="crop-result-overlay">
+            <button class="crop-result-btn" onclick="reopenCropEditor()">✏ Re-edit</button>
+            <button class="crop-result-btn" onclick="document.getElementById('img-file-input').click()">📂 New Image</button>
+          </div>
+        </div>
+
+        <canvas id="crop-canvas" style="display:none;"></canvas>
         <input type="file" id="img-file-input" accept="image/*" style="display:none;" onchange="handleImgUpload(event)"/>
-        <!-- Zoom / Rotate controls — only shown once image loaded -->
-        <div class="img-controls" id="img-controls" style="display:none;">
-          <span class="img-ctrl-label">Zoom</span>
-          <button class="img-ctrl-btn" onclick="adjustZoom(-10)">−</button>
-          <input class="img-ctrl-slider" id="zoom-slider" type="range" min="60" max="200" value="100" oninput="onZoom(this.value)"/>
-          <button class="img-ctrl-btn" onclick="adjustZoom(10)">+</button>
-          <span class="img-ctrl-value" id="zoom-val">100%</span>
-          <div style="width:1px;height:16px;background:rgba(255,255,255,0.15);margin:0 4px;"></div>
-          <span class="img-ctrl-label">Rotate</span>
-          <button class="img-ctrl-btn" onclick="adjustRotate(-90)">↺ 90°</button>
-          <button class="img-ctrl-btn" onclick="adjustRotate(90)">↻ 90°</button>
-          <div style="width:1px;height:16px;background:rgba(255,255,255,0.15);margin:0 4px;"></div>
-          <button class="img-ctrl-btn img-ctrl-reset" onclick="resetTransform()">↺ Reset</button>
-        </div>
-        <div class="field-hint" style="margin-top:8px;">This image appears full-bleed on the student dashboard. Evocative, slightly mysterious images work best — like Pobble 365.</div>
+        <div class="field-hint" style="margin-top:8px;">Upload your image, position and zoom it, then click <strong style="color:var(--teal);">✂ CROP &amp; USE</strong> to confirm. The cropped area is what students will see.</div>
       </div>
     </div>
 
@@ -575,7 +663,13 @@ function prefillEditor() {
   document.getElementById('e-date').value = _currentPrompt.prompt_date || new Date().toISOString().slice(0, 10);
   document.getElementById('e-date-bar').value = _currentPrompt.prompt_date || new Date().toISOString().slice(0, 10);
   if (_currentPrompt.image_url) {
-    showImgPreview(_currentPrompt.image_url);
+    // Show existing image as a cropped result (no need to re-crop)
+    var resultImg = document.getElementById('crop-result-img');
+    resultImg.src = _currentPrompt.image_url;
+    document.getElementById('crop-result-wrap').style.display = 'block';
+    document.getElementById('img-upload-zone').style.display = 'none';
+    document.getElementById('crop-editor').style.display = 'none';
+    _cropState.rawSrc = _currentPrompt.image_url;
   } else {
     resetImgZone();
   }
@@ -767,55 +861,211 @@ async function loadStats() {
 }
 
 // ── Utils ──
-// ── Image zoom / rotate ──
-var _imgTransform = {zoom: 100, rotate: 0};
+// ══════════════════════════════════════
+// IMAGE CROP EDITOR
+// ══════════════════════════════════════
+var _cropState = {
+  zoom: 100, rotate: 0,
+  panX: 0, panY: 0,
+  dragging: false,
+  lastX: 0, lastY: 0,
+  naturalW: 0, naturalH: 0,
+  rawSrc: null   // original full-res data URL before any crop
+};
+var VIEWPORT_W = 0, VIEWPORT_H = 280;
 
+// ── Load image into crop editor ──
+function showImgPreview(src) {
+  _cropState.rawSrc = src;
+  var img = document.getElementById('crop-img');
+  img.onload = function() {
+    _cropState.naturalW = img.naturalWidth;
+    _cropState.naturalH = img.naturalHeight;
+    var vp = document.getElementById('crop-viewport');
+    VIEWPORT_W = vp.offsetWidth;
+    // Fit-contain initial zoom so whole image is visible
+    var fitZoom = Math.min(
+      (VIEWPORT_W / _cropState.naturalW) * 100,
+      (VIEWPORT_H / _cropState.naturalH) * 100
+    );
+    _cropState.zoom   = Math.round(fitZoom);
+    _cropState.rotate = 0;
+    _cropState.panX   = 0;
+    _cropState.panY   = 0;
+    document.getElementById('zoom-slider').value = _cropState.zoom;
+    document.getElementById('zoom-val').textContent = _cropState.zoom + '%';
+    document.getElementById('rotate-slider').value = 0;
+    document.getElementById('rotate-val').textContent = '0°';
+    renderCropImg();
+  };
+  img.src = src;
+  // Show crop editor, hide upload zone and result
+  document.getElementById('img-upload-zone').style.display = 'none';
+  document.getElementById('crop-editor').style.display = 'block';
+  document.getElementById('crop-result-wrap').style.display = 'none';
+  document.getElementById('crop-viewport').style.display = 'block';
+}
+
+// ── Position the image inside the viewport ──
+function renderCropImg() {
+  var img = document.getElementById('crop-img');
+  var vp  = document.getElementById('crop-viewport');
+  VIEWPORT_W = vp.offsetWidth;
+  var scale  = _cropState.zoom / 100;
+  var dispW  = _cropState.naturalW * scale;
+  var dispH  = _cropState.naturalH * scale;
+  var left   = (VIEWPORT_W  / 2) - (dispW / 2) + _cropState.panX;
+  var top    = (VIEWPORT_H  / 2) - (dispH / 2) + _cropState.panY;
+  img.style.width     = dispW + 'px';
+  img.style.height    = dispH + 'px';
+  img.style.left      = left + 'px';
+  img.style.top       = top  + 'px';
+  img.style.transform = 'rotate(' + _cropState.rotate + 'deg)';
+  img.style.display   = 'block';
+}
+
+// ── Zoom controls ──
 function onZoom(val) {
-  _imgTransform.zoom = parseInt(val);
+  _cropState.zoom = parseInt(val);
   document.getElementById('zoom-val').textContent = val + '%';
-  applyTransform();
+  renderCropImg();
 }
 function adjustZoom(delta) {
-  var newVal = Math.min(200, Math.max(60, _imgTransform.zoom + delta));
-  _imgTransform.zoom = newVal;
-  document.getElementById('zoom-slider').value = newVal;
-  document.getElementById('zoom-val').textContent = newVal + '%';
-  applyTransform();
+  var v = Math.min(300, Math.max(20, _cropState.zoom + delta));
+  _cropState.zoom = v;
+  document.getElementById('zoom-slider').value = v;
+  document.getElementById('zoom-val').textContent = v + '%';
+  renderCropImg();
+}
+
+// ── Rotate controls ──
+function onRotate(val) {
+  _cropState.rotate = parseInt(val);
+  document.getElementById('rotate-val').textContent = val + '°';
+  renderCropImg();
 }
 function adjustRotate(delta) {
-  _imgTransform.rotate = (_imgTransform.rotate + delta + 360) % 360;
-  applyTransform();
+  var v = _cropState.rotate + delta;
+  if (v > 180) v -= 360;
+  if (v < -180) v += 360;
+  _cropState.rotate = v;
+  document.getElementById('rotate-slider').value = v;
+  document.getElementById('rotate-val').textContent = v + '°';
+  renderCropImg();
 }
+
+// ── Reset ──
 function resetTransform() {
-  _imgTransform = {zoom: 100, rotate: 0};
-  document.getElementById('zoom-slider').value = 100;
-  document.getElementById('zoom-val').textContent = '100%';
-  applyTransform();
+  var fitZoom = Math.min(
+    (VIEWPORT_W / _cropState.naturalW) * 100,
+    (VIEWPORT_H / _cropState.naturalH) * 100
+  );
+  _cropState.zoom = Math.round(fitZoom);
+  _cropState.rotate = 0; _cropState.panX = 0; _cropState.panY = 0;
+  document.getElementById('zoom-slider').value = _cropState.zoom;
+  document.getElementById('zoom-val').textContent = _cropState.zoom + '%';
+  document.getElementById('rotate-slider').value = 0;
+  document.getElementById('rotate-val').textContent = '0°';
+  renderCropImg();
 }
-function applyTransform() {
-  var prev = document.getElementById('img-preview');
-  if (prev && prev.style.display !== 'none') {
-    prev.style.transform = 'scale(' + (_imgTransform.zoom/100) + ') rotate(' + _imgTransform.rotate + 'deg)';
-    prev.style.transformOrigin = 'center center';
-  }
+
+// ── Pan / drag ──
+function startDrag(e) {
+  _cropState.dragging = true;
+  _cropState.lastX = e.clientX; _cropState.lastY = e.clientY;
+  document.getElementById('crop-viewport').classList.add('dragging');
+  e.preventDefault();
 }
-function showImgPreview(src) {
-  var prev = document.getElementById('img-preview');
-  prev.src = src; prev.style.display = 'block';
-  document.getElementById('img-placeholder').style.display = 'none';
-  document.getElementById('img-change-btn').style.display = 'block';
-  document.getElementById('img-controls').style.display = 'flex';
+function startDragTouch(e) {
+  if (e.touches.length !== 1) return;
+  _cropState.dragging = true;
+  _cropState.lastX = e.touches[0].clientX;
+  _cropState.lastY = e.touches[0].clientY;
 }
+document.addEventListener('mousemove', function(e) {
+  if (!_cropState.dragging) return;
+  _cropState.panX += e.clientX - _cropState.lastX;
+  _cropState.panY += e.clientY - _cropState.lastY;
+  _cropState.lastX = e.clientX; _cropState.lastY = e.clientY;
+  renderCropImg();
+});
+document.addEventListener('mouseup', function() {
+  _cropState.dragging = false;
+  var vp = document.getElementById('crop-viewport');
+  if (vp) vp.classList.remove('dragging');
+});
+document.addEventListener('touchmove', function(e) {
+  if (!_cropState.dragging || e.touches.length !== 1) return;
+  _cropState.panX += e.touches[0].clientX - _cropState.lastX;
+  _cropState.panY += e.touches[0].clientY - _cropState.lastY;
+  _cropState.lastX = e.touches[0].clientX;
+  _cropState.lastY = e.touches[0].clientY;
+  renderCropImg();
+}, {passive:true});
+document.addEventListener('touchend', function() { _cropState.dragging = false; });
+
+// ── Scroll to zoom ──
+document.addEventListener('wheel', function(e) {
+  if (!document.getElementById('crop-viewport') ||
+      document.getElementById('crop-editor').style.display === 'none') return;
+  if (!e.target.closest('#crop-viewport')) return;
+  e.preventDefault();
+  adjustZoom(e.deltaY < 0 ? 10 : -10);
+}, {passive:false});
+
+// ── Apply crop → render to canvas → store as dataUrl ──
+function applyCrop() {
+  var vp     = document.getElementById('crop-viewport');
+  var img    = document.getElementById('crop-img');
+  var canvas = document.getElementById('crop-canvas');
+  VIEWPORT_W = vp.offsetWidth;
+  var dpr    = window.devicePixelRatio || 1;
+  canvas.width  = VIEWPORT_W * dpr;
+  canvas.height = VIEWPORT_H * dpr;
+  var ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, VIEWPORT_W, VIEWPORT_H);
+  var scale  = _cropState.zoom / 100;
+  var dispW  = _cropState.naturalW * scale;
+  var dispH  = _cropState.naturalH * scale;
+  var left   = (VIEWPORT_W / 2) - (dispW / 2) + _cropState.panX;
+  var top    = (VIEWPORT_H / 2) - (dispH / 2) + _cropState.panY;
+  ctx.save();
+  ctx.translate(left + dispW/2, top + dispH/2);
+  ctx.rotate((_cropState.rotate * Math.PI) / 180);
+  ctx.drawImage(img, -dispW/2, -dispH/2, dispW, dispH);
+  ctx.restore();
+  var croppedDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+  _newImgDataUrl = croppedDataUrl;
+  // Show result
+  var resultImg = document.getElementById('crop-result-img');
+  resultImg.src = croppedDataUrl;
+  document.getElementById('crop-editor').style.display = 'none';
+  document.getElementById('crop-result-wrap').style.display = 'block';
+  toast('✓ Cropped! Looking good.');
+}
+
+function cancelCrop() {
+  document.getElementById('crop-editor').style.display = 'none';
+  document.getElementById('img-upload-zone').style.display = 'block';
+  _newImgDataUrl = null; _cropState.rawSrc = null;
+}
+
+function reopenCropEditor() {
+  if (!_cropState.rawSrc) return;
+  document.getElementById('crop-result-wrap').style.display = 'none';
+  showImgPreview(_cropState.rawSrc);
+}
+
+// ── Reset everything ──
 function resetImgZone() {
   _newImgDataUrl = null;
-  _imgTransform = {zoom:100,rotate:0};
+  _cropState = {zoom:100,rotate:0,panX:0,panY:0,dragging:false,lastX:0,lastY:0,naturalW:0,naturalH:0,rawSrc:null};
+  document.getElementById('img-upload-zone').style.display = 'block';
+  document.getElementById('crop-editor').style.display = 'none';
+  document.getElementById('crop-result-wrap').style.display = 'none';
   var prev = document.getElementById('img-preview');
-  prev.style.display = 'none'; prev.src = ''; prev.style.transform = '';
-  document.getElementById('img-placeholder').style.display = 'block';
-  document.getElementById('img-change-btn').style.display = 'none';
-  document.getElementById('img-controls').style.display = 'none';
-  document.getElementById('zoom-slider').value = 100;
-  document.getElementById('zoom-val').textContent = '100%';
+  if (prev) { prev.style.display = 'none'; prev.src = ''; }
 }
 
 function formatDate(d) { if(!d)return'TODAY'; var dt=new Date(d+'T12:00:00'); return dt.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'}).toUpperCase(); }
