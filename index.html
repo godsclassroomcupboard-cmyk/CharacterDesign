@@ -170,7 +170,7 @@ input[type="text"] {
 }
 input[type="text"]:focus { border-color:#FF2D78; box-shadow:0 0 0 3px rgba(255,45,120,0.2); }
 input[type="text"]::placeholder { color:rgba(255,255,255,0.3); }
-.field-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.08); }
+.field-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.1); }
 .field-row:last-child { border-bottom:none; }
 .field-label { min-width:155px; display:flex; align-items:center; gap:8px; font-weight:800; font-size:13px; color:rgba(255,255,255,0.85); }
 
@@ -261,7 +261,7 @@ input[type="text"]::placeholder { color:rgba(255,255,255,0.3); }
 /* ── COMMUNITY CARD ── */
 .community-card {
   display:flex; align-items:center; gap:12px; padding:10px;
-  border-radius:14px; background:#F8F5FF; border:1.5px solid #EAE4FD;
+  border-radius:14px; background:rgba(255,255,255,0.06); border:1.5px solid #EAE4FD;
 }
 
 /* ── SCROLLBAR ── */
@@ -285,7 +285,7 @@ input[type="text"]::placeholder { color:rgba(255,255,255,0.3); }
 .style-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-bottom:14px; visibility:visible; opacity:1; }
 .style-chip {
   padding:7px 6px; border-radius:10px; border:2px solid #E5E0FA;
-  background:#F8F5FF; cursor:pointer; text-align:center;
+  background:rgba(255,255,255,0.06); cursor:pointer; text-align:center;
   font-family:'Nunito',sans-serif; font-size:10px; font-weight:800; color:#6C5CE7;
   transition:all 0.15s; line-height:1.3;
   opacity:1; display:block;
@@ -297,7 +297,7 @@ input[type="text"]::placeholder { color:rgba(255,255,255,0.3); }
 /* ── API KEY BAR ── */
 .api-key-bar {
   display:flex; align-items:center; gap:7px;
-  background:#F5F3FF; border:1.5px solid #E5E0FA; border-radius:10px;
+  background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:10px;
   padding:7px 10px;
 }
 .api-key-bar input {
@@ -325,7 +325,7 @@ input[type="text"]::placeholder { color:rgba(255,255,255,0.3); }
 }
 .auth-input {
   width:100%;padding:11px 14px;border-radius:12px;
-  border:2px solid #E5E0FA;background:#F8F5FF;
+  border:2px solid #E5E0FA;background:rgba(255,255,255,0.06);
   font-family:'Nunito',sans-serif;font-size:14px;color:#333;
   outline:none;margin-bottom:10px;transition:border-color 0.18s;
 }
@@ -347,7 +347,7 @@ input[type="text"]::placeholder { color:rgba(255,255,255,0.3); }
   display:flex;align-items:center;gap:9px;
   transition:background 0.15s;
 }
-.profile-menu-item:hover { background:#F5F2FF; }
+.profile-menu-item:hover { background:rgba(255,255,255,0.06); }
 
 /* ── COMMUNITY SECTION ── */
 .community-grid {
@@ -372,6 +372,59 @@ input[type="text"]::placeholder { color:rgba(255,255,255,0.3); }
 }
 .star-btn:hover { background:#FFF5E0;color:#F6C90E; }
 .star-btn.starred { color:#F6C90E; }
+
+/* ══════════════════════════════════════════
+   GLASS CARD SYSTEM
+══════════════════════════════════════════ */
+input[type="text"], input[type="date"], input[type="email"],
+input[type="password"], textarea, select {
+  background:rgba(255,255,255,0.08) !important;
+  border:1.5px solid rgba(255,255,255,0.2) !important;
+  border-radius:8px !important;
+  color:#fff !important;
+}
+input[type="text"]::placeholder, textarea::placeholder {
+  color:rgba(255,255,255,0.3) !important;
+}
+input[type="text"]:focus, textarea:focus, select:focus {
+  border-color:#FF2D78 !important;
+  box-shadow:0 0 0 3px rgba(255,45,120,0.15) !important;
+  outline:none;
+}
+select option { background:#1E0E40; color:#fff; }
+.field-label { color:rgba(255,255,255,0.85) !important; }
+.field-row { border-bottom:1px solid rgba(255,255,255,0.1) !important; }
+/* Glass modal bodies */
+#sb-loc-modal > div > div:not(.modal-header):not([style*="background:linear-gradient"]),
+#char-detail-modal > div > div:not([style*="linear-gradient"]),
+#char-delete-modal > div { background:#1E0E40 !important; }
+/* Upload zones */
+#sb-loc-upload-zone, #sb-modal-upload-zone {
+  background:rgba(255,255,255,0.04) !important;
+  border-color:rgba(255,215,0,0.3) !important;
+}
+/* Glass community/setting cards */
+#sb-community-list > div,
+#sb-detail-locations > div,
+#sb-locations-list > div {
+  background:rgba(255,255,255,0.05) !important;
+  border-color:rgba(255,255,255,0.15) !important;
+}
+/* Readable text in dark containers */
+#sb-community-list .char-card-name,
+#sb-detail-locations .winner-name { color:#fff !important; }
+/* Star buttons */
+.star-btn {
+  background:rgba(255,255,255,0.06) !important;
+  border-color:rgba(255,255,255,0.15) !important;
+  color:rgba(255,255,255,0.6) !important;
+  font-family:'Fredoka One',cursive;
+}
+.star-btn.starred, .star-btn:hover {
+  background:rgba(255,215,0,0.15) !important;
+  border-color:rgba(255,215,0,0.4) !important;
+  color:#FFD700 !important;
+}
 
 /* ── SAVE TO PROFILE TOAST ── */
 .toast {
@@ -656,7 +709,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
             ondragover="event.preventDefault();this.style.borderColor='#6C5CE7';"
             ondragleave="this.style.borderColor='#E5E0FA';"
             ondrop="handleImageDrop(event)"
-            style="border:2px dashed #E5E0FA;border-radius:12px;padding:20px 12px;text-align:center;cursor:pointer;background:#F8F5FF;transition:border-color 0.18s;margin-bottom:10px;">
+            style="border:2px dashed rgba(255,215,0,0.3);border-radius:12px;padding:20px 12px;text-align:center;cursor:pointer;background:rgba(255,255,255,0.05);transition:border-color 0.18s;margin-bottom:10px;">
             <svg viewBox="0 0 24 24" fill="none" stroke="#A29BFE" stroke-width="2" width="32" height="32" style="display:block;margin:0 auto 8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             <div style="font-weight:800;font-size:12px;color:#6C5CE7;">Upload a photo or drawing</div>
             <div style="font-size:10px;color:#C0BADA;margin-top:3px;">Click or drag & drop · JPG, PNG, GIF, WebP</div>
@@ -770,7 +823,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
             <span style="color:#6C5CE7;font-weight:800;font-size:12px;cursor:pointer;">View all</span>
           </div>
         </div>
-        <div style="background:linear-gradient(180deg,rgba(26,10,58,0.5) 0%,rgba(10,5,32,0.7) 60%);padding:10px 14px 14px;">
+        <div style="background:rgba(10,5,32,0.65);padding:10px 14px 14px;">
           <div class="community-card">
             <div style="width:58px;height:58px;border-radius:11px;background:linear-gradient(135deg,#C8E6FF,#8EC5FF);flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
               <svg viewBox="0 0 50 50" fill="none" width="52" height="52">
@@ -905,7 +958,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
             <button onclick="settingBank.cancelForm()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.55);font-size:20px;line-height:1;">←</button>
             <h2 id="sb-form-title" style="font-family:'Baloo 2',cursive;font-size:19px;font-weight:800;color:#6C5CE7;">New Setting</h2>
-            <span id="sb-edit-badge" style="display:none;background:#F0ECFC;color:#6C5CE7;border-radius:99px;font-size:10px;font-weight:800;padding:2px 8px;">Editing</span>
+            <span id="sb-edit-badge" style="display:none;background:rgba(255,215,0,0.2);color:#FFD700;border-radius:99px;font-size:10px;font-weight:800;padding:2px 8px;">Editing</span>
           </div>
 
           <!-- Setting name -->
@@ -914,7 +967,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
               <svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><path d="M10 2a8 8 0 1 0 0 16A8 8 0 0 0 10 2z"/><path d="M10 6v4l3 3"/></svg>
               Setting Name
             </div>
-            <input type="text" id="sb-setting-name" placeholder="e.g. The Old Library, Moonlit Harbour…" />
+            <input type="text" id="sb-setting-name" style="background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:8px;padding:8px 10px;color:#fff;font-family:Nunito,sans-serif;font-size:13px;width:100%;outline:none;" placeholder="e.g. The Old Library, Moonlit Harbour…">
           </div>
 
           <!-- Locations within this setting -->
@@ -956,7 +1009,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
               <h2 id="sb-detail-title" style="font-family:'Baloo 2',cursive;font-size:20px;font-weight:800;color:#fff;"></h2>
               <div id="sb-detail-meta" style="font-size:11px;color:rgba(255,255,255,0.55);font-weight:600;"></div>
             </div>
-            <button id="sb-edit-btn" onclick="settingBank.editCurrentSetting()" style="background:#F0ECFC;border:none;border-radius:99px;padding:7px 14px;font-size:12px;font-weight:800;color:#6C5CE7;cursor:pointer;">✏️ Edit</button>
+            <button id="sb-edit-btn" onclick="settingBank.editCurrentSetting()" style="background:rgba(255,45,120,0.2);border:1px solid rgba(255,45,120,0.4);border-radius:99px;padding:7px 14px;font-family:Fredoka One,cursive;font-size:12px;color:#FF6EB4;cursor:pointer;">✏️ Edit</button>
           </div>
           <!-- Setting image if uploaded -->
           <div id="sb-detail-img-wrap" style="display:none;margin-bottom:14px;border-radius:14px;overflow:hidden;">
@@ -991,7 +1044,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <h2 style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:800;color:#fff;">Community Settings</h2>
           <div style="display:flex;gap:8px;">
             <button id="sb-com-tab-all" onclick="settingBank.switchCommunityTab('all')" style="background:#6C5CE7;color:#fff;border:none;border-radius:99px;padding:6px 14px;font-size:11px;font-weight:800;cursor:pointer;">All</button>
-            <button id="sb-com-tab-top" onclick="settingBank.switchCommunityTab('top')" style="background:#F0ECFC;color:#6C5CE7;border:none;border-radius:99px;padding:6px 14px;font-size:11px;font-weight:800;cursor:pointer;">⭐ Top Rated</button>
+            <button id="sb-com-tab-top" onclick="settingBank.switchCommunityTab('top')" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.2);border-radius:99px;padding:6px 14px;font-family:Fredoka One,cursive;font-size:11px;cursor:pointer;">⭐ Top Rated</button>
           </div>
         </div>
         <div id="sb-community-list" style="display:flex;flex-direction:column;gap:10px;">
@@ -1018,7 +1071,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
             <span class="beta-badge" style="background:#E8E2FF;color:#6C5CE7;">NEW</span>
           </div>
         </div>
-        <div style="background:linear-gradient(180deg,rgba(26,10,58,0.5) 0%,rgba(10,5,32,0.7) 60%);padding:12px 14px 16px;" id="sb-loc-panel-body">
+        <div style="background:rgba(10,5,32,0.65);padding:12px 14px 16px;" id="sb-loc-panel-body">
 
           <!-- Idle state -->
           <div id="sb-loc-idle" style="text-align:center;padding:28px 10px;">
@@ -1034,45 +1087,45 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
                 <svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><path d="M10 2C6.7 2 4 4.7 4 8c0 6 6 12 6 12s6-6 6-12c0-3.3-2.7-6-6-6z"/><circle cx="10" cy="8" r="2.5"/></svg>
                 Location Name
               </div>
-              <input type="text" id="sb-loc-name" placeholder="e.g. The Old Attic, Harbour Docks…" />
+              <input type="text" id="sb-loc-name" style="background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:8px;padding:8px 10px;color:#fff;font-family:Nunito,sans-serif;font-size:13px;width:100%;outline:none;">
             </div>
 
-            <div style="font-weight:800;font-size:12px;color:#6C5CE7;margin:12px 0 8px;padding-left:2px;">🌟 Sensing Prompts</div>
+            <div style="font-weight:800;font-size:12px;color:#6C5CE7;margin:12px 0 8px;padding-left:2px;"><span style="color:#FFD700;font-family:Fredoka One,cursive;letter-spacing:0.5px;">🌟 Sensing Prompts</span></div>
 
             <div class="field-row">
-              <div class="field-label" style="font-size:10px;">
+              <div class="field-label" style="font-size:10px;color:rgba(255,255,255,0.8);">
                 <svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="14" height="14"><circle cx="10" cy="10" r="3"/><path d="M10 2C5.6 2 2 5.6 2 10s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8z" opacity=".3"/><path d="M6 10a4 4 0 0 1 4-4" opacity=".6"/></svg>
                 What can you see?
               </div>
-              <textarea id="sb-loc-see" placeholder="Describe what the senses of sight reveal…" style="min-height:52px;resize:vertical;"></textarea>
+              <textarea id="sb-loc-see" placeholder="Describe what the senses of sight reveal…" style="min-height:52px;resize:vertical;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:8px;padding:8px 10px;color:#fff;font-family:Nunito,sans-serif;font-size:13px;width:100%;outline:none;"></textarea>
             </div>
             <div class="field-row">
-              <div class="field-label" style="font-size:10px;">
+              <div class="field-label" style="font-size:10px;color:rgba(255,255,255,0.8);">
                 <svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="14" height="14"><path d="M10 2v6l3 3"/><circle cx="10" cy="16" r="2"/><path d="M6 6C4 7.5 3 9.6 3 12"/></svg>
                 What noises can you hear?
               </div>
-              <textarea id="sb-loc-hear" placeholder="Sounds, music, voices, silence…" style="min-height:52px;resize:vertical;"></textarea>
+              <textarea id="sb-loc-hear" placeholder="Sounds, music, voices, silence…" style="min-height:52px;resize:vertical;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:8px;padding:8px 10px;color:#fff;font-family:Nunito,sans-serif;font-size:13px;width:100%;outline:none;"></textarea>
             </div>
             <div class="field-row">
-              <div class="field-label" style="font-size:10px;">
+              <div class="field-label" style="font-size:10px;color:rgba(255,255,255,0.8);">
                 <svg viewBox="0 0 20 20" fill="none" stroke="#E84393" stroke-width="2" width="14" height="14"><path d="M10 17.7l-7-4V6.3L10 2.3l7 4v7.4l-7 4z"/></svg>
                 What does it feel like (emotionally)?
               </div>
-              <textarea id="sb-loc-feel-emotion" placeholder="Eerie, cosy, exciting, lonely…" style="min-height:52px;resize:vertical;"></textarea>
+              <textarea id="sb-loc-feel-emotion" placeholder="Eerie, cosy, exciting, lonely…" style="min-height:52px;resize:vertical;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:8px;padding:8px 10px;color:#fff;font-family:Nunito,sans-serif;font-size:13px;width:100%;outline:none;"></textarea>
             </div>
             <div class="field-row">
-              <div class="field-label" style="font-size:10px;">
+              <div class="field-label" style="font-size:10px;color:rgba(255,255,255,0.8);">
                 <svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="14" height="14"><path d="M10 2c-1.7 0-3 1.3-3 3v6c0 1.7 1.3 3 3 3s3-1.3 3-3V5c0-1.7-1.3-3-3-3z"/><path d="M5 10v1a5 5 0 0 0 10 0v-1"/><line x1="10" y1="16" x2="10" y2="18"/></svg>
                 Things that can be felt (touch)?
               </div>
-              <textarea id="sb-loc-touch" placeholder="Rough stone walls, cold air, soft grass…" style="min-height:52px;resize:vertical;"></textarea>
+              <textarea id="sb-loc-touch" placeholder="Rough stone walls, cold air, soft grass…" style="min-height:52px;resize:vertical;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:8px;padding:8px 10px;color:#fff;font-family:Nunito,sans-serif;font-size:13px;width:100%;outline:none;"></textarea>
             </div>
             <div class="field-row" style="border-bottom:none;">
-              <div class="field-label" style="font-size:10px;">
+              <div class="field-label" style="font-size:10px;color:rgba(255,255,255,0.8);">
                 <svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="14" height="14"><path d="M10 4c-3.3 0-6 1.8-6 4s2.7 4 6 4 6-1.8 6-4-2.7-4-6-4z"/><path d="M10 12c-3.3 0-6 1.8-6 4"/></svg>
                 What smells are there?
               </div>
-              <textarea id="sb-loc-smell" placeholder="Damp earth, sea salt, baking bread…" style="min-height:52px;resize:vertical;"></textarea>
+              <textarea id="sb-loc-smell" placeholder="Damp earth, sea salt, baking bread…" style="min-height:52px;resize:vertical;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:8px;padding:8px 10px;color:#fff;font-family:Nunito,sans-serif;font-size:13px;width:100%;outline:none;"></textarea>
             </div>
 
             <!-- Image upload -->
@@ -1083,12 +1136,12 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
                 ondragover="event.preventDefault();this.style.borderColor='#6C5CE7';"
                 ondragleave="this.style.borderColor='#E5E0FA';"
                 ondrop="settingBank.handleLocImageDrop(event)"
-                style="border:2px dashed #E5E0FA;border-radius:10px;padding:14px 10px;text-align:center;cursor:pointer;background:#F8F5FF;transition:border-color 0.18s;">
+                style="border:2px dashed rgba(255,215,0,0.3);border-radius:10px;padding:14px 10px;text-align:center;cursor:pointer;background:rgba(255,255,255,0.05);transition:border-color 0.18s;">
                 <div id="sb-loc-img-preview" style="display:none;margin-bottom:8px;">
                   <img id="sb-loc-img-thumb" style="max-height:80px;max-width:100%;border-radius:8px;object-fit:cover;" />
                 </div>
                 <svg viewBox="0 0 24 24" fill="none" stroke="#A29BFE" stroke-width="2" width="24" height="24" style="display:block;margin:0 auto 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                <div id="sb-loc-upload-label" style="font-weight:800;font-size:11px;color:#6C5CE7;">Upload a map or photo</div>
+                <div id="sb-loc-upload-label" style="font-family:Fredoka One,cursive;font-size:11px;color:#FFD700;">Upload a map or photo</div>
                 <div style="font-size:9px;color:#C0BADA;margin-top:2px;">Click or drag & drop</div>
               </div>
               <input type="file" id="sb-loc-upload-input" accept="image/*" style="display:none;" onchange="settingBank.handleLocImageUpload(event)" />
@@ -1115,18 +1168,18 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
             <h3 style="font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:#fff;">How it works</h3>
           </div>
         </div>
-        <div style="background:linear-gradient(180deg,rgba(26,10,58,0.5) 0%,rgba(10,5,32,0.7) 60%);padding:12px 14px 16px;">
+        <div style="background:rgba(10,5,32,0.65);padding:12px 14px 16px;">
           <div style="display:flex;flex-direction:column;gap:8px;">
-            <div style="background:#F0ECFC;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.85);line-height:1.5;border-left:3px solid #6C5CE7;">
+            <div style="background:rgba(108,92,231,0.15);border-radius:10px;padding:9px 12px;font-size:11px;font-weight:700;color:#fff;line-height:1.5;border-left:3px solid #FF2D78;">
               📍 <strong>Create a Setting</strong> — give it a name and add locations inside it
             </div>
-            <div style="background:#FFF0F6;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:600;color:#6A1A3A;line-height:1.5;border-left:3px solid #E84393;">
+            <div style="background:rgba(255,45,120,0.15);border-radius:10px;padding:9px 12px;font-size:11px;font-weight:700;color:#fff;line-height:1.5;border-left:3px solid #FFD700;">
               🌟 <strong>Sense it</strong> — fill in what you see, hear, feel, touch and smell
             </div>
-            <div style="background:#F0ECFC;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.85);line-height:1.5;border-left:3px solid #6C5CE7;">
+            <div style="background:rgba(108,92,231,0.15);border-radius:10px;padding:9px 12px;font-size:11px;font-weight:700;color:#fff;line-height:1.5;border-left:3px solid #FF2D78;">
               👀 <strong>Borrow</strong> — click any community setting to add it to yours
             </div>
-            <div style="background:#FFF0F6;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:600;color:#6A1A3A;line-height:1.5;border-left:3px solid #E84393;">
+            <div style="background:rgba(255,45,120,0.15);border-radius:10px;padding:9px 12px;font-size:11px;font-weight:700;color:#fff;line-height:1.5;border-left:3px solid #FFD700;">
               ⭐ <strong>Star</strong> — vote on settings you love to help others find them
             </div>
           </div>
@@ -1641,7 +1694,7 @@ async function generateWritingPrompts() {
     const emojis = ['✏️','🌟','🔍'];
     promptsArea.innerHTML = '<div style="display:flex;flex-direction:column;gap:8px;">' +
       prompts.map((p,i) => `
-        <div style="background:#F5F2FF;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.85);line-height:1.5;border-left:3px solid #6C5CE7;">
+        <div style="background:rgba(0,196,180,0.12);border-radius:10px;padding:9px 12px;font-size:11px;font-weight:700;color:#fff;line-height:1.5;border-left:3px solid #00C4B4;">
           ${emojis[i]||'📍'} ${p}
         </div>`).join('') + '</div>';
   } catch(err) {
@@ -2994,7 +3047,7 @@ window.addEventListener('load', () => {
 
   <div style="flex:1;overflow-y:auto;padding:20px 24px;position:relative;z-index:2;">
     <!-- Profile header card -->
-    <div style="background:#fff;border-radius:20px;padding:20px 24px;margin-bottom:20px;box-shadow:0 3px 18px rgba(108,92,231,0.08);display:flex;align-items:center;gap:18px;">
+    <div style="background:#1E0E40;border-radius:20px;padding:20px 24px;margin-bottom:20px;box-shadow:0 3px 18px rgba(108,92,231,0.08);display:flex;align-items:center;gap:18px;">
       <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#6C5CE7,#E84393);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
         <svg viewBox="0 0 40 40" fill="none" width="40" height="40"><circle cx="20" cy="15" r="8" fill="rgba(255,255,255,0.9)"/><ellipse cx="20" cy="34" rx="13" ry="10" fill="rgba(255,255,255,0.7)"/></svg>
       </div>
@@ -3085,26 +3138,26 @@ window.addEventListener('load', () => {
      CHARACTER DETAIL / EDIT / DELETE MODAL
 ══════════════════════════════════════════ -->
 <div id="char-detail-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(26,29,58,0.6);align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:22px;width:480px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:0 16px 60px rgba(108,92,231,0.28);">
+  <div style="background:#1E0E40;border:2px solid #FF2D78;border-radius:22px;width:480px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:0 16px 60px rgba(255,45,120,0.3);">
     <!-- Header -->
-    <div style="background:linear-gradient(135deg,#EEE9FC,#E8E3FA);padding:18px 20px 14px;border-radius:22px 22px 0 0;display:flex;align-items:center;justify-content:space-between;">
+    <div style="background:linear-gradient(135deg,#FF2D78,#9B59B6);padding:18px 20px 14px;border-radius:20px 20px 0 0;display:flex;align-items:center;justify-content:space-between;">
       <div>
-        <h3 id="cdm-name" style="font-family:'Baloo 2',cursive;font-size:20px;font-weight:900;color:#fff;"></h3>
+        <h3 id="cdm-name" style="font-family:'Bangers',cursive;font-size:22px;letter-spacing:1.5px;color:#fff;"></h3>
         <div id="cdm-meta" style="font-size:11px;color:rgba(255,255,255,0.55);font-weight:600;margin-top:2px;"></div>
       </div>
       <button onclick="closeCharModal()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.55);font-size:24px;line-height:1;padding:4px;">×</button>
     </div>
 
     <!-- Image -->
-    <div id="cdm-img-wrap" style="display:none;background:#F0ECFC;">
+    <div id="cdm-img-wrap" style="display:none;background:#0A0520;">
       <img id="cdm-img" style="width:100%;max-height:200px;object-fit:cover;display:block;" />
     </div>
 
     <!-- Fields -->
-    <div id="cdm-view-mode" style="padding:16px 20px;">
+    <div id="cdm-view-mode" style="padding:16px 20px;background:#1E0E40;color:#fff;">
       <div id="cdm-fields" style="display:flex;flex-direction:column;gap:0;"></div>
       <!-- Download buttons -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;background:#1E0E40;">
         <button onclick="downloadCharModalPDF()" class="btn-pink" style="padding:10px 8px;font-size:11px;display:flex;align-items:center;justify-content:center;gap:5px;">
           📄 Dossier PDF
         </button>
@@ -3124,8 +3177,8 @@ window.addEventListener('load', () => {
     </div>
 
     <!-- Edit mode (hidden by default) -->
-    <div id="cdm-edit-mode" style="display:none;padding:16px 20px;">
-      <h4 style="font-family:'Baloo 2',cursive;font-size:15px;font-weight:800;color:#6C5CE7;margin-bottom:12px;">Edit Character</h4>
+    <div id="cdm-edit-mode" style="display:none;padding:16px 20px;background:#1E0E40;color:#fff;">
+      <h4 style="font-family:'Bangers',cursive;font-size:18px;letter-spacing:1.5px;color:#FFD700;margin-bottom:12px;">EDIT CHARACTER</h4>
       <div class="field-row"><div class="field-label">Name</div><input type="text" id="cdm-edit-name" /></div>
       <div class="field-row"><div class="field-label">Stand Out Features</div><input type="text" id="cdm-edit-features" /></div>
       <div class="field-row"><div class="field-label">Height</div><input type="text" id="cdm-edit-height" /></div>
@@ -3148,10 +3201,10 @@ window.addEventListener('load', () => {
 
 <!-- Delete Warning Modal -->
 <div id="char-delete-modal" style="display:none;position:fixed;inset:0;z-index:1010;background:rgba(26,29,58,0.7);align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:20px;width:360px;max-width:94vw;padding:28px 24px;box-shadow:0 16px 60px rgba(232,67,147,0.25);text-align:center;">
+  <div style="background:#1E0E40;border:2px solid #FF2D78;border-radius:20px;width:360px;max-width:94vw;padding:28px 24px;box-shadow:0 16px 60px rgba(255,45,120,0.35);text-align:center;">
     <div style="font-size:40px;margin-bottom:10px;">⚠️</div>
-    <h3 style="font-family:'Baloo 2',cursive;font-size:20px;font-weight:900;color:#fff;margin-bottom:8px;">Delete Character?</h3>
-    <p id="cdm-delete-name" style="font-size:14px;font-weight:700;color:#6C5CE7;margin-bottom:10px;"></p>
+    <h3 style="font-family:'Bangers',cursive;font-size:24px;letter-spacing:1.5px;color:#FF2D78;margin-bottom:8px;">DELETE CHARACTER?</h3>
+    <p id="cdm-delete-name" style="font-family:'Fredoka One',cursive;font-size:15px;color:#FFD700;margin-bottom:10px;"></p>
     <p style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:20px;line-height:1.5;">This will permanently remove this character from your bank and the community. <strong>This cannot be undone.</strong></p>
     <div style="display:flex;gap:10px;">
       <button onclick="closeDeleteModal()" style="flex:1;padding:12px;font-size:13px;font-weight:800;border:2px solid #E5E0FA;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;background:#fff;color:#6C5CE7;">Cancel</button>
@@ -3164,8 +3217,8 @@ window.addEventListener('load', () => {
      SETTING BANK — Add Location Modal Overlay
 ══════════════════════════════════════════ -->
 <div id="sb-loc-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(26,29,58,0.55);align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:20px;width:520px;max-width:96vw;max-height:90vh;overflow-y:auto;box-shadow:0 16px 60px rgba(108,92,231,0.25);">
-    <div style="background:linear-gradient(135deg,#EEE9FC,#E8E3FA);padding:18px 20px 14px;border-radius:20px 20px 0 0;display:flex;align-items:center;justify-content:space-between;">
+  <div style="background:#1E0E40;border:2px solid #FF2D78;border-radius:20px;width:520px;max-width:96vw;max-height:90vh;overflow-y:auto;box-shadow:0 0 60px rgba(255,45,120,0.3);">
+    <div style="background:linear-gradient(135deg,#FF2D78,#9B59B6);padding:18px 20px 14px;border-radius:18px 18px 0 0;display:flex;align-items:center;justify-content:space-between;">
       <h3 id="sb-modal-title" style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:800;color:#fff;">Add Location</h3>
       <button onclick="settingBank.closeLocModal()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.55);font-size:22px;line-height:1;">×</button>
     </div>
@@ -3175,28 +3228,28 @@ window.addEventListener('load', () => {
           <svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><path d="M10 2C6.7 2 4 4.7 4 8c0 6 6 12 6 12s6-6 6-12c0-3.3-2.7-6-6-6z"/><circle cx="10" cy="8" r="2.5"/></svg>
           Location Name
         </div>
-        <input type="text" id="sb-modal-loc-name" placeholder="e.g. The Old Attic, Harbour Docks…" />
+        <input type="text" id="sb-modal-loc-name" style="background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:8px;padding:8px 10px;color:#fff;font-family:Nunito,sans-serif;font-size:13px;width:100%;outline:none;">
       </div>
-      <div style="font-weight:800;font-size:12px;color:#6C5CE7;margin:12px 0 8px;padding-left:2px;">🌟 Sensing Prompts</div>
+      <div style="font-weight:800;font-size:12px;color:#6C5CE7;margin:12px 0 8px;padding-left:2px;"><span style="color:#FFD700;font-family:Fredoka One,cursive;letter-spacing:0.5px;">🌟 Sensing Prompts</span></div>
       <div class="field-row">
-        <div class="field-label" style="font-size:11px;">👁 What can you see?</div>
-        <textarea id="sb-modal-see" placeholder="Describe what the sense of sight reveals…" style="min-height:52px;resize:vertical;"></textarea>
-      </div>
-      <div class="field-row">
-        <div class="field-label" style="font-size:11px;">👂 What noises can you hear?</div>
-        <textarea id="sb-modal-hear" placeholder="Sounds, music, voices, silence…" style="min-height:52px;resize:vertical;"></textarea>
+        <div class="field-label" style="font-size:11px;color:rgba(255,255,255,0.8);">👁 What can you see?</div>
+        <textarea id="sb-modal-see" placeholder="Describe what the sense of sight reveals…" style="min-height:52px;resize:vertical;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:8px;padding:8px 10px;color:#fff;font-family:Nunito,sans-serif;font-size:13px;width:100%;outline:none;"></textarea>
       </div>
       <div class="field-row">
-        <div class="field-label" style="font-size:11px;">💜 What does it feel like emotionally?</div>
-        <textarea id="sb-modal-feel-emotion" placeholder="Eerie, cosy, exciting, lonely…" style="min-height:52px;resize:vertical;"></textarea>
+        <div class="field-label" style="font-size:11px;color:rgba(255,255,255,0.8);">👂 What noises can you hear?</div>
+        <textarea id="sb-modal-hear" placeholder="Sounds, music, voices, silence…" style="min-height:52px;resize:vertical;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:8px;padding:8px 10px;color:#fff;font-family:Nunito,sans-serif;font-size:13px;width:100%;outline:none;"></textarea>
       </div>
       <div class="field-row">
-        <div class="field-label" style="font-size:11px;">✋ Things that can be felt (touch)?</div>
-        <textarea id="sb-modal-touch" placeholder="Rough stone walls, cold air, soft grass…" style="min-height:52px;resize:vertical;"></textarea>
+        <div class="field-label" style="font-size:11px;color:rgba(255,255,255,0.8);">💜 What does it feel like emotionally?</div>
+        <textarea id="sb-modal-feel-emotion" placeholder="Eerie, cosy, exciting, lonely…" style="min-height:52px;resize:vertical;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:8px;padding:8px 10px;color:#fff;font-family:Nunito,sans-serif;font-size:13px;width:100%;outline:none;"></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field-label" style="font-size:11px;color:rgba(255,255,255,0.8);">✋ Things that can be felt (touch)?</div>
+        <textarea id="sb-modal-touch" placeholder="Rough stone walls, cold air, soft grass…" style="min-height:52px;resize:vertical;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:8px;padding:8px 10px;color:#fff;font-family:Nunito,sans-serif;font-size:13px;width:100%;outline:none;"></textarea>
       </div>
       <div class="field-row" style="border-bottom:none;">
-        <div class="field-label" style="font-size:11px;">👃 What smells are there?</div>
-        <textarea id="sb-modal-smell" placeholder="Damp earth, sea salt, baking bread…" style="min-height:52px;resize:vertical;"></textarea>
+        <div class="field-label" style="font-size:11px;color:rgba(255,255,255,0.8);">👃 What smells are there?</div>
+        <textarea id="sb-modal-smell" placeholder="Damp earth, sea salt, baking bread…" style="min-height:52px;resize:vertical;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:8px;padding:8px 10px;color:#fff;font-family:Nunito,sans-serif;font-size:13px;width:100%;outline:none;"></textarea>
       </div>
       <div style="margin-top:14px;">
         <div style="font-weight:800;font-size:12px;color:#fff;margin-bottom:6px;">📷 Location Image <span style="color:#C0BADA;font-weight:600;">(optional)</span></div>
@@ -3205,12 +3258,12 @@ window.addEventListener('load', () => {
           ondragover="event.preventDefault();this.style.borderColor='#6C5CE7';"
           ondragleave="this.style.borderColor='#E5E0FA';"
           ondrop="settingBank.handleModalImageDrop(event)"
-          style="border:2px dashed #E5E0FA;border-radius:10px;padding:14px 10px;text-align:center;cursor:pointer;background:#F8F5FF;transition:border-color 0.18s;">
+          style="border:2px dashed rgba(255,215,0,0.3);border-radius:10px;padding:14px 10px;text-align:center;cursor:pointer;background:rgba(255,255,255,0.05);transition:border-color 0.18s;">
           <div id="sb-modal-img-preview" style="display:none;margin-bottom:8px;">
             <img id="sb-modal-img-thumb" style="max-height:80px;max-width:100%;border-radius:8px;object-fit:cover;" />
           </div>
           <svg viewBox="0 0 24 24" fill="none" stroke="#A29BFE" stroke-width="2" width="24" height="24" style="display:block;margin:0 auto 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <div id="sb-modal-upload-label" style="font-weight:800;font-size:11px;color:#6C5CE7;">Upload a map or photo</div>
+          <div id="sb-modal-upload-label" style="font-family:Fredoka One,cursive;font-size:11px;color:#FFD700;">Upload a map or photo</div>
           <div style="font-size:9px;color:#C0BADA;margin-top:2px;">Click or drag & drop</div>
         </div>
         <input type="file" id="sb-modal-upload-input" accept="image/*" style="display:none;" onchange="settingBank.handleModalImageUpload(event)" />
@@ -3304,7 +3357,7 @@ async function downloadCharModalPDF() {
     + '.two-col { display:flex; gap:6mm; align-items:flex-start; }'
     + '.portrait { width:42mm; flex-shrink:0; }'
     + '.portrait img { width:42mm; height:52mm; object-fit:cover; border:0.5mm solid #c8b896; border-radius:1mm; display:block; }'
-    + '.portrait-placeholder { width:42mm; height:52mm; background:#ede4d4; border:0.5mm dashed #c8b896; border-radius:1mm; display:flex; align-items:center; justify-content:center; color:#a89880; font-size:8pt; font-style:italic; }'
+    + '.portrait-placeholder { width:42mm; height:52mm; background:rgba(255,255,255,0.06); border:0.5mm dashed #c8b896; border-radius:1mm; display:flex; align-items:center; justify-content:center; color:#a89880; font-size:8pt; font-style:italic; }'
     + '.fields-table { width:100%; border-collapse:collapse; }'
     + '.label-cell { font-weight:700; color:#FFD700; font-size:8pt; width:38mm; padding:1.5mm 2mm 1.5mm 0; border-bottom:0.25mm dotted #c8b896; vertical-align:top; line-height:1.4; }'
     + '.value-cell { font-size:8pt; color:#2a1a08; padding:1.5mm 0; border-bottom:0.25mm dotted #c8b896; vertical-align:top; line-height:1.4; }'
@@ -3414,10 +3467,18 @@ function openCharDetail(char) {
     ['Interests',          char.interests],
     ['Appearance',         char.appearance],
   ];
+  var _fieldColours = {
+    'Stand Out Features':'#FFD700','Height':'#00C4B4','Build':'#00C4B4',
+    'Character':'#FF6EB4','Fears':'#FF2D78','Strengths':'#00E676',
+    'Interests':'#FFA500','Appearance':'#A29BFE'
+  };
   var fieldsHtml = fieldDefs.filter(function(f){ return f[1]; }).map(function(f) {
-    return '<div class="field-row" style="padding:8px 0;">'
-      + '<div class="field-label" style="font-size:11px;">' + f[0] + '</div>'
-      + '<div style="font-size:13px;color:#fff;font-weight:600;padding:4px 0;">' + f[1] + '</div>'
+    var col = _fieldColours[f[0]] || '#A29BFE';
+    return '<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.07);">'
+      + '<div style="min-width:130px;flex-shrink:0;">'
+      + '<span style="display:inline-block;background:' + col + '22;border:1px solid ' + col + '55;border-radius:4px;padding:2px 8px;font-family:Fredoka One,cursive;font-size:10px;letter-spacing:0.5px;color:' + col + ';white-space:nowrap;">'
+      + f[0] + '</span></div>'
+      + '<div style="font-family:Nunito,sans-serif;font-size:13px;color:rgba(255,255,255,0.92);font-weight:700;line-height:1.5;flex:1;">' + f[1] + '</div>'
       + '</div>';
   }).join('');
   document.getElementById('cdm-fields').innerHTML = fieldsHtml || '<div style="color:#C0BADA;font-style:italic;font-size:13px;padding:8px 0;">No details filled in yet.</div>';
@@ -3805,7 +3866,7 @@ const settingBank = (() => {
       return;
     }
     list.innerHTML = locs.map((loc, i) => `
-      <div style="background:#F8F5FF;border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
+      <div style="background:rgba(255,255,255,0.08);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px;border:1px solid rgba(255,255,255,0.12);">
         ${loc.imageDataUrl ? `<img src="${loc.imageDataUrl}" style="width:38px;height:38px;border-radius:8px;object-fit:cover;flex-shrink:0;" />` : '<div style="width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,#EDE0FF,#D8CBFF);flex-shrink:0;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="14" height="14"><path d="M10 2C6.7 2 4 4.7 4 8c0 6 6 12 6 12s6-6 6-12c0-3.3-2.7-6-6-6z"/><circle cx="10" cy="8" r="2.5"/></svg></div>'}
         <div style="flex:1;min-width:0;">
           <div style="font-weight:800;font-size:12px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(loc.name)}</div>
@@ -3825,15 +3886,15 @@ const settingBank = (() => {
       return;
     }
     container.innerHTML = locs.map((loc, i) => `
-      <div style="background:rgba(255,255,255,0.06);border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);">
+      <div style="background:rgba(255,255,255,0.04);border-radius:14px;overflow:hidden;border:1.5px solid rgba(255,255,255,0.12);margin-bottom:10px;">
         ${loc.imageDataUrl ? `<img src="${loc.imageDataUrl}" style="width:100%;height:100px;object-fit:cover;display:block;" />` : ''}
-        <div style="padding:10px 12px;">
+        <div style="padding:12px 14px;background:rgba(10,5,32,0.4);">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:14px;color:#fff;">📍 ${escHtml(loc.name)}</div>
-            <button onclick="settingBank.editLocation(${i})" style="background:#EDE8FA;border:none;border-radius:99px;padding:4px 10px;font-size:10px;font-weight:800;color:#6C5CE7;cursor:pointer;">Edit</button>
+            <div style="font-family:'Bangers',cursive;font-size:16px;letter-spacing:1px;color:#00C4B4;">📍 ${escHtml(loc.name)}</div>
+            <button onclick="settingBank.editLocation(${i})" style="background:rgba(255,45,120,0.2);border:1px solid rgba(255,45,120,0.3);border-radius:99px;padding:4px 10px;font-family:Fredoka One,cursive;font-size:10px;color:#FF6EB4;cursor:pointer;">Edit</button>
           </div>
           ${loc.borrowedFrom ? `<div style="font-size:10px;color:rgba(255,255,255,0.55);font-style:italic;margin-bottom:6px;">Borrowed from <strong>${escHtml(loc.borrowedFrom)}</strong></div>` : ''}
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
             ${loc.see ? sensingChip('👁','See', loc.see) : ''}
             ${loc.hear ? sensingChip('👂','Hear', loc.hear) : ''}
             ${loc.feelEmotion ? sensingChip('💜','Feel', loc.feelEmotion) : ''}
@@ -3845,10 +3906,17 @@ const settingBank = (() => {
   }
 
   function sensingChip(emoji, label, text) {
-    return `<div style="background:#fff;border-radius:8px;padding:6px 8px;border:1px solid #EDE8FA;">
-      <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.55);margin-bottom:2px;">${emoji} ${label.toUpperCase()}</div>
-      <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.85);line-height:1.4;">${escHtml(text)}</div>
-    </div>`;
+    var sc = {
+      See:   {bg:'rgba(0,196,180,0.15)',  border:'rgba(0,196,180,0.4)',  col:'#00C4B4'},
+      Hear:  {bg:'rgba(255,215,0,0.12)',  border:'rgba(255,215,0,0.4)',  col:'#FFD700'},
+      Feel:  {bg:'rgba(255,110,180,0.15)',border:'rgba(255,110,180,0.4)',col:'#FF6EB4'},
+      Touch: {bg:'rgba(0,230,118,0.12)',  border:'rgba(0,230,118,0.4)', col:'#00E676'},
+      Smell: {bg:'rgba(255,165,0,0.12)',  border:'rgba(255,165,0,0.4)', col:'#FFA500'},
+    }[label] || {bg:'rgba(162,155,254,0.15)',border:'rgba(162,155,254,0.4)',col:'#A29BFE'};
+    return '<div style="background:' + sc.bg + ';border-radius:10px;padding:9px 11px;border:1.5px solid ' + sc.border + ';">'
+      + '<div style="font-family:Fredoka One,cursive;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:' + sc.col + ';margin-bottom:5px;">' + emoji + ' ' + label + '</div>'
+      + '<div style="font-size:12px;font-weight:700;color:#fff;line-height:1.5;">' + escHtml(text) + '</div>'
+      + '</div>';
   }
 
   function editLocation(idx) {
@@ -3893,7 +3961,7 @@ const settingBank = (() => {
     }
     list.innerHTML = mySettings.slice(-5).reverse().map((s, i) => `
       <div onclick="settingBank.showDetail(settingBank.getSettings()[${mySettings.indexOf(s)}])"
-        style="background:#F8F5FF;border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 0.15s;"
+        style="background:rgba(255,255,255,0.06);border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 0.15s;"
         onmouseover="this.style.background='#EDE8FA'" onmouseout="this.style.background='#F8F5FF'">
         <div style="width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#EDE0FF,#D8CBFF);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;">📍</div>
         <div style="flex:1;min-width:0;">
@@ -3946,19 +4014,19 @@ const settingBank = (() => {
         <div style="padding:10px 12px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
             <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:14px;color:#fff;">${escHtml(s.name || 'Untitled')}</div>
-            <button onclick="settingBank.starSetting('${s.id}')" style="background:#FFF0F6;border:1px solid #FCCDE8;border-radius:99px;padding:4px 10px;font-size:11px;font-weight:800;color:#E84393;cursor:pointer;">⭐ ${s.star_count || 0}</button>
+            <button onclick="settingBank.starSetting('${s.id}')" style="background:rgba(255,45,120,0.12);border:1px solid #FCCDE8;border-radius:99px;padding:4px 10px;font-size:11px;font-weight:800;color:#E84393;cursor:pointer;">⭐ ${s.star_count || 0}</button>
           </div>
           <div style="font-size:10px;color:rgba(255,255,255,0.55);font-weight:600;margin-bottom:8px;">By ${escHtml(author)} · ${locCount} location${locCount === 1 ? '' : 's'}</div>
           ${locCount > 0 && Array.isArray(s.locations) ? `
             <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">
-              ${s.locations.slice(0,3).map(loc => `<span style="background:#EDE8FA;color:#6C5CE7;border-radius:99px;font-size:9px;font-weight:800;padding:2px 8px;">📍 ${escHtml(loc.name)}</span>`).join('')}
-              ${locCount > 3 ? `<span style="background:#EDE8FA;color:rgba(255,255,255,0.55);border-radius:99px;font-size:9px;font-weight:800;padding:2px 8px;">+${locCount-3} more</span>` : ''}
+              ${s.locations.slice(0,3).map(loc => `<span style="background:rgba(255,255,255,0.06);color:#6C5CE7;border-radius:99px;font-size:9px;font-weight:800;padding:2px 8px;">📍 ${escHtml(loc.name)}</span>`).join('')}
+              ${locCount > 3 ? `<span style="background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.55);border-radius:99px;font-size:9px;font-weight:800;padding:2px 8px;">+${locCount-3} more</span>` : ''}
             </div>` : ''}
           <div style="display:flex;gap:8px;">
             <button onclick="settingBank.borrowSetting(${JSON.stringify(s).replace(/"/g,'&quot;')})" style="flex:1;background:linear-gradient(90deg,#6C5CE7,#9B59B6);color:#fff;border:none;border-radius:99px;padding:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;">
               + Add to My Bank
             </button>
-            <button onclick="settingBank.borrowLocation(${JSON.stringify(s).replace(/"/g,'&quot;')})" style="background:#F0ECFC;color:#6C5CE7;border:none;border-radius:99px;padding:8px 12px;font-size:11px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;" title="Add one location to existing setting">📍</button>
+            <button onclick="settingBank.borrowLocation(${JSON.stringify(s).replace(/"/g,'&quot;')})" style="background:rgba(108,92,231,0.15);color:#6C5CE7;border:none;border-radius:99px;padding:8px 12px;font-size:11px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;" title="Add one location to existing setting">📍</button>
           </div>
         </div>
       </div>`;
