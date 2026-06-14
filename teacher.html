@@ -260,6 +260,56 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
 
 @media(max-width:900px){.zine-grid{grid-template-columns:1fr;}.lb-row{grid-template-columns:1fr 1fr;}}
 @media(max-width:580px){.lb-row{grid-template-columns:1fr;}}
+
+/* ── MANAGEMENT TABS (Students / Characters / Settings) ── */
+.mgmt-wrap{max-width:1100px;margin:0 auto;padding:22px 20px 60px;}
+.mgmt-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+.mgmt-search{flex:1;min-width:200px;padding:9px 14px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.18);border-radius:8px;color:#fff;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;outline:none;}
+.mgmt-search::placeholder{color:rgba(255,255,255,0.3);}
+.mgmt-search:focus{border-color:var(--pink);}
+.mgmt-count{font-family:'Fredoka One',cursive;font-size:12px;color:rgba(255,255,255,0.4);letter-spacing:0.5px;white-space:nowrap;}
+.btn-add{background:var(--teal);color:var(--ink);border:none;border-radius:6px;padding:9px 18px;font-family:'Bangers',cursive;font-size:14px;letter-spacing:1.5px;cursor:pointer;transition:opacity 0.15s;}
+.btn-add:hover{opacity:0.85;}
+.mgmt-table{width:100%;border-collapse:collapse;background:rgba(0,0,0,0.35);border-radius:10px;overflow:hidden;border:1.5px solid rgba(255,255,255,0.1);}
+.mgmt-table th{background:rgba(0,0,0,0.4);padding:10px 14px;font-family:'Bangers',cursive;font-size:12px;letter-spacing:1.5px;color:rgba(255,255,255,0.55);text-align:left;border-bottom:1.5px solid rgba(255,255,255,0.1);}
+.mgmt-table td{padding:10px 14px;font-size:12px;font-weight:700;color:rgba(255,255,255,0.85);border-bottom:1px solid rgba(255,255,255,0.06);vertical-align:middle;}
+.mgmt-table tr:last-child td{border-bottom:none;}
+.mgmt-table tr:hover td{background:rgba(255,255,255,0.04);}
+.action-btn{border:none;border-radius:5px;padding:5px 12px;font-family:'Fredoka One',cursive;font-size:11px;cursor:pointer;transition:all 0.15s;letter-spacing:0.3px;}
+.btn-edit-row{background:rgba(108,92,231,0.25);color:#a29bfe;border:1px solid rgba(108,92,231,0.4);}
+.btn-edit-row:hover{background:rgba(108,92,231,0.45);}
+.btn-del-row{background:rgba(255,45,120,0.15);color:#ff6eb4;border:1px solid rgba(255,45,120,0.35);}
+.btn-del-row:hover{background:rgba(255,45,120,0.35);}
+.btn-view-row{background:rgba(0,196,180,0.15);color:var(--teal);border:1px solid rgba(0,196,180,0.35);}
+.btn-view-row:hover{background:rgba(0,196,180,0.3);}
+.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:10px;font-weight:800;letter-spacing:0.5px;}
+.pill-public{background:rgba(0,230,118,0.2);color:#00E676;border:1px solid rgba(0,230,118,0.35);}
+.pill-private{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.45);border:1px solid rgba(255,255,255,0.1);}
+.char-thumb{width:36px;height:36px;border-radius:6px;object-fit:cover;border:1.5px solid rgba(255,255,255,0.15);}
+.char-thumb-ph{width:36px;height:36px;border-radius:6px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:18px;border:1.5px solid rgba(255,255,255,0.1);}
+.empty-state{padding:48px;text-align:center;font-family:'Fredoka One',cursive;font-size:14px;color:rgba(255,255,255,0.3);letter-spacing:0.5px;}
+
+/* Modal overlay */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);}
+.modal-box{background:#1A0A3A;border:2px solid rgba(255,255,255,0.15);border-radius:14px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.6);}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1.5px solid rgba(255,255,255,0.1);}
+.modal-title{font-family:'Bangers',cursive;font-size:20px;letter-spacing:2px;color:var(--yellow);}
+.modal-close{background:none;border:none;color:rgba(255,255,255,0.45);font-size:22px;cursor:pointer;line-height:1;padding:2px 6px;border-radius:4px;}
+.modal-close:hover{color:#fff;background:rgba(255,255,255,0.1);}
+.modal-body{padding:20px;}
+.modal-footer{padding:14px 20px;border-top:1.5px solid rgba(255,255,255,0.1);display:flex;gap:10px;justify-content:flex-end;}
+.modal-body .field-grp{margin-bottom:14px;}
+.modal-body .field-lbl{font-family:'Fredoka One',cursive;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:5px;display:block;}
+.modal-body .field-inp{width:100%;padding:10px 13px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;outline:none;transition:border-color 0.15s;}
+.modal-body .field-inp:focus{border-color:var(--pink);}
+.modal-body textarea.field-inp{min-height:90px;resize:vertical;}
+.code-display{font-family:'Bangers',cursive;font-size:28px;letter-spacing:4px;color:var(--yellow);background:rgba(255,215,0,0.08);border:2px dashed rgba(255,215,0,0.35);border-radius:8px;padding:12px 20px;text-align:center;margin:8px 0;}
+.char-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.char-detail-item{background:rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;}
+.char-detail-lbl{font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:3px;}
+.char-detail-val{font-size:12px;font-weight:700;color:#fff;line-height:1.4;}
+.char-img-pair{display:flex;gap:10px;margin-bottom:14px;}
+.char-img-pair img{flex:1;max-width:50%;border-radius:8px;object-fit:cover;border:1.5px solid rgba(255,255,255,0.15);}
 </style>
 </head>
 <body>
@@ -289,6 +339,18 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
   <div class="tab" id="tab-prompt" onclick="switchTab('prompt')">
     <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 4h12M3 8h8M3 12h6"/></svg>
     EDIT PROMPT
+  </div>
+  <div class="tab" id="tab-students" onclick="switchTab('students')">
+    <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="9" cy="6" r="3"/><path d="M2 16c0-3.3 3.1-6 7-6s7 2.7 7 6"/></svg>
+    STUDENTS
+  </div>
+  <div class="tab" id="tab-characters" onclick="switchTab('characters')">
+    <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="2" y="2" width="14" height="14" rx="2"/><path d="M6 7h6M6 11h4"/></svg>
+    CHARACTERS
+  </div>
+  <div class="tab" id="tab-settings-tab" onclick="switchTab('settings-tab')">
+    <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="9" cy="9" r="3"/><path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.2 3.2l1.4 1.4M13.4 13.4l1.4 1.4M3.2 14.8l1.4-1.4M13.4 4.6l1.4-1.4"/></svg>
+    SETTINGS
   </div>
 </nav>
 
@@ -514,7 +576,158 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
   </div>
 </div><!-- end tab-prompt -->
 
+<!-- ══ TAB: STUDENTS ══ -->
+<div class="tab-content" id="content-students">
+  <div class="mgmt-wrap">
+    <div class="mgmt-toolbar">
+      <input class="mgmt-search" id="student-search" type="text" placeholder="Search by name or login code…" oninput="filterStudents()"/>
+      <span class="mgmt-count" id="student-count"></span>
+      <button class="btn-add" onclick="openStudentModal(null)">+ ADD STUDENT</button>
+    </div>
+    <table class="mgmt-table">
+      <thead>
+        <tr>
+          <th>DISPLAY NAME</th>
+          <th>USERNAME / LOGIN CODE</th>
+          <th>EMAIL</th>
+          <th>CHARACTERS</th>
+          <th>STARS EARNED</th>
+          <th>JOINED</th>
+          <th style="width:120px;">ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody id="student-tbody">
+        <tr><td colspan="7"><div class="empty-state">Loading students…</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ TAB: CHARACTERS ══ -->
+<div class="tab-content" id="content-characters">
+  <div class="mgmt-wrap">
+    <div class="mgmt-toolbar">
+      <input class="mgmt-search" id="char-search" type="text" placeholder="Search by character name or student…" oninput="filterChars()"/>
+      <span class="mgmt-count" id="char-count"></span>
+    </div>
+    <table class="mgmt-table">
+      <thead>
+        <tr>
+          <th style="width:48px;"></th>
+          <th>CHARACTER NAME</th>
+          <th>STUDENT</th>
+          <th>ART STYLE</th>
+          <th>VISIBILITY</th>
+          <th>STARS</th>
+          <th>CREATED</th>
+          <th style="width:150px;">ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody id="char-tbody">
+        <tr><td colspan="8"><div class="empty-state">Loading characters…</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ TAB: SETTINGS ══ -->
+<div class="tab-content" id="content-settings-tab">
+  <div class="mgmt-wrap">
+    <div class="mgmt-toolbar">
+      <input class="mgmt-search" id="setting-search" type="text" placeholder="Search by setting name or student…" oninput="filterSettings()"/>
+      <span class="mgmt-count" id="setting-count"></span>
+    </div>
+    <table class="mgmt-table">
+      <thead>
+        <tr>
+          <th>SETTING NAME</th>
+          <th>STUDENT</th>
+          <th>LOCATIONS</th>
+          <th>VISIBILITY</th>
+          <th>STARS</th>
+          <th>CREATED</th>
+          <th style="width:120px;">ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody id="setting-tbody">
+        <tr><td colspan="7"><div class="empty-state">Loading settings…</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
 </div><!-- end page -->
+
+<!-- ══ STUDENT MODAL ══ -->
+<div class="modal-overlay" id="student-modal" style="display:none;" onclick="if(event.target===this)closeStudentModal()">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <span class="modal-title" id="student-modal-title">ADD STUDENT</span>
+      <button class="modal-close" onclick="closeStudentModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="sm-id"/>
+      <div class="field-grp">
+        <label class="field-lbl">Student's Display Name</label>
+        <input class="field-inp" id="sm-name" type="text" placeholder="e.g. Jamie Smith"/>
+      </div>
+      <div class="field-grp">
+        <label class="field-lbl">Username / Login Code</label>
+        <input class="field-inp" id="sm-username" type="text" placeholder="e.g. jamie2025"/>
+        <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;">Students use this to log in. Lowercase letters and numbers only.</div>
+      </div>
+      <div class="field-grp" id="sm-email-grp">
+        <label class="field-lbl">Email Address</label>
+        <input class="field-inp" id="sm-email" type="email" placeholder="student@school.nz"/>
+        <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;">Required for account creation. Can be a school-issued address.</div>
+      </div>
+      <div class="field-grp" id="sm-pw-grp">
+        <label class="field-lbl" id="sm-pw-label">Password</label>
+        <input class="field-inp" id="sm-password" type="text" placeholder="Set a memorable password"/>
+        <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;">Students can change this later in their profile.</div>
+      </div>
+      <div id="sm-code-display" style="display:none;">
+        <div class="field-lbl" style="display:block;margin-bottom:4px;">Login Code</div>
+        <div class="code-display" id="sm-code-val"></div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;text-align:center;">Share this with the student so they can sign in.</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-discard" onclick="closeStudentModal()">Cancel</button>
+      <button class="btn-publish" id="sm-save-btn" onclick="saveStudent()" style="padding:10px 24px;font-size:15px;">SAVE</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CHARACTER DETAIL MODAL ══ -->
+<div class="modal-overlay" id="char-modal" style="display:none;" onclick="if(event.target===this)closeCharModal()">
+  <div class="modal-box" style="max-width:620px;">
+    <div class="modal-hdr">
+      <span class="modal-title" id="char-modal-title">CHARACTER DETAILS</span>
+      <button class="modal-close" onclick="closeCharModal()">✕</button>
+    </div>
+    <div class="modal-body" id="char-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn-discard" onclick="closeCharModal()">Close</button>
+      <button class="action-btn btn-del-row" id="char-modal-del-btn" style="padding:9px 20px;font-size:12px;">🗑 DELETE CHARACTER</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SETTING DETAIL MODAL ══ -->
+<div class="modal-overlay" id="setting-modal" style="display:none;" onclick="if(event.target===this)closeSettingModal()">
+  <div class="modal-box" style="max-width:600px;">
+    <div class="modal-hdr">
+      <span class="modal-title" id="setting-modal-title">SETTING DETAILS</span>
+      <button class="modal-close" onclick="closeSettingModal()">✕</button>
+    </div>
+    <div class="modal-body" id="setting-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn-discard" onclick="closeSettingModal()">Close</button>
+      <button class="action-btn btn-del-row" id="setting-modal-del-btn" style="padding:9px 20px;font-size:12px;">🗑 DELETE SETTING</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -575,7 +788,10 @@ function switchTab(name) {
   document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
   document.getElementById('tab-' + name).classList.add('active');
   document.getElementById('content-' + name).classList.add('active');
-  if (name === 'prompt') prefillEditor();
+  if (name === 'prompt')       prefillEditor();
+  if (name === 'students')     loadStudents();
+  if (name === 'characters')   loadAllChars();
+  if (name === 'settings-tab') loadAllSettings();
 }
 
 function focusImageUpload() {
@@ -1073,6 +1289,363 @@ function toast(msg) { var t=document.getElementById('toast'); t.textContent=msg;
 function escHtml(s) { if(!s)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 init();
+
+// ══════════════════════════════════════════════════════
+//  STUDENTS TAB
+// ══════════════════════════════════════════════════════
+var _allStudents = [];
+var _studentsLoaded = false;
+
+async function loadStudents() {
+  if (_studentsLoaded) return;
+  _studentsLoaded = true;
+  var r = await _sb.from('profiles').select('id,username,display_name,student_name,class_code,star_points,created_at').order('created_at', {ascending:false});
+  if (r.error) { toast('Error loading students: ' + r.error.message); return; }
+  // Fetch character counts per student
+  var ids = (r.data||[]).map(function(p){return p.id;});
+  var counts = {};
+  if (ids.length) {
+    var cr = await _sb.from('characters').select('user_id').in('user_id', ids);
+    (cr.data||[]).forEach(function(c){ counts[c.user_id] = (counts[c.user_id]||0)+1; });
+  }
+  _allStudents = (r.data||[]).map(function(p){ p._charCount = counts[p.id]||0; return p; });
+  renderStudents(_allStudents);
+}
+
+function renderStudents(list) {
+  var tbody = document.getElementById('student-tbody');
+  document.getElementById('student-count').textContent = list.length + ' student' + (list.length!==1?'s':'');
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state">No students found</div></td></tr>'; return; }
+  tbody.innerHTML = list.map(function(s) {
+    var name = s.display_name || s.student_name || '—';
+    var joined = s.created_at ? new Date(s.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    return '<tr>'
+      +'<td>'+escHtml(name)+'</td>'
+      +'<td><span style="font-family:\'Bangers\',cursive;letter-spacing:1px;color:var(--yellow);">'+escHtml(s.username||'—')+'</span></td>'
+      +'<td><span style="color:rgba(255,255,255,0.45);font-size:11px;">'+escHtml(s.class_code||'—')+'</span></td>'
+      +'<td>'+s._charCount+'</td>'
+      +'<td>⭐ '+( s.star_points||0)+'</td>'
+      +'<td style="color:rgba(255,255,255,0.45);font-size:11px;">'+joined+'</td>'
+      +'<td style="display:flex;gap:5px;flex-wrap:wrap;">'
+        +'<button class="action-btn btn-edit-row" onclick="openStudentModal(\''+s.id+'\')">✏ Edit</button>'
+        +'<button class="action-btn btn-del-row" onclick="deleteStudent(\''+s.id+'\',\''+escHtml(name)+'\')">🗑</button>'
+      +'</td>'
+    +'</tr>';
+  }).join('');
+}
+
+function filterStudents() {
+  var q = document.getElementById('student-search').value.toLowerCase();
+  if (!q) { renderStudents(_allStudents); return; }
+  var filtered = _allStudents.filter(function(s){
+    return (s.display_name||'').toLowerCase().includes(q)
+        || (s.student_name||'').toLowerCase().includes(q)
+        || (s.username||'').toLowerCase().includes(q)
+        || (s.class_code||'').toLowerCase().includes(q);
+  });
+  renderStudents(filtered);
+}
+
+// Student modal
+var _editingStudentId = null;
+function openStudentModal(id) {
+  _editingStudentId = id;
+  document.getElementById('sm-id').value = id || '';
+  document.getElementById('student-modal-title').textContent = id ? 'EDIT STUDENT' : 'ADD STUDENT';
+  document.getElementById('sm-name').value = '';
+  document.getElementById('sm-username').value = '';
+  document.getElementById('sm-email').value = '';
+  document.getElementById('sm-password').value = '';
+  document.getElementById('sm-code-display').style.display = 'none';
+  document.getElementById('sm-email-grp').style.display = id ? 'none' : '';
+  document.getElementById('sm-pw-grp').style.display = '';
+  document.getElementById('sm-pw-label').textContent = id ? 'New Password (leave blank to keep)' : 'Password';
+
+  if (id) {
+    var s = _allStudents.find(function(x){return x.id===id;});
+    if (s) {
+      document.getElementById('sm-name').value = s.display_name || s.student_name || '';
+      document.getElementById('sm-username').value = s.username || '';
+      document.getElementById('sm-code-display').style.display = 'block';
+      document.getElementById('sm-code-val').textContent = s.username || '—';
+    }
+  }
+  document.getElementById('student-modal').style.display = 'flex';
+}
+
+function closeStudentModal() { document.getElementById('student-modal').style.display = 'none'; }
+
+async function saveStudent() {
+  var id       = document.getElementById('sm-id').value;
+  var name     = document.getElementById('sm-name').value.trim();
+  var username = document.getElementById('sm-username').value.trim().toLowerCase();
+  var email    = document.getElementById('sm-email').value.trim();
+  var password = document.getElementById('sm-password').value.trim();
+  if (!name)     { toast('Please enter a display name'); return; }
+  if (!username) { toast('Please enter a username / login code'); return; }
+  var btn = document.getElementById('sm-save-btn');
+  btn.textContent = 'SAVING…'; btn.disabled = true;
+
+  if (id) {
+    // Update existing profile
+    var updates = { display_name: name, student_name: name, username: username };
+    var r = await _sb.from('profiles').update(updates).eq('id', id);
+    if (r.error) { toast('Error: ' + r.error.message); btn.textContent='SAVE'; btn.disabled=false; return; }
+    // Password reset if provided — requires service role in a real setup; we'll note the limitation
+    if (password) { toast('⚠ Password changes require Supabase admin access. Updated profile info only.'); }
+    else toast('✓ Student updated');
+    _studentsLoaded = false;
+    await loadStudents();
+    closeStudentModal();
+  } else {
+    // Create new student via Supabase Auth sign-up
+    if (!email)    { toast('Email is required to create an account'); btn.textContent='SAVE'; btn.disabled=false; return; }
+    if (!password) { toast('Password is required to create an account'); btn.textContent='SAVE'; btn.disabled=false; return; }
+    var r = await _sb.auth.signUp({
+      email: email, password: password,
+      options: { data: { username: username, display_name: name } }
+    });
+    if (r.error) { toast('Error: ' + r.error.message); btn.textContent='SAVE'; btn.disabled=false; return; }
+    toast('✓ Student account created! They can log in with the code shown.');
+    _studentsLoaded = false;
+    await loadStudents();
+    closeStudentModal();
+    // Re-open to show the login code
+    setTimeout(function(){
+      var newS = _allStudents.find(function(x){return x.username===username;});
+      if (newS) openStudentModal(newS.id);
+    }, 800);
+  }
+  btn.textContent = 'SAVE'; btn.disabled = false;
+}
+
+async function deleteStudent(id, name) {
+  if (!confirm('Delete student "' + name + '"?\n\nThis will permanently delete their account and ALL their characters, settings and stories. This cannot be undone.')) return;
+  // Delete from auth (requires service role normally); we delete from profiles (cascades to characters)
+  var r = await _sb.from('profiles').delete().eq('id', id);
+  if (r.error) { toast('Error: ' + r.error.message); return; }
+  toast('✓ Student "' + name + '" deleted');
+  _studentsLoaded = false;
+  await loadStudents();
+}
+
+// ══════════════════════════════════════════════════════
+//  CHARACTERS TAB
+// ══════════════════════════════════════════════════════
+var _allChars = [];
+var _charsLoaded = false;
+
+async function loadAllChars() {
+  if (_charsLoaded) return;
+  _charsLoaded = true;
+  // Use the teacher view if available, else fallback to public join
+  var r = await _sb.from('teacher_character_view').select('*').order('created_at', {ascending:false});
+  if (r.error) {
+    // Fallback: read public characters with a join
+    var r2 = await _sb.from('characters').select('*,profiles(username,display_name)').order('created_at',{ascending:false});
+    if (r2.error) { toast('Error loading characters: ' + r2.error.message); return; }
+    _allChars = (r2.data||[]).map(function(c){
+      return Object.assign({}, c, {
+        character_name: c.name,
+        student_username: c.profiles ? c.profiles.username : '?',
+        student_display_name: c.profiles ? c.profiles.display_name : '?',
+      });
+    });
+  } else {
+    _allChars = r.data || [];
+  }
+  renderChars(_allChars);
+}
+
+function renderChars(list) {
+  var tbody = document.getElementById('char-tbody');
+  document.getElementById('char-count').textContent = list.length + ' character' + (list.length!==1?'s':'');
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state">No characters found</div></td></tr>'; return; }
+  tbody.innerHTML = list.map(function(c) {
+    var img = c.ai_art_url || c.sketch_url;
+    var thumb = img
+      ? '<img src="'+escHtml(img)+'" class="char-thumb" alt=""/>'
+      : '<div class="char-thumb-ph">🎭</div>';
+    var created = c.created_at ? new Date(c.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : '—';
+    var pub = c.is_public
+      ? '<span class="pill pill-public">PUBLIC</span>'
+      : '<span class="pill pill-private">PRIVATE</span>';
+    var studentName = c.student_display_name || c.student_username || '?';
+    return '<tr>'
+      +'<td>'+thumb+'</td>'
+      +'<td style="font-weight:800;color:#fff;">'+escHtml(c.character_name||c.name||'Unnamed')+'</td>'
+      +'<td style="color:rgba(255,255,255,0.7);">'+escHtml(studentName)+'</td>'
+      +'<td style="color:rgba(255,255,255,0.5);font-size:11px;">'+escHtml(c.art_style||'—')+'</td>'
+      +'<td>'+pub+'</td>'
+      +'<td style="color:var(--yellow);">⭐ '+(c.star_count||0)+'</td>'
+      +'<td style="color:rgba(255,255,255,0.4);font-size:11px;">'+created+'</td>'
+      +'<td style="display:flex;gap:5px;flex-wrap:wrap;">'
+        +'<button class="action-btn btn-view-row" onclick="openCharModal(\''+c.id+'\')">👁 View</button>'
+        +'<button class="action-btn btn-del-row" onclick="deleteChar(\''+c.id+'\',\''+escHtml(c.character_name||c.name||'this character')+'\')">🗑</button>'
+      +'</td>'
+    +'</tr>';
+  }).join('');
+}
+
+function filterChars() {
+  var q = document.getElementById('char-search').value.toLowerCase();
+  if (!q) { renderChars(_allChars); return; }
+  var filtered = _allChars.filter(function(c){
+    return (c.character_name||c.name||'').toLowerCase().includes(q)
+        || (c.student_display_name||'').toLowerCase().includes(q)
+        || (c.student_username||'').toLowerCase().includes(q);
+  });
+  renderChars(filtered);
+}
+
+function openCharModal(id) {
+  var c = _allChars.find(function(x){return x.id===id;});
+  if (!c) return;
+  document.getElementById('char-modal-title').textContent = escHtml(c.character_name||c.name||'Character');
+  var img = c.ai_art_url || c.sketch_url;
+  var fields = [
+    {l:'Appearance',v:c.appearance},{l:'Height',v:c.height},{l:'Build',v:c.build},
+    {l:'Personality',v:c.personality},{l:'Strengths',v:c.strengths},{l:'Fears',v:c.fears},
+    {l:'Interests',v:c.interests},{l:'Features',v:c.features},
+  ].filter(function(f){return f.v;});
+  var html = '';
+  if (img) html += '<img src="'+escHtml(img)+'" style="width:100%;max-height:220px;object-fit:cover;border-radius:8px;margin-bottom:14px;border:1.5px solid rgba(255,255,255,0.15);"/>';
+  html += '<div style="margin-bottom:10px;"><span class="field-lbl" style="display:inline;margin-right:6px;">Student:</span><span style="font-weight:800;color:#fff;">'+escHtml(c.student_display_name||c.student_username||'?')+'</span></div>';
+  if (c.teacher_note) html += '<div style="background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.25);border-radius:6px;padding:10px 12px;margin-bottom:12px;"><span style="font-size:10px;color:var(--yellow);font-weight:800;letter-spacing:1px;">TEACHER NOTE</span><p style="font-size:12px;margin-top:4px;color:rgba(255,255,255,0.8);">'+escHtml(c.teacher_note)+'</p></div>';
+  if (fields.length) {
+    html += '<div class="char-detail-grid">';
+    fields.forEach(function(f){ html += '<div class="char-detail-item"><div class="char-detail-lbl">'+escHtml(f.l)+'</div><div class="char-detail-val">'+escHtml(f.v)+'</div></div>'; });
+    html += '</div>';
+  }
+  // Teacher note editor
+  html += '<div class="field-grp" style="margin-top:8px;">'
+    +'<label class="field-lbl" style="display:block;">ADD / EDIT TEACHER NOTE</label>'
+    +'<textarea class="field-inp" id="char-note-input" style="min-height:70px;">'+escHtml(c.teacher_note||'')+'</textarea>'
+    +'<button onclick="saveTeacherNote(\''+id+'\')" style="margin-top:6px;" class="action-btn btn-edit-row">💾 Save Note</button>'
+    +'</div>';
+  document.getElementById('char-modal-body').innerHTML = html;
+  document.getElementById('char-modal-del-btn').onclick = function(){ closeCharModal(); deleteChar(id, c.character_name||c.name||'this character'); };
+  document.getElementById('char-modal').style.display = 'flex';
+}
+function closeCharModal() { document.getElementById('char-modal').style.display = 'none'; }
+
+async function saveTeacherNote(charId) {
+  var note = document.getElementById('char-note-input').value.trim();
+  var c = _allChars.find(function(x){return x.id===charId;});
+  var r;
+  if (c && c.feedback_id) {
+    r = await _sb.from('teacher_feedback').update({teacher_note:note}).eq('id',c.feedback_id);
+  } else {
+    r = await _sb.from('teacher_feedback').insert({character_id:charId, teacher_note:note});
+  }
+  if (r.error) { toast('Error: '+r.error.message); return; }
+  toast('✓ Note saved');
+  _charsLoaded = false;
+  await loadAllChars();
+}
+
+async function deleteChar(id, name) {
+  if (!confirm('Delete character "' + name + '"?\n\nThis cannot be undone.')) return;
+  var r = await _sb.from('characters').delete().eq('id', id);
+  if (r.error) { toast('Error: ' + r.error.message); return; }
+  toast('✓ Character deleted');
+  _charsLoaded = false;
+  await loadAllChars();
+}
+
+// ══════════════════════════════════════════════════════
+//  SETTINGS TAB
+// ══════════════════════════════════════════════════════
+var _allSettings = [];
+var _settingsLoaded = false;
+
+async function loadAllSettings() {
+  if (_settingsLoaded) return;
+  _settingsLoaded = true;
+  var r = await _sb.from('settings').select('*,profiles(username,display_name)').order('created_at',{ascending:false});
+  if (r.error) {
+    if (r.error.code === '42P01') {
+      document.getElementById('setting-tbody').innerHTML = '<tr><td colspan="7"><div class="empty-state">The settings table doesn\'t exist yet — run the Story Lab schema SQL in Supabase first.</div></td></tr>';
+      _settingsLoaded = false;
+    } else {
+      toast('Error loading settings: ' + r.error.message);
+    }
+    return;
+  }
+  _allSettings = (r.data||[]).map(function(s){
+    s._studentName = s.profiles ? (s.profiles.display_name || s.profiles.username || '?') : '?';
+    return s;
+  });
+  renderSettings(_allSettings);
+}
+
+function renderSettings(list) {
+  var tbody = document.getElementById('setting-tbody');
+  document.getElementById('setting-count').textContent = list.length + ' setting' + (list.length!==1?'s':'');
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state">No settings found</div></td></tr>'; return; }
+  tbody.innerHTML = list.map(function(s) {
+    var locs = Array.isArray(s.locations) ? s.locations : [];
+    var created = s.created_at ? new Date(s.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : '—';
+    var pub = s.is_public
+      ? '<span class="pill pill-public">PUBLIC</span>'
+      : '<span class="pill pill-private">PRIVATE</span>';
+    return '<tr>'
+      +'<td style="font-weight:800;color:#fff;">'+escHtml(s.name||'Unnamed')+'</td>'
+      +'<td style="color:rgba(255,255,255,0.7);">'+escHtml(s._studentName)+'</td>'
+      +'<td style="color:rgba(255,255,255,0.5);">'+locs.length+'</td>'
+      +'<td>'+pub+'</td>'
+      +'<td style="color:var(--yellow);">⭐ '+(s.star_count||0)+'</td>'
+      +'<td style="color:rgba(255,255,255,0.4);font-size:11px;">'+created+'</td>'
+      +'<td style="display:flex;gap:5px;flex-wrap:wrap;">'
+        +'<button class="action-btn btn-view-row" onclick="openSettingModal(\''+s.id+'\')">👁 View</button>'
+        +'<button class="action-btn btn-del-row" onclick="deleteSetting(\''+s.id+'\',\''+escHtml(s.name||'this setting')+'\')">🗑</button>'
+      +'</td>'
+    +'</tr>';
+  }).join('');
+}
+
+function filterSettings() {
+  var q = document.getElementById('setting-search').value.toLowerCase();
+  if (!q) { renderSettings(_allSettings); return; }
+  var filtered = _allSettings.filter(function(s){
+    return (s.name||'').toLowerCase().includes(q)
+        || (s._studentName||'').toLowerCase().includes(q);
+  });
+  renderSettings(filtered);
+}
+
+function openSettingModal(id) {
+  var s = _allSettings.find(function(x){return x.id===id;});
+  if (!s) return;
+  document.getElementById('setting-modal-title').textContent = escHtml(s.name||'Setting');
+  var locs = Array.isArray(s.locations) ? s.locations : [];
+  var html = '<div style="margin-bottom:12px;"><span class="field-lbl" style="display:inline;margin-right:6px;">Student:</span><span style="font-weight:800;color:#fff;">'+escHtml(s._studentName)+'</span></div>';
+  if (s.description) html += '<div class="char-detail-item" style="margin-bottom:12px;"><div class="char-detail-lbl">Description</div><div class="char-detail-val">'+escHtml(s.description)+'</div></div>';
+  if (locs.length) {
+    html += '<div style="font-family:\'Bangers\',cursive;font-size:13px;letter-spacing:1.5px;color:var(--teal);margin-bottom:8px;">LOCATIONS ('+locs.length+')</div>';
+    locs.forEach(function(loc){
+      html += '<div class="char-detail-item" style="margin-bottom:8px;display:flex;gap:10px;align-items:flex-start;">';
+      if (loc.imageDataUrl) html += '<img src="'+escHtml(loc.imageDataUrl)+'" style="width:60px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;"/>';
+      html += '<div><div class="char-detail-lbl">'+escHtml(loc.name||'Location')+'</div>';
+      if (loc.description) html += '<div class="char-detail-val" style="font-size:11px;color:rgba(255,255,255,0.7);">'+escHtml(loc.description)+'</div>';
+      html += '</div></div>';
+    });
+  }
+  document.getElementById('setting-modal-body').innerHTML = html;
+  document.getElementById('setting-modal-del-btn').onclick = function(){ closeSettingModal(); deleteSetting(id, s.name||'this setting'); };
+  document.getElementById('setting-modal').style.display = 'flex';
+}
+function closeSettingModal() { document.getElementById('setting-modal').style.display = 'none'; }
+
+async function deleteSetting(id, name) {
+  if (!confirm('Delete setting "' + name + '"?\n\nThis cannot be undone.')) return;
+  var r = await _sb.from('settings').delete().eq('id', id);
+  if (r.error) { toast('Error: ' + r.error.message); return; }
+  toast('✓ Setting deleted');
+  _settingsLoaded = false;
+  await loadAllSettings();
+}
+
 </script>
 </body>
 </html>
