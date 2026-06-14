@@ -2738,9 +2738,32 @@ async function handleSaveSettingToSupabase(setting) {
     else { console.warn('[SettingBank] no user session, cannot save to Supabase'); return; }
   }
 
+  // ── Ensure unique name ──
+  // Only needed for new settings (no supabase_id yet)
+  let finalName = setting.name;
+  if (!setting.supabase_id) {
+    // Fetch all existing setting names (any user) to check for collisions
+    const { data: existing } = await _sb.from('settings').select('name');
+    const takenNames = new Set((existing || []).map(s => s.name.trim().toLowerCase()));
+    if (takenNames.has(finalName.trim().toLowerCase())) {
+      // Try appending 01, 02, … until we find a free name
+      let suffix = 1;
+      let candidate;
+      do {
+        candidate = finalName + ' ' + String(suffix).padStart(2, '0');
+        suffix++;
+      } while (takenNames.has(candidate.trim().toLowerCase()) && suffix < 100);
+      finalName = candidate;
+      // Update the in-memory setting and the UI input so the student sees the final name
+      setting.name = finalName;
+      const nameInput = document.getElementById('sb-setting-name');
+      if (nameInput) nameInput.value = finalName;
+    }
+  }
+
   const payload = {
     user_id:   _currentUser.id,
-    name:      setting.name,
+    name:      finalName,
     locations: setting.locations || [],
     is_public: true,
     star_count: setting.star_count || 0,
@@ -3738,7 +3761,13 @@ const settingBank = (() => {
     persist();
     try {
       await saveToSupabase(activeSetting);
-      toast('✓ Setting saved to your bank & community!');
+      // activeSetting.name may have been auto-suffixed by handleSaveSettingToSupabase
+      const savedName = activeSetting.name;
+      if (savedName !== name) {
+        toast('✓ Saved as "' + savedName + '" (another setting had that name)');
+      } else {
+        toast('✓ Setting saved to your bank & community!');
+      }
     } catch(e) {
       console.error('[SettingBank] saveSetting error:', e);
       toast('Saved locally — cloud sync failed', 'error');
