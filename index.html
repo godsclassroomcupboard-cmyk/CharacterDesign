@@ -665,39 +665,39 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         <div id="char-form">
           <div class="field-row">
             <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><circle cx="10" cy="7" r="4"/><path d="M3 18c0-4 3.1-6 7-6s7 2 7 6"/></svg>Name</div>
-            <input type="text" id="f-name" placeholder="e.g. Zara Stormwhisper" />
+            <input type="text" id="f-name" placeholder="e.g. Zara Stormwhisper" autocomplete="off" />
           </div>
           <div class="field-row">
             <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><polygon points="10,2 12.5,7.5 18,8.2 14,12 15.4,17.5 10,14.5 4.6,17.5 6,12 2,8.2 7.5,7.5"/></svg>Stand Out Features</div>
-            <input type="text" id="f-features" placeholder="e.g. Silver hair, glowing eyes, Cybernetic arm" />
+            <input type="text" id="f-features" placeholder="e.g. Silver hair, glowing eyes, Cybernetic arm" autocomplete="off" />
           </div>
           <div class="field-row">
             <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><line x1="10" y1="2" x2="10" y2="18"/><line x1="4" y1="6" x2="16" y2="6"/><line x1="4" y1="10" x2="16" y2="10"/><line x1="4" y1="14" x2="16" y2="14"/></svg>Height</div>
-            <input type="text" id="f-height" placeholder="e.g. 165cm" />
+            <input type="text" id="f-height" placeholder="e.g. 165cm" autocomplete="off" />
           </div>
           <div class="field-row">
             <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><path d="M6 3h8M6 3v4a4 4 0 0 0 8 0V3"/><path d="M5 17h10"/><path d="M8 17v-3M12 17v-3"/></svg>Build</div>
-            <input type="text" id="f-build" placeholder="e.g. Athletic" />
+            <input type="text" id="f-build" placeholder="e.g. Athletic" autocomplete="off" />
           </div>
           <div class="field-row">
             <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><path d="M17.7 3.8a4.6 4.6 0 0 0-6.5 0L10 5l-1.2-1.2a4.6 4.6 0 0 0-6.5 6.5L10 18l7.7-7.7a4.6 4.6 0 0 0 0-6.5z"/></svg>Character</div>
-            <input type="text" id="f-character" placeholder="e.g. Brave, Curious, Loyal" />
+            <input type="text" id="f-character" placeholder="e.g. Brave, Curious, Loyal" autocomplete="off" />
           </div>
           <div class="field-row">
             <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><circle cx="10" cy="10" r="8"/><line x1="10" y1="6" x2="10" y2="10"/><circle cx="10" cy="14" r="0.5" fill="#00C4B4"/></svg>Fears</div>
-            <input type="text" id="f-fears" placeholder="e.g. Heights, Losing friends" />
+            <input type="text" id="f-fears" placeholder="e.g. Heights, Losing friends" autocomplete="off" />
           </div>
           <div class="field-row">
             <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><polygon points="13,2 3,14 10,14 7,18 17,6 10,6"/></svg>Strengths</div>
-            <input type="text" id="f-strengths" placeholder="e.g. Problem solving, Archery" />
+            <input type="text" id="f-strengths" placeholder="e.g. Problem solving, Archery" autocomplete="off" />
           </div>
           <div class="field-row">
             <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><circle cx="10" cy="10" r="8"/><polyline points="10,6 10,10 13,12"/></svg>Interests</div>
-            <input type="text" id="f-interests" placeholder="e.g. Space travel, Robotics, Music" />
+            <input type="text" id="f-interests" placeholder="e.g. Space travel, Robotics, Music" autocomplete="off" />
           </div>
           <div class="field-row" style="border-bottom:none;">
             <div class="field-label"><svg viewBox="0 0 20 20" fill="none" stroke="#00C4B4" stroke-width="2" width="16" height="16"><circle cx="10" cy="7" r="4"/><path d="M3 18c0-4 3.1-6 7-6s7 2 7 6"/></svg>Appearance</div>
-            <input type="text" id="f-appearance" placeholder="e.g. Short silver hair, scar on left cheek" />
+            <input type="text" id="f-appearance" placeholder="e.g. Short silver hair, scar on left cheek" autocomplete="off" />
           </div>
         </div>
 
@@ -3179,15 +3179,15 @@ window.addEventListener('load', () => {
     <!-- Edit mode (hidden by default) -->
     <div id="cdm-edit-mode" style="display:none;padding:16px 20px;background:#1E0E40;color:#fff;">
       <h4 style="font-family:'Bangers',cursive;font-size:18px;letter-spacing:1.5px;color:#FFD700;margin-bottom:12px;">EDIT CHARACTER</h4>
-      <div class="field-row"><div class="field-label">Name</div><input type="text" id="cdm-edit-name" /></div>
-      <div class="field-row"><div class="field-label">Stand Out Features</div><input type="text" id="cdm-edit-features" /></div>
-      <div class="field-row"><div class="field-label">Height</div><input type="text" id="cdm-edit-height" /></div>
-      <div class="field-row"><div class="field-label">Build</div><input type="text" id="cdm-edit-build" /></div>
-      <div class="field-row"><div class="field-label">Character</div><input type="text" id="cdm-edit-character" /></div>
-      <div class="field-row"><div class="field-label">Fears</div><input type="text" id="cdm-edit-fears" /></div>
-      <div class="field-row"><div class="field-label">Strengths</div><input type="text" id="cdm-edit-strengths" /></div>
-      <div class="field-row"><div class="field-label">Interests</div><input type="text" id="cdm-edit-interests" /></div>
-      <div class="field-row" style="border-bottom:none;"><div class="field-label">Appearance</div><input type="text" id="cdm-edit-appearance" /></div>
+      <div class="field-row"><div class="field-label">Name</div><input type="text" id="cdm-edit-name" autocomplete="off" /></div>
+      <div class="field-row"><div class="field-label">Stand Out Features</div><input type="text" id="cdm-edit-features" autocomplete="off" /></div>
+      <div class="field-row"><div class="field-label">Height</div><input type="text" id="cdm-edit-height" autocomplete="off" /></div>
+      <div class="field-row"><div class="field-label">Build</div><input type="text" id="cdm-edit-build" autocomplete="off" /></div>
+      <div class="field-row"><div class="field-label">Character</div><input type="text" id="cdm-edit-character" autocomplete="off" /></div>
+      <div class="field-row"><div class="field-label">Fears</div><input type="text" id="cdm-edit-fears" autocomplete="off" /></div>
+      <div class="field-row"><div class="field-label">Strengths</div><input type="text" id="cdm-edit-strengths" autocomplete="off" /></div>
+      <div class="field-row"><div class="field-label">Interests</div><input type="text" id="cdm-edit-interests" autocomplete="off" /></div>
+      <div class="field-row" style="border-bottom:none;"><div class="field-label">Appearance</div><input type="text" id="cdm-edit-appearance" autocomplete="off" /></div>
       <div style="display:flex;gap:10px;margin-top:18px;">
         <button onclick="closeCharEdit()" style="padding:11px 20px;font-size:13px;font-weight:800;border:2px solid #E5E0FA;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;background:#fff;color:#6C5CE7;">Cancel</button>
         <button onclick="saveCharEdit()" style="flex:1;padding:12px;font-size:13px;font-weight:800;border:none;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;background:linear-gradient(90deg,#6C5CE7,#9B59B6);color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;">
