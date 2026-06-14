@@ -128,17 +128,44 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic2);
 /* ── Modal ── */
 .modal-bg{display:none;position:fixed;inset:0;z-index:200;background:rgba(10,5,32,0.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;}
 .modal-bg.open{display:flex;}
-.modal-box{background:#1E0E40;border:2px solid var(--pink);border-radius:14px;width:500px;max-width:96vw;max-height:88vh;overflow-y:auto;box-shadow:0 0 60px rgba(255,45,120,0.25);}
+.modal-box{background:#1E0E40;border:2px solid var(--pink);border-radius:14px;width:680px;max-width:96vw;max-height:88vh;overflow-y:auto;box-shadow:0 0 60px rgba(255,45,120,0.25);}
 .modal-header{background:var(--pink);padding:14px 18px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;}
 .modal-header h3{font-family:'Bangers',cursive;font-size:20px;letter-spacing:2px;color:#fff;}
 .modal-close{background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.7);font-size:24px;}
 .modal-body-inner{padding:16px 18px 20px;}
 .pick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
 .pick-card{border:1.5px solid rgba(255,255,255,0.15);border-radius:10px;padding:10px;cursor:pointer;transition:all 0.15s;background:rgba(255,255,255,0.05);}
-.pick-card:hover{border-color:var(--teal);}
+.pick-card:hover{border-color:var(--teal);background:rgba(0,196,180,0.08);}
 .pick-card.selected{border-color:var(--pink);background:rgba(255,45,120,0.15);}
 .pick-card-name{font-family:'Fredoka One',cursive;font-size:13px;color:#fff;margin-bottom:2px;}
 .pick-card-meta{font-size:10px;color:rgba(255,255,255,0.5);font-weight:700;}
+.comm-filter-bar{display:flex;gap:8px;margin:10px 0 4px;}
+.comm-filter-btn{flex:1;padding:7px;border:1.5px solid rgba(255,255,255,0.15);border-radius:8px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.55);font-family:'Bangers',cursive;font-size:13px;letter-spacing:1.5px;cursor:pointer;transition:all 0.15s;}
+.comm-filter-btn.active{background:rgba(108,92,231,0.3);border-color:var(--purple);color:#fff;}
+/* Preview pane */
+.preview-pane{display:none;flex-direction:column;gap:0;}
+.preview-pane.visible{display:flex;}
+.preview-back{background:none;border:none;color:var(--teal);font-family:'Fredoka One',cursive;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;padding:0 0 10px 0;letter-spacing:0.5px;}
+.preview-back:hover{color:#fff;}
+.preview-img{width:100%;max-height:200px;object-fit:cover;border-radius:8px;margin-bottom:12px;border:1.5px solid rgba(255,255,255,0.1);}
+.preview-name{font-family:'Bangers',cursive;font-size:22px;letter-spacing:2px;color:#fff;margin-bottom:4px;}
+.preview-type-pill{display:inline-block;padding:2px 10px;border-radius:99px;font-family:'Fredoka One',cursive;font-size:10px;letter-spacing:1px;margin-bottom:12px;}
+.preview-type-pill.char{background:rgba(255,45,120,0.2);color:#FF6EB4;border:1px solid rgba(255,45,120,0.35);}
+.preview-type-pill.setting{background:rgba(0,196,180,0.15);color:var(--teal);border:1px solid rgba(0,196,180,0.3);}
+.preview-field{background:rgba(255,255,255,0.05);border-radius:7px;padding:8px 11px;margin-bottom:7px;}
+.preview-field-lbl{font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:3px;}
+.preview-field-val{font-size:12px;color:rgba(255,255,255,0.85);line-height:1.4;}
+.preview-loc{border:1.5px solid rgba(0,196,180,0.2);border-radius:8px;overflow:hidden;margin-bottom:8px;}
+.preview-loc-hdr{background:rgba(0,196,180,0.12);padding:6px 11px;font-family:'Fredoka One',cursive;font-size:12px;color:var(--teal);}
+.preview-loc-img{width:100%;max-height:110px;object-fit:cover;display:block;}
+.preview-loc-senses{padding:8px 11px;display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.preview-sense{background:rgba(255,255,255,0.04);border-radius:5px;padding:5px 8px;}
+.preview-sense-lbl{font-size:9px;font-weight:800;color:rgba(255,255,255,0.35);margin-bottom:2px;}
+.preview-sense-val{font-size:11px;color:rgba(255,255,255,0.8);line-height:1.3;}
+.preview-actions{display:flex;gap:10px;margin-top:14px;padding-top:12px;border-top:1.5px solid rgba(255,255,255,0.08);}
+.btn-add-ref{flex:1;padding:11px;background:var(--purple);border:none;border-radius:8px;color:#fff;font-family:'Bangers',cursive;font-size:16px;letter-spacing:2px;cursor:pointer;transition:opacity 0.15s;}
+.btn-add-ref:hover{opacity:0.88;}
+.btn-add-ref.added{background:rgba(0,230,118,0.2);color:#00E676;border:1.5px solid rgba(0,230,118,0.4);cursor:default;}
 
 /* ── Export ── */
 .export-area{display:none;max-width:700px;margin:0 auto;width:100%;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:14px;padding:28px 32px;font-family:'Patrick Hand',cursive;font-size:14px;line-height:1.8;color:#fff;}
@@ -566,19 +593,28 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic2);
 <div class="modal-bg" id="add-ref-modal" onclick="handleModalBg(event,'add-ref-modal')">
   <div class="modal-box">
     <div class="modal-header">
-      <h3>ADD REFERENCE</h3>
+      <h3 id="add-ref-modal-title">ADD REFERENCE</h3>
       <button class="modal-close" onclick="closeModal('add-ref-modal')">×</button>
     </div>
     <div class="modal-body">
-      <div class="ref-tabs" style="margin-bottom:12px;">
+      <div class="ref-tabs" id="pick-tabs-row" style="margin-bottom:12px;">
         <button class="ref-tab active" id="pick-tab-chars" onclick="switchPickTab('chars')" style="flex:none;padding:7px 16px;">🎭 My Characters</button>
         <button class="ref-tab" id="pick-tab-settings" onclick="switchPickTab('settings')" style="flex:none;padding:7px 16px;">📍 My Settings</button>
         <button class="ref-tab" id="pick-tab-community" onclick="switchPickTab('community')" style="flex:none;padding:7px 16px;">🌍 Community</button>
       </div>
+      <!-- Community type filter (only shown on community tab) -->
+      <div class="comm-filter-bar" id="comm-filter-bar" style="display:none;">
+        <button class="comm-filter-btn active" id="comm-filter-all" onclick="setCommunityFilter('all')">✦ ALL</button>
+        <button class="comm-filter-btn" id="comm-filter-chars" onclick="setCommunityFilter('chars')">🎭 CHARACTERS</button>
+        <button class="comm-filter-btn" id="comm-filter-settings" onclick="setCommunityFilter('settings')">📍 SETTINGS</button>
+      </div>
+      <!-- Grid view -->
       <div id="pick-content" class="pick-grid">
         <div style="grid-column:1/-1;text-align:center;padding:20px;"><div class="spinner"></div></div>
       </div>
-      <div style="margin-top:14px;display:flex;justify-content:flex-end;">
+      <!-- Preview pane (replaces grid when an item is clicked) -->
+      <div class="preview-pane" id="pick-preview"></div>
+      <div style="margin-top:14px;display:flex;justify-content:flex-end;" id="pick-footer">
         <button onclick="confirmAddRefs()" class="btn btn-purple">Add Selected →</button>
       </div>
     </div>
@@ -860,9 +896,13 @@ function highlightRef(type, name) {
 }
 
 // ── Add ref modal ──
+var _communityFilter = 'all'; // 'all' | 'chars' | 'settings'
+var _communityRaw = { chars: [], settings: [] }; // full fetched community data
+
 function openAddRef() {
   _selectedPicks.clear();
   document.getElementById('add-ref-modal').classList.add('open');
+  backToPickGrid();
   switchPickTab('chars');
 }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -875,80 +915,201 @@ async function switchPickTab(tab) {
     if (btn) btn.className = 'ref-tab' + (t === tab ? ' active' : '');
   });
   _selectedPicks.clear();
+  backToPickGrid();
+
+  // Show/hide community filter bar
+  var filterBar = document.getElementById('comm-filter-bar');
+  filterBar.style.display = tab === 'community' ? 'flex' : 'none';
+
   var content = document.getElementById('pick-content');
+  content.className = 'pick-grid';
+  content.style.display = '';
   content.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;"><div class="spinner"></div></div>';
 
-  if (!_user) { content.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--muted);font-size:12px;font-weight:700;">Sign in to load your saved items</div>'; return; }
+  if (!_user) {
+    content.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--muted);font-size:12px;font-weight:700;">Sign in to load your saved items</div>';
+    return;
+  }
 
   if (tab === 'chars') {
-    var { data } = await _sb.from('characters').select('id, name, personality, strengths, fears, features, ai_art_url, sketch_url').eq('user_id', _user.id).order('created_at', { ascending: false });
+    var { data } = await _sb.from('characters').select('id, name, personality, strengths, fears, features, appearance, height, build, interests, ai_art_url, sketch_url').eq('user_id', _user.id).order('created_at', { ascending: false });
     _pickData = data || [];
   } else if (tab === 'settings') {
     var { data } = await _sb.from('settings').select('id, name, locations').eq('user_id', _user.id).order('created_at', { ascending: false });
     _pickData = data || [];
   } else {
-    // Community — show both chars and settings
-    var { data: chars } = await _sb.from('characters').select('id, name, personality, ai_art_url, sketch_url').eq('is_public', true).order('star_count', { ascending: false }).limit(20);
-    var { data: sets }  = await _sb.from('settings').select('id, name, locations').eq('is_public', true).order('star_count', { ascending: false }).limit(20);
-    _pickData = [
-      ...(chars || []).map(function(c){ c._type = 'char'; return c; }),
-      ...(sets  || []).map(function(s){ s._type = 'setting'; return s; }),
-    ];
+    // Community — fetch both, store separately for filtering
+    var { data: chars } = await _sb.from('characters').select('id, name, personality, strengths, fears, features, appearance, height, build, interests, ai_art_url, sketch_url').eq('is_public', true).order('star_count', { ascending: false }).limit(30);
+    var { data: sets }  = await _sb.from('settings').select('id, name, locations').eq('is_public', true).order('star_count', { ascending: false }).limit(30);
+    _communityRaw.chars    = (chars || []).map(function(c){ c._type = 'char'; return c; });
+    _communityRaw.settings = (sets  || []).map(function(s){ s._type = 'setting'; return s; });
+    _communityFilter = 'all';
+    setCommunityFilter('all', true); // true = skip re-render (we do it below)
+    _pickData = buildCommunityList();
   }
 
-  if (_pickData.length === 0) {
+  renderPickGrid();
+}
+
+function buildCommunityList() {
+  if (_communityFilter === 'chars')    return _communityRaw.chars;
+  if (_communityFilter === 'settings') return _communityRaw.settings;
+  return [..._communityRaw.chars, ..._communityRaw.settings];
+}
+
+function setCommunityFilter(filter, skipRender) {
+  _communityFilter = filter;
+  ['all','chars','settings'].forEach(function(f) {
+    var btn = document.getElementById('comm-filter-' + f);
+    if (btn) btn.className = 'comm-filter-btn' + (f === filter ? ' active' : '');
+  });
+  if (!skipRender) {
+    _pickData = buildCommunityList();
+    backToPickGrid();
+    renderPickGrid();
+  }
+}
+
+function renderPickGrid() {
+  var content = document.getElementById('pick-content');
+  if (!_pickData.length) {
     content.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--muted);font-size:12px;font-weight:700;">Nothing here yet</div>';
     return;
   }
-
   content.className = 'pick-grid';
   content.innerHTML = _pickData.map(function(item, i) {
     var imgUrl = item.ai_art_url || item.sketch_url || null;
-    var isChar = tab === 'chars' || item._type === 'char';
-    var meta = isChar ? (item.personality || '') : ((item.locations || []).length + ' locations');
-    return '<div class="pick-card" id="pick-' + i + '" onclick="togglePick(' + i + ')">'
+    var isChar = _pickTab === 'chars' || item._type === 'char';
+    var meta = isChar
+      ? (item.personality || item.features || '')
+      : ((item.locations || []).length + ' location' + ((item.locations||[]).length !== 1 ? 's' : ''));
+    var alreadyAdded = !!(_loadedRefs[isChar ? 'chars' : 'settings'] || []).find(function(e){ return e.id === item.id; });
+    return '<div class="pick-card' + (alreadyAdded ? ' selected' : '') + '" id="pick-' + i + '" onclick="showPickPreview(' + i + ')">'
       + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">'
-      + '<div style="width:32px;height:32px;border-radius:8px;overflow:hidden;flex-shrink:0;background:linear-gradient(135deg,#EDE0FF,#D8CBFF);display:flex;align-items:center;justify-content:center;font-size:16px;">'
+      + '<div style="width:36px;height:36px;border-radius:8px;overflow:hidden;flex-shrink:0;background:linear-gradient(135deg,#EDE0FF,#D8CBFF);display:flex;align-items:center;justify-content:center;font-size:16px;">'
       + (imgUrl ? '<img src="' + imgUrl + '" style="width:100%;height:100%;object-fit:cover;"/>' : (isChar ? '🎭' : '📍'))
       + '</div>'
       + '<span class="pick-card-name">' + escHtml(item.name || 'Unnamed') + '</span>'
+      + (alreadyAdded ? '<span style="margin-left:auto;font-size:9px;color:#00E676;font-weight:800;">✓ ADDED</span>' : '')
       + '</div>'
-      + '<div class="pick-card-meta">' + escHtml(meta) + '</div>'
+      + '<div class="pick-card-meta">' + escHtml(meta.slice(0, 60)) + (meta.length > 60 ? '…' : '') + '</div>'
+      + '<div style="margin-top:6px;font-size:9px;color:var(--teal);font-weight:800;letter-spacing:0.5px;">TAP TO PREVIEW →</div>'
       + '</div>';
   }).join('');
 }
 
-function togglePick(i) {
-  var card = document.getElementById('pick-' + i);
-  if (_selectedPicks.has(i)) {
-    _selectedPicks.delete(i);
-    card.classList.remove('selected');
+// ── Preview pane ──
+function showPickPreview(i) {
+  var item = _pickData[i];
+  if (!item) return;
+  var isChar = _pickTab === 'chars' || item._type === 'char';
+  var alreadyAdded = !!(_loadedRefs[isChar ? 'chars' : 'settings'] || []).find(function(e){ return e.id === item.id; });
+
+  // Hide grid, show preview
+  document.getElementById('pick-content').style.display = 'none';
+  document.getElementById('comm-filter-bar').style.display = 'none';
+  document.getElementById('pick-tabs-row').style.display = 'none';
+  document.getElementById('pick-footer').style.display = 'none';
+  document.getElementById('add-ref-modal-title').textContent = isChar ? 'CHARACTER PREVIEW' : 'SETTING PREVIEW';
+
+  var preview = document.getElementById('pick-preview');
+  preview.classList.add('visible');
+
+  var html = '<button class="preview-back" onclick="backToPickGrid()">← Back to list</button>';
+
+  if (isChar) {
+    var imgUrl = item.ai_art_url || item.sketch_url;
+    if (imgUrl) html += '<img src="' + escHtml(imgUrl) + '" class="preview-img" alt=""/>';
+    html += '<div class="preview-name">' + escHtml(item.name || 'Character') + '</div>';
+    html += '<span class="preview-type-pill char">🎭 CHARACTER</span>';
+    var charFields = [
+      {l:'Personality / Character', v:item.personality},
+      {l:'Appearance',   v:item.appearance},
+      {l:'Height',       v:item.height},
+      {l:'Build',        v:item.build},
+      {l:'Stand-Out Features', v:item.features},
+      {l:'Strengths',    v:item.strengths},
+      {l:'Fears',        v:item.fears},
+      {l:'Interests',    v:item.interests},
+    ].filter(function(f){ return f.v && f.v.trim(); });
+    charFields.forEach(function(f) {
+      html += '<div class="preview-field"><div class="preview-field-lbl">' + escHtml(f.l) + '</div><div class="preview-field-val">' + escHtml(f.v) + '</div></div>';
+    });
   } else {
-    _selectedPicks.add(i);
-    card.classList.add('selected');
+    var locs = Array.isArray(item.locations) ? item.locations : [];
+    html += '<div class="preview-name">' + escHtml(item.name || 'Setting') + '</div>';
+    html += '<span class="preview-type-pill setting">📍 SETTING · ' + locs.length + ' location' + (locs.length !== 1 ? 's' : '') + '</span>';
+    locs.forEach(function(loc, li) {
+      html += '<div class="preview-loc">';
+      html += '<div class="preview-loc-hdr">📍 ' + escHtml(loc.name || 'Location ' + (li+1)) + '</div>';
+      if (loc.imageDataUrl) html += '<img src="' + escHtml(loc.imageDataUrl) + '" class="preview-loc-img" alt=""/>';
+      var senses = [
+        {icon:'👁', l:'See',   v:loc.see},
+        {icon:'👂', l:'Hear',  v:loc.hear},
+        {icon:'✋', l:'Touch', v:loc.touch},
+        {icon:'👃', l:'Smell', v:loc.smell},
+        {icon:'💭', l:'Feel',  v:loc.feelEmotion},
+      ].filter(function(s){ return s.v && s.v.trim(); });
+      if (senses.length) {
+        html += '<div class="preview-loc-senses">';
+        senses.forEach(function(s) {
+          html += '<div class="preview-sense"><div class="preview-sense-lbl">' + s.icon + ' ' + s.l.toUpperCase() + '</div><div class="preview-sense-val">' + escHtml(s.v) + '</div></div>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+    });
   }
+
+  html += '<div class="preview-actions">';
+  if (alreadyAdded) {
+    html += '<button class="btn-add-ref added" disabled>✓ Already in References</button>';
+  } else {
+    html += '<button class="btn-add-ref" onclick="addRefFromPreview(' + i + ')">+ Add to References</button>';
+  }
+  html += '</div>';
+
+  preview.innerHTML = html;
 }
 
-function confirmAddRefs() {
-  var isChar = _pickTab === 'chars' || _pickTab === 'community';
-  _selectedPicks.forEach(function(i) {
-    var item = _pickData[i];
-    if (!item) return;
-    var type = (item._type === 'setting' || _pickTab === 'settings') ? 'settings' : 'chars';
-    // Avoid duplicates
-    var existing = _loadedRefs[type] || [];
-    if (!existing.find(function(e){ return e.id === item.id; })) {
-      existing.push(item);
-      _loadedRefs[type] = existing;
-    }
-  });
-  closeModal('add-ref-modal');
+function backToPickGrid() {
+  document.getElementById('pick-content').style.display = '';
+  document.getElementById('pick-tabs-row').style.display = '';
+  document.getElementById('pick-footer').style.display = '';
+  document.getElementById('add-ref-modal-title').textContent = 'ADD REFERENCE';
+  if (_pickTab === 'community') document.getElementById('comm-filter-bar').style.display = 'flex';
+  var preview = document.getElementById('pick-preview');
+  preview.classList.remove('visible');
+  preview.innerHTML = '';
+}
+
+function addRefFromPreview(i) {
+  var item = _pickData[i];
+  if (!item) return;
+  var isChar = _pickTab === 'chars' || item._type === 'char';
+  var type = isChar ? 'chars' : 'settings';
+  var existing = _loadedRefs[type] || [];
+  if (!existing.find(function(e){ return e.id === item.id; })) {
+    existing.push(item);
+    _loadedRefs[type] = existing;
+  }
   renderRefPanel();
   _layers.forEach(function(l) {
     if (document.getElementById('layer-' + l).classList.contains('active')) renderRefChips(l);
   });
   markUnsaved();
-  toast('✓ References added!');
+  // Update button to show added state
+  var btn = document.querySelector('.btn-add-ref');
+  if (btn) { btn.textContent = '✓ Added!'; btn.className = 'btn-add-ref added'; btn.disabled = true; }
+  toast('✓ Added to references!');
+}
+
+function togglePick(i) { showPickPreview(i); } // legacy alias
+
+function confirmAddRefs() {
+  // "Add Selected" button — now just closes since adding happens per-item in preview
+  closeModal('add-ref-modal');
+  toast('✓ References updated!');
 }
 
 // ── Word Bank ──
