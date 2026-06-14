@@ -716,7 +716,7 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
 
 <!-- ══ SETTING DETAIL MODAL ══ -->
 <div class="modal-overlay" id="setting-modal" style="display:none;" onclick="if(event.target===this)closeSettingModal()">
-  <div class="modal-box" style="max-width:600px;">
+  <div class="modal-box" style="max-width:680px;">
     <div class="modal-hdr">
       <span class="modal-title" id="setting-modal-title">SETTING DETAILS</span>
       <button class="modal-close" onclick="closeSettingModal()">✕</button>
@@ -1617,20 +1617,65 @@ function filterSettings() {
 function openSettingModal(id) {
   var s = _allSettings.find(function(x){return x.id===id;});
   if (!s) return;
-  document.getElementById('setting-modal-title').textContent = escHtml(s.name||'Setting');
+  document.getElementById('setting-modal-title').textContent = s.name || 'Setting';
   var locs = Array.isArray(s.locations) ? s.locations : [];
-  var html = '<div style="margin-bottom:12px;"><span class="field-lbl" style="display:inline;margin-right:6px;">Student:</span><span style="font-weight:800;color:#fff;">'+escHtml(s._studentName)+'</span></div>';
-  if (s.description) html += '<div class="char-detail-item" style="margin-bottom:12px;"><div class="char-detail-lbl">Description</div><div class="char-detail-val">'+escHtml(s.description)+'</div></div>';
-  if (locs.length) {
-    html += '<div style="font-family:\'Bangers\',cursive;font-size:13px;letter-spacing:1.5px;color:var(--teal);margin-bottom:8px;">LOCATIONS ('+locs.length+')</div>';
-    locs.forEach(function(loc){
-      html += '<div class="char-detail-item" style="margin-bottom:8px;display:flex;gap:10px;align-items:flex-start;">';
-      if (loc.imageDataUrl) html += '<img src="'+escHtml(loc.imageDataUrl)+'" style="width:60px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;"/>';
-      html += '<div><div class="char-detail-lbl">'+escHtml(loc.name||'Location')+'</div>';
-      if (loc.description) html += '<div class="char-detail-val" style="font-size:11px;color:rgba(255,255,255,0.7);">'+escHtml(loc.description)+'</div>';
-      html += '</div></div>';
+
+  var html = '<div style="margin-bottom:14px;display:flex;align-items:center;gap:10px;">'
+    +'<span style="font-family:\'Fredoka One\',cursive;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.4);">Student</span>'
+    +'<span style="font-weight:800;color:#fff;font-size:14px;">'+escHtml(s._studentName)+'</span>'
+    +'<span style="margin-left:auto;font-family:\'Bangers\',cursive;font-size:12px;letter-spacing:1px;color:var(--teal);">'+locs.length+' LOCATION'+(locs.length!==1?'S':'')+'</span>'
+    +'</div>';
+
+  if (s.description) {
+    html += '<div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:10px 14px;margin-bottom:14px;border-left:3px solid var(--teal);">'
+      +'<div style="font-size:10px;font-weight:800;letter-spacing:1.5px;color:var(--teal);margin-bottom:4px;">DESCRIPTION</div>'
+      +'<div style="font-size:13px;color:rgba(255,255,255,0.85);line-height:1.5;">'+escHtml(s.description)+'</div>'
+      +'</div>';
+  }
+
+  if (!locs.length) {
+    html += '<div style="text-align:center;padding:24px;font-family:\'Fredoka One\',cursive;font-size:13px;color:rgba(255,255,255,0.3);">No locations added yet</div>';
+  } else {
+    locs.forEach(function(loc, i) {
+      html += '<div style="background:rgba(255,255,255,0.05);border:1.5px solid rgba(0,196,180,0.25);border-radius:10px;overflow:hidden;margin-bottom:12px;">';
+
+      // Location header
+      html += '<div style="background:rgba(0,196,180,0.15);padding:8px 14px;display:flex;align-items:center;gap:8px;">'
+        +'<span style="font-family:\'Bangers\',cursive;font-size:11px;letter-spacing:1.5px;color:var(--teal);">📍 LOCATION '+(i+1)+'</span>'
+        +'<span style="font-family:\'Fredoka One\',cursive;font-size:14px;color:#fff;margin-left:4px;">'+escHtml(loc.name||'Unnamed')+'</span>'
+        +'</div>';
+
+      // Image if present
+      if (loc.imageDataUrl) {
+        html += '<img src="'+escHtml(loc.imageDataUrl)+'" style="width:100%;max-height:180px;object-fit:cover;display:block;"/>';
+      }
+
+      // Sensory details
+      var senses = [
+        {icon:'👁', label:'See',       val:loc.see},
+        {icon:'👂', label:'Hear',      val:loc.hear},
+        {icon:'✋', label:'Touch',     val:loc.touch},
+        {icon:'👃', label:'Smell',     val:loc.smell},
+        {icon:'💭', label:'Feel',      val:loc.feelEmotion},
+      ].filter(function(s){return s.val && s.val.trim();});
+
+      if (senses.length) {
+        html += '<div style="padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
+        senses.forEach(function(sense) {
+          html += '<div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:8px 10px;">'
+            +'<div style="font-size:10px;font-weight:800;letter-spacing:1px;color:rgba(255,255,255,0.4);margin-bottom:3px;">'+sense.icon+' '+sense.label.toUpperCase()+'</div>'
+            +'<div style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.4;">'+escHtml(sense.val)+'</div>'
+            +'</div>';
+        });
+        html += '</div>';
+      } else if (!loc.imageDataUrl) {
+        html += '<div style="padding:12px 14px;font-size:11px;color:rgba(255,255,255,0.3);font-style:italic;">No sensory details added</div>';
+      }
+
+      html += '</div>'; // end location card
     });
   }
+
   document.getElementById('setting-modal-body').innerHTML = html;
   document.getElementById('setting-modal-del-btn').onclick = function(){ closeSettingModal(); deleteSetting(id, s.name||'this setting'); };
   document.getElementById('setting-modal').style.display = 'flex';
