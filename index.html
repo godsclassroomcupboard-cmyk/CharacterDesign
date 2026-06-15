@@ -2796,6 +2796,9 @@ async function loadCommunity(sortBy = 'stars') {
   document.getElementById('community-grid').style.display    = 'none';
   document.getElementById('community-empty').style.display   = 'none';
 
+  // Update weekly stars badge
+  updateWeeklyStarsBadge();
+
   const items = await _fetchCommunity(0, sortBy);
   _renderCommunityGrid(items, false);
 }
@@ -2861,18 +2864,68 @@ function _renderCommunityGrid(items, append) {
 async function handleStarToggle(characterId, btn) {
   if (!_currentUser) { openAuthModal('signin'); return; }
   const wasStarred = _myStarredIds.has(characterId);
-  if (wasStarred) {
-    await _sb.from('stars').delete().eq('user_id',_currentUser.id).eq('character_id',characterId);
-    _myStarredIds.delete(characterId);
-  } else {
+
+  if (!wasStarred) {
+    // Check weekly limit — count stars given since Monday 00:00 this week
+    const weekStart = getWeekStart();
+    const { count } = await _sb.from('stars')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', _currentUser.id)
+      .gte('created_at', weekStart.toISOString());
+    if ((count || 0) >= 5) {
+      showStarLimitToast();
+      return;
+    }
     await _sb.from('stars').insert({ user_id:_currentUser.id, character_id:characterId });
     _myStarredIds.add(characterId);
+  } else {
+    await _sb.from('stars').delete().eq('user_id',_currentUser.id).eq('character_id',characterId);
+    _myStarredIds.delete(characterId);
   }
+
   const { data } = await _sb.from('characters').select('star_count').eq('id',characterId).single();
   const newCount = data?.star_count ?? 0;
   const nowStarred = !wasStarred;
   btn.className = `star-btn ${nowStarred ? 'starred' : ''}`;
   btn.innerHTML = `${nowStarred ? '⭐' : '☆'} <span id="star-count-${characterId}">${newCount}</span>`;
+}
+
+function getWeekStart() {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun, 1=Mon…
+  const diff = (day === 0 ? -6 : 1 - day); // days back to Monday
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
+
+function showStarLimitToast() {
+  const now = new Date();
+  const day = now.getDay();
+  const daysUntilMonday = day === 0 ? 1 : 8 - day;
+  const msg = `⭐ You've used all 5 stars this week! New stars in ${daysUntilMonday} day${daysUntilMonday !== 1 ? 's' : ''}.`;
+  if (typeof toast === 'function') toast(msg);
+  else if (typeof showToast === 'function') showToast(msg);
+  else alert(msg);
+}
+
+async function updateWeeklyStarsBadge() {
+  const badge = document.getElementById('weekly-stars-badge');
+  if (!badge || !_currentUser) return;
+  const weekStart = getWeekStart();
+  const [{ count: charStars }, { count: settingStars }] = await Promise.all([
+    _sb.from('stars').select('id', { count: 'exact', head: true }).eq('user_id', _currentUser.id).gte('created_at', weekStart.toISOString()),
+    _sb.from('setting_stars').select('id', { count: 'exact', head: true }).eq('user_id', _currentUser.id).gte('created_at', weekStart.toISOString()),
+  ]);
+  const used = (charStars || 0) + (settingStars || 0);
+  const left = Math.max(0, 5 - used);
+  badge.textContent = left > 0
+    ? `⭐ ${left} star${left !== 1 ? 's' : ''} left this week`
+    : `⭐ No stars left until Monday`;
+  badge.style.color        = left > 0 ? '#FFD700' : 'rgba(255,255,255,0.4)';
+  badge.style.borderColor  = left > 0 ? 'rgba(255,215,0,0.3)' : 'rgba(255,255,255,0.1)';
+  badge.style.background   = left > 0 ? 'rgba(255,215,0,0.12)' : 'rgba(255,255,255,0.05)';
 }
 
 async function _getMyStarredIds() {
@@ -3024,6 +3077,7 @@ window.addEventListener('load', () => {
       <div style="display:flex;gap:8px;">
         <button onclick="loadCommunity('stars')" id="sort-stars-btn" class="btn-purple" style="padding:7px 16px;font-size:12px;">⭐ Most Starred</button>
         <button onclick="loadCommunity('newest')" id="sort-newest-btn" class="btn-outline" style="padding:7px 16px;font-size:12px;">🆕 Newest</button>
+        <span id="weekly-stars-badge" style="margin-left:auto;font-family:'Fredoka One',cursive;font-size:11px;background:rgba(255,215,0,0.12);border:1.5px solid rgba(255,215,0,0.3);border-radius:99px;padding:4px 12px;color:#FFD700;letter-spacing:0.5px;white-space:nowrap;">⭐ — stars left this week</span>
       </div>
     </div>
 
@@ -3674,14 +3728,26 @@ const settingBank = (() => {
       user = session?.user;
     }
     if (!user) { toast('Sign in to star settings!', 'error'); return; }
+
     // Check if already starred
     const { data: existing } = await sdb.from('setting_stars').select('id').eq('user_id', user.id).eq('setting_id', settingId).single();
-    if (existing) {
-      await sdb.from('setting_stars').delete().eq('id', existing.id);
-      toast('Star removed');
-    } else {
+
+    if (!existing) {
+      // Count total stars given this week across both stars tables
+      const weekStart = getWeekStart();
+      const [{ count: charStars }, { count: settingStars }] = await Promise.all([
+        sdb.from('stars').select('id', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', weekStart.toISOString()),
+        sdb.from('setting_stars').select('id', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', weekStart.toISOString()),
+      ]);
+      if ((charStars || 0) + (settingStars || 0) >= 5) {
+        showStarLimitToast();
+        return;
+      }
       await sdb.from('setting_stars').insert({ user_id: user.id, setting_id: settingId });
       toast('⭐ Starred!');
+    } else {
+      await sdb.from('setting_stars').delete().eq('id', existing.id);
+      toast('Star removed');
     }
     loadCommunity();
   }
