@@ -2866,13 +2866,8 @@ async function handleStarToggle(characterId, btn) {
   const wasStarred = _myStarredIds.has(characterId);
 
   if (!wasStarred) {
-    // Check weekly limit — count stars given since Monday 00:00 this week
-    const weekStart = getWeekStart();
-    const { count } = await _sb.from('stars')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', _currentUser.id)
-      .gte('created_at', weekStart.toISOString());
-    if ((count || 0) >= 5) {
+    const starsUsed = await getWeeklyStarsUsed(_currentUser.id);
+    if (starsUsed >= 5) {
       showStarLimitToast();
       return;
     }
@@ -2888,6 +2883,19 @@ async function handleStarToggle(characterId, btn) {
   const nowStarred = !wasStarred;
   btn.className = `star-btn ${nowStarred ? 'starred' : ''}`;
   btn.innerHTML = `${nowStarred ? '⭐' : '☆'} <span id="star-count-${characterId}">${newCount}</span>`;
+  updateWeeklyStarsBadge();
+}
+
+async function getWeeklyStarsUsed(userId) {
+  const weekStart = getWeekStart().toISOString();
+  // Fetch actual rows — more reliable than count header with RLS
+  const [charRes, settingRes] = await Promise.all([
+    _sb.from('stars').select('id').eq('user_id', userId).gte('created_at', weekStart),
+    _sb.from('setting_stars').select('id').eq('user_id', userId).gte('created_at', weekStart),
+  ]);
+  const charCount    = (charRes.data    || []).length;
+  const settingCount = (settingRes.data || []).length;
+  return charCount + settingCount;
 }
 
 function getWeekStart() {
@@ -2913,19 +2921,14 @@ function showStarLimitToast() {
 async function updateWeeklyStarsBadge() {
   const badge = document.getElementById('weekly-stars-badge');
   if (!badge || !_currentUser) return;
-  const weekStart = getWeekStart();
-  const [{ count: charStars }, { count: settingStars }] = await Promise.all([
-    _sb.from('stars').select('id', { count: 'exact', head: true }).eq('user_id', _currentUser.id).gte('created_at', weekStart.toISOString()),
-    _sb.from('setting_stars').select('id', { count: 'exact', head: true }).eq('user_id', _currentUser.id).gte('created_at', weekStart.toISOString()),
-  ]);
-  const used = (charStars || 0) + (settingStars || 0);
+  const used = await getWeeklyStarsUsed(_currentUser.id);
   const left = Math.max(0, 5 - used);
   badge.textContent = left > 0
     ? `⭐ ${left} star${left !== 1 ? 's' : ''} left this week`
     : `⭐ No stars left until Monday`;
-  badge.style.color        = left > 0 ? '#FFD700' : 'rgba(255,255,255,0.4)';
-  badge.style.borderColor  = left > 0 ? 'rgba(255,215,0,0.3)' : 'rgba(255,255,255,0.1)';
-  badge.style.background   = left > 0 ? 'rgba(255,215,0,0.12)' : 'rgba(255,255,255,0.05)';
+  badge.style.color       = left > 0 ? '#FFD700' : 'rgba(255,255,255,0.4)';
+  badge.style.borderColor = left > 0 ? 'rgba(255,215,0,0.3)' : 'rgba(255,255,255,0.1)';
+  badge.style.background  = left > 0 ? 'rgba(255,215,0,0.12)' : 'rgba(255,255,255,0.05)';
 }
 
 async function _getMyStarredIds() {
@@ -3733,22 +3736,15 @@ const settingBank = (() => {
     const { data: existing } = await sdb.from('setting_stars').select('id').eq('user_id', user.id).eq('setting_id', settingId).single();
 
     if (!existing) {
-      // Count total stars given this week across both stars tables
-      const weekStart = getWeekStart();
-      const [{ count: charStars }, { count: settingStars }] = await Promise.all([
-        sdb.from('stars').select('id', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', weekStart.toISOString()),
-        sdb.from('setting_stars').select('id', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', weekStart.toISOString()),
-      ]);
-      if ((charStars || 0) + (settingStars || 0) >= 5) {
-        showStarLimitToast();
-        return;
-      }
+      const starsUsed = await getWeeklyStarsUsed(user.id);
+      if (starsUsed >= 5) { showStarLimitToast(); return; }
       await sdb.from('setting_stars').insert({ user_id: user.id, setting_id: settingId });
       toast('⭐ Starred!');
     } else {
       await sdb.from('setting_stars').delete().eq('id', existing.id);
       toast('Star removed');
     }
+    updateWeeklyStarsBadge();
     loadCommunity();
   }
 
