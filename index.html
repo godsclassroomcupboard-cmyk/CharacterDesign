@@ -2892,14 +2892,24 @@ async function handleStarToggle(characterId, btn) {
 
 async function getWeeklyStarsUsed(userId) {
   const weekStart = getWeekStart().toISOString();
-  // Fetch actual rows — more reliable than count header with RLS
-  const [charRes, settingRes] = await Promise.all([
-    _sb.from('stars').select('id').eq('user_id', userId).gte('created_at', weekStart),
-    _sb.from('setting_stars').select('id').eq('user_id', userId).gte('created_at', weekStart),
-  ]);
-  const charCount    = (charRes.data    || []).length;
-  const settingCount = (settingRes.data || []).length;
-  return charCount + settingCount;
+  try {
+    const [charRes, settingRes] = await Promise.all([
+      _sb.from('stars').select('id').eq('user_id', userId).gte('created_at', weekStart),
+      _sb.from('setting_stars').select('id').eq('user_id', userId).gte('created_at', weekStart),
+    ]);
+    // Log any errors so we can diagnose in the browser console
+    if (charRes.error)    console.warn('[StarLimit] stars query error:', charRes.error.message);
+    if (settingRes.error) console.warn('[StarLimit] setting_stars query error:', settingRes.error.message);
+    // If both queries failed we can't determine the count — block to be safe
+    if (charRes.error && settingRes.error) return 99;
+    const charCount    = charRes.error    ? 0 : (charRes.data    || []).length;
+    const settingCount = settingRes.error ? 0 : (settingRes.data || []).length;
+    console.log('[StarLimit] used this week — chars:', charCount, 'settings:', settingCount, 'total:', charCount + settingCount);
+    return charCount + settingCount;
+  } catch (e) {
+    console.error('[StarLimit] getWeeklyStarsUsed exception:', e);
+    return 99; // block on unexpected error
+  }
 }
 
 function getWeekStart() {
