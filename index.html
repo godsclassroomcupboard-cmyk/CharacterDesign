@@ -2552,7 +2552,11 @@ async function _onSignIn(user) {
   _myStarredIds   = await _getMyStarredIds();
   _updateTopbar();
   _showSaveButton();
-  loadMyCharacters(); // populate My Characters panel
+  loadMyCharacters();
+  // Load this student's saved settings from Supabase
+  if (window.settingBank && typeof window.settingBank.loadMySettings === 'function') {
+    window.settingBank.loadMySettings();
+  }
 }
 
 function _onSignOut() {
@@ -3695,10 +3699,38 @@ const settingBank = (() => {
     renderMiniList();
   }
   function load() {
+    // Load from localStorage as a quick local fallback
     try {
       const s = localStorage.getItem('setting_bank_v1');
       if (s) mySettings = JSON.parse(s);
     } catch(e) {}
+  }
+
+  // ── Supabase: load this user's own settings ──
+  async function loadMySettings() {
+    const sdb = db();
+    const user = currentUser();
+    if (!sdb || !user) return;
+    const { data, error } = await sdb
+      .from('settings')
+      .select('id, name, locations, is_public, star_count, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    if (error) { console.error('[SettingBank] loadMySettings error:', error); return; }
+    // Merge: Supabase is the source of truth — map to local shape
+    mySettings = (data || []).map(s => ({
+      supabase_id: s.id,
+      name:        s.name,
+      locations:   Array.isArray(s.locations) ? s.locations : [],
+      isPublic:    s.is_public,
+      star_count:  s.star_count || 0,
+      createdAt:   s.created_at,
+    }));
+    persist();           // keep localStorage in sync
+    renderMiniList();
+    if (typeof renderMySettingsMini === 'function') renderMySettingsMini();
+    if (mySettings.length === 0) showState('empty');
+    else if (!activeSetting) showState('list');
   }
 
   // ── Supabase: save setting ──
@@ -4625,6 +4657,7 @@ const settingBank = (() => {
     starSetting,
     getSettings,
     renderMiniList,
+    loadMySettings,
     downloadSettingPDF,
     downloadSettingDOCX,
     downloadSettingWorksheet,
@@ -4636,7 +4669,11 @@ const _origSwitchSectionForBank = window.switchSection;
 window.switchSection = function(name) {
   if (_origSwitchSectionForBank) _origSwitchSectionForBank(name);
   if (name === 'map') {
-    setTimeout(() => settingBank.init(), 100);
+    setTimeout(() => {
+      settingBank.init();
+      // Pull fresh settings from Supabase every time the section is opened
+      if (window._currentUser) settingBank.loadMySettings();
+    }, 100);
   }
 };
 
