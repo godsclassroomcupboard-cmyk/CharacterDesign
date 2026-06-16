@@ -351,9 +351,12 @@ input[type="text"]::placeholder { color:rgba(255,255,255,0.3); }
 
 /* ── COMMUNITY SECTION ── */
 .community-grid {
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  display:grid;grid-template-columns:repeat(5,1fr);
   gap:14px;padding:4px 2px;
 }
+@media(max-width:1100px){.community-grid{grid-template-columns:repeat(4,1fr);}}
+@media(max-width:860px){.community-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:580px){.community-grid{grid-template-columns:repeat(2,1fr);}}
 .community-creation-card {
   border-radius:16px;background:#fff;overflow:hidden;
   box-shadow:0 3px 14px rgba(108,92,231,0.09);
@@ -2536,8 +2539,7 @@ window._sb = _sb; // expose for settingBank
 let _currentUser    = null;
 let _currentProfile = null;
 let _myStarredIds   = new Set();
-let _communityOffset = 0;
-let _communitySortBy = 'stars';
+let _communityAllItems = []; // used by profile grid
 
 // ── Supabase init ────────────────────────────────────────────
 (async () => {
@@ -2796,54 +2798,62 @@ async function handleSaveSettingToSupabase(setting) {
 }
 
 // ── Community feed ───────────────────────────────────────────
-async function loadCommunity(sortBy = 'stars') {
-  _communitySortBy  = sortBy;
-  _communityOffset  = 0;
+const COMM_PAGE_SIZE = 10;
+let _communityPage  = 0;  // 0-based
+let _communityTotal = 0;
+let _communitySortBy = 'stars';
 
+async function loadCommunity(sortBy = 'stars') {
+  _communitySortBy = sortBy;
+  _communityPage   = 0;
   document.getElementById('sort-stars-btn').className  = sortBy === 'stars'  ? 'btn-purple' : 'btn-outline';
   document.getElementById('sort-newest-btn').className = sortBy === 'newest' ? 'btn-purple' : 'btn-outline';
-  document.getElementById('community-loading').style.display = 'flex';
-  document.getElementById('community-grid').style.display    = 'none';
-  document.getElementById('community-empty').style.display   = 'none';
-
-  // Update weekly stars badge
   updateWeeklyStarsBadge();
-
-  const items = await _fetchCommunity(0, sortBy);
-  _renderCommunityGrid(items, false);
+  await _fetchAndRenderCommunity();
 }
 
-async function loadMoreCommunity() {
-  _communityOffset += 20;
-  const items = await _fetchCommunity(_communityOffset, _communitySortBy);
-  _renderCommunityGrid(items, true);
+async function communityPage(dir) {
+  const maxPage = Math.ceil(_communityTotal / COMM_PAGE_SIZE) - 1;
+  _communityPage = Math.max(0, Math.min(_communityPage + dir, maxPage));
+  await _fetchAndRenderCommunity();
 }
 
-async function _fetchCommunity(offset, sortBy) {
-  let q = _sb.from('community_feed').select('*').range(offset, offset + 19);
-  if (sortBy === 'stars')  q = q.order('star_count',  { ascending: false });
-  if (sortBy === 'newest') q = q.order('created_at',  { ascending: false });
-  const { data, error } = await q;
-  if (error) { console.error('[Community]', error); return []; }
-  return data ?? [];
-}
-
-function _renderCommunityGrid(items, append) {
+async function _fetchAndRenderCommunity() {
   const grid    = document.getElementById('community-grid');
   const loading = document.getElementById('community-loading');
   const empty   = document.getElementById('community-empty');
-  const loadBtn = document.getElementById('load-more-btn');
+  const pagination = document.getElementById('community-pagination');
 
+  loading.style.display = 'flex';
+  grid.style.display    = 'none';
+  empty.style.display   = 'none';
+  pagination.style.display = 'none';
+
+  const offset = _communityPage * COMM_PAGE_SIZE;
+
+  // Get total count first
+  let countQ = _sb.from('community_feed').select('id', { count: 'exact', head: true });
+  const { count } = await countQ;
+  _communityTotal = count || 0;
+
+  // Fetch page
+  let q = _sb.from('community_feed').select('*').range(offset, offset + COMM_PAGE_SIZE - 1);
+  if (_communitySortBy === 'stars')  q = q.order('star_count', { ascending: false });
+  if (_communitySortBy === 'newest') q = q.order('created_at', { ascending: false });
+  const { data, error } = await q;
+  if (error) { console.error('[Community]', error); loading.style.display = 'none'; return; }
+
+  const items = data || [];
   loading.style.display = 'none';
 
-  if (!append && items.length === 0) {
-    empty.style.display = 'block'; grid.style.display = 'none';
-    loadBtn.style.display = 'none'; return;
+  if (_communityTotal === 0) {
+    empty.style.display = 'block';
+    return;
   }
 
+  // Render cards
   grid.style.display = 'grid';
-  if (!append) grid.innerHTML = '';
-
+  grid.innerHTML = '';
   items.forEach(item => {
     const isStarred = _myStarredIds.has(item.id);
     const card = document.createElement('div');
@@ -2851,25 +2861,37 @@ function _renderCommunityGrid(items, append) {
     card.id = `cc-${item.id}`;
     const imgSrc = item.ai_art_url || item.sketch_url || '';
     card.innerHTML = `
-      <div style="height:160px;background:linear-gradient(135deg,#EDE0FF,#D8CBFF);overflow:hidden;position:relative;">
-        ${imgSrc ? `<img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" />` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:40px;">🎨</div>`}
-        <div style="position:absolute;top:8px;right:8px;background:rgba(108,92,231,0.85);color:#fff;font-size:9px;font-weight:900;padding:2px 8px;border-radius:99px;text-transform:uppercase;">${item.art_style || 'art'}</div>
+      <div style="height:140px;background:linear-gradient(135deg,#EDE0FF,#D8CBFF);overflow:hidden;position:relative;">
+        ${imgSrc ? `<img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" />` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:36px;">🎨</div>`}
+        <div style="position:absolute;top:6px;right:6px;background:rgba(108,92,231,0.85);color:#fff;font-size:8px;font-weight:900;padding:2px 7px;border-radius:99px;text-transform:uppercase;">${item.art_style || 'art'}</div>
       </div>
-      <div style="padding:10px 12px 12px;">
-        <div style="font-weight:900;font-size:14px;color:#fff;margin-bottom:2px;">${_esc(item.name || 'Unnamed')}</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.55);font-weight:700;margin-bottom:8px;">by ${_esc(item.display_name || item.username)}</div>
+      <div style="padding:9px 11px 11px;">
+        <div style="font-weight:900;font-size:13px;color:#fff;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${_esc(item.name || 'Unnamed')}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.5);font-weight:700;margin-bottom:7px;">by ${_esc(item.display_name || item.username || '?')}</div>
         <div style="display:flex;align-items:center;justify-content:space-between;">
           <button class="star-btn ${isStarred ? 'starred' : ''}" id="star-btn-${item.id}" onclick="handleStarToggle('${item.id}',this)">
             ${isStarred ? '⭐' : '☆'} <span id="star-count-${item.id}">${item.star_count}</span>
           </button>
-          <span style="font-size:10px;color:#C0BADA;font-weight:600;">${_timeAgo(item.created_at)}</span>
+          <span style="font-size:9px;color:#C0BADA;font-weight:600;">${_timeAgo(item.created_at)}</span>
         </div>
       </div>`;
     grid.appendChild(card);
   });
 
-  loadBtn.style.display = items.length === 20 ? 'block' : 'none';
+  // Pagination controls
+  const showing = Math.min(offset + COMM_PAGE_SIZE, _communityTotal);
+  const maxPage  = Math.ceil(_communityTotal / COMM_PAGE_SIZE) - 1;
+  document.getElementById('comm-page-info').textContent =
+    `${offset + 1}–${showing} of ${_communityTotal}`;
+  document.getElementById('comm-prev-btn').disabled = _communityPage === 0;
+  document.getElementById('comm-next-btn').disabled = _communityPage >= maxPage;
+  pagination.style.display = 'flex';
 }
+
+// Keep legacy alias in case called elsewhere
+async function loadMoreCommunity() { communityPage(1); }
+async function _fetchCommunity() { return []; }
+function _renderCommunityGrid() {}
 
 async function handleStarToggle(characterId, btn) {
   if (!_currentUser) { openAuthModal('signin'); return; }
@@ -3118,14 +3140,12 @@ window.addEventListener('load', () => {
   </header>
 
   <div style="flex:1;overflow-y:auto;padding:20px 24px;position:relative;z-index:2;">
-    <!-- Sort bar -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <div style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:800;color:#fff;">All Creations</div>
-      <div style="display:flex;gap:8px;">
-        <button onclick="loadCommunity('stars')" id="sort-stars-btn" class="btn-purple" style="padding:7px 16px;font-size:12px;">⭐ Most Starred</button>
-        <button onclick="loadCommunity('newest')" id="sort-newest-btn" class="btn-outline" style="padding:7px 16px;font-size:12px;">🆕 Newest</button>
-        <span id="weekly-stars-badge" style="margin-left:auto;font-family:'Fredoka One',cursive;font-size:11px;background:rgba(255,215,0,0.12);border:1.5px solid rgba(255,215,0,0.3);border-radius:99px;padding:4px 12px;color:#FFD700;letter-spacing:0.5px;white-space:nowrap;">⭐ — stars left this week</span>
-      </div>
+    <!-- Sort + stars bar -->
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+      <div style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:800;color:#fff;margin-right:4px;">All Creations</div>
+      <button onclick="loadCommunity('stars')" id="sort-stars-btn" class="btn-purple" style="padding:7px 16px;font-size:12px;">⭐ Most Starred</button>
+      <button onclick="loadCommunity('newest')" id="sort-newest-btn" class="btn-outline" style="padding:7px 16px;font-size:12px;">🆕 Newest</button>
+      <span id="weekly-stars-badge" style="margin-left:auto;font-family:'Fredoka One',cursive;font-size:11px;background:rgba(255,215,0,0.12);border:1.5px solid rgba(255,215,0,0.3);border-radius:99px;padding:5px 14px;color:#FFD700;letter-spacing:0.5px;white-space:nowrap;">⭐ — stars left this week</span>
     </div>
 
     <!-- Loading state -->
@@ -3144,9 +3164,11 @@ window.addEventListener('load', () => {
     <!-- Grid -->
     <div id="community-grid" class="community-grid" style="display:none;"></div>
 
-    <!-- Load more -->
-    <div style="text-align:center;margin-top:20px;">
-      <button id="load-more-btn" onclick="loadMoreCommunity()" class="btn-outline" style="padding:10px 28px;font-size:13px;display:none;">Load more</button>
+    <!-- Pagination -->
+    <div id="community-pagination" style="display:none;margin-top:20px;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;">
+      <button id="comm-prev-btn" onclick="communityPage(-1)" class="btn-outline" style="padding:8px 20px;font-size:12px;">← Prev</button>
+      <span id="comm-page-info" style="font-family:'Fredoka One',cursive;font-size:13px;color:rgba(255,255,255,0.6);letter-spacing:0.5px;"></span>
+      <button id="comm-next-btn" onclick="communityPage(1)" class="btn-outline" style="padding:8px 20px;font-size:12px;">Next →</button>
     </div>
   </div>
 </div>
