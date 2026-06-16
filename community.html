@@ -62,8 +62,21 @@ html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--cosmi
 .results-count{font-family:'Fredoka One',cursive;font-size:12px;color:rgba(255,255,255,0.5);margin-left:auto;}
 
 /* ── GRID ── */
-.grid-wrap{max-width:1100px;margin:0 auto;padding:18px 22px 60px;}
-.char-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;}
+.grid-wrap{max-width:1100px;margin:0 auto;padding:18px 22px 40px;}
+.char-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;}
+@media(max-width:1050px){.char-grid{grid-template-columns:repeat(4,1fr);}}
+@media(max-width:800px){.char-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:560px){.char-grid{grid-template-columns:repeat(2,1fr);}}
+
+/* Pagination */
+.pagination{display:flex;align-items:center;justify-content:center;gap:12px;padding:18px 0 40px;flex-wrap:wrap;}
+.page-btn{padding:8px 20px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:99px;color:rgba(255,255,255,0.7);font-family:'Fredoka One',cursive;font-size:12px;cursor:pointer;transition:all 0.15s;letter-spacing:0.5px;}
+.page-btn:hover:not(:disabled){background:rgba(255,255,255,0.18);}
+.page-btn:disabled{opacity:0.3;cursor:default;}
+.page-info{font-family:'Fredoka One',cursive;font-size:13px;color:rgba(255,255,255,0.55);letter-spacing:0.5px;white-space:nowrap;}
+
+/* Stars-to-give pill */
+.tb-give{background:rgba(108,92,231,0.25);border:1px solid rgba(108,92,231,0.5);border-radius:99px;padding:4px 12px;font-family:'Bangers',cursive;font-size:14px;color:#C4A8FF;letter-spacing:1px;white-space:nowrap;}
 
 /* ── CARD ── */
 .zine-card{background:rgba(255,255,255,0.07);border:2px solid rgba(255,255,255,0.12);border-radius:12px;overflow:hidden;cursor:pointer;transition:all 0.2s;}
@@ -119,7 +132,6 @@ html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--cosmi
 /* Toast */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#1E0E40;color:#fff;border:1.5px solid var(--yellow);border-radius:99px;padding:10px 22px;font-family:'Fredoka One',cursive;font-size:13px;opacity:0;transition:all 0.3s;pointer-events:none;z-index:9999;white-space:nowrap;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-@media(max-width:600px){.char-grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr));}}
 </style>
 </head>
 <body>
@@ -139,6 +151,7 @@ html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--cosmi
     <div id="tb-user" style="display:none;align-items:center;gap:8px;">
       <span class="tb-user" id="tb-name"></span>
       <div class="tb-stars">⭐ <span id="tb-stars">0</span></div>
+      <div id="tb-give" title="Stars left to give this week" style="background:rgba(108,92,231,0.3);border:1.5px solid rgba(108,92,231,0.6);border-radius:99px;padding:4px 12px;font-family:'Fredoka One',cursive;font-size:12px;color:#C4A8FF;letter-spacing:0.5px;white-space:nowrap;">🎁 <span id="tb-give-count">5</span> left</div>
     </div>
   </div>
 </header>
@@ -176,6 +189,11 @@ html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--cosmi
   <div class="char-grid" id="char-grid">
     <div class="state-box"><div class="spinner"></div></div>
   </div>
+  <div class="pagination" id="pagination" style="display:none;">
+    <button class="sort-btn" id="pg-prev" onclick="changePage(-1)">← Prev</button>
+    <span id="pg-info" style="font-family:'Fredoka One',cursive;font-size:13px;color:rgba(255,255,255,0.6);letter-spacing:0.5px;"></span>
+    <button class="sort-btn" id="pg-next" onclick="changePage(1)">Next →</button>
+  </div>
 </div>
 </div>
 
@@ -203,6 +221,7 @@ var _sb = window.__aurabot_sb;
 var _user=null,_profile=null,_type='characters',_sortBy='stars',_classId='all';
 var _allChars=[],_allSettings=[],_starredIds=new Set(),_starredSettingIds=new Set();
 var _activeItem=null,_classes=[],_renderedItems=[];
+var PAGE_SIZE=10,_page=0;
 
 async function init(){
   var s=await _sb.auth.getSession();
@@ -213,7 +232,8 @@ async function init(){
 }
 async function onSignIn(user){
   _user=user;var r=await _sb.from('profiles').select('*').eq('id',user.id).single();_profile=r.data;
-  _starredIds=await getMyStars();_starredSettingIds=await getMySettingStars();updateTopbar();
+  _starredIds=await getMyStars();_starredSettingIds=await getMySettingStars();
+  updateTopbar();updateGiveBadge();
   document.getElementById('signin-bar').style.display='none';
 }
 function updateTopbar(){
@@ -222,6 +242,41 @@ function updateTopbar(){
   document.getElementById('tb-name').textContent='Welcome, '+(_profile.display_name||_profile.username||'');
   document.getElementById('tb-stars').textContent=_profile.star_points||0;
 }
+
+// ── Weekly star limit ──
+function getWeekStart(){
+  var now=new Date(),day=now.getDay(),diff=(day===0?-6:1-day);
+  var mon=new Date(now);mon.setDate(now.getDate()+diff);mon.setHours(0,0,0,0);return mon;
+}
+async function getWeeklyStarsUsed(){
+  if(!_user)return 0;
+  var ws=getWeekStart().toISOString();
+  var r1=await _sb.from('stars').select('id').eq('user_id',_user.id).gte('created_at',ws);
+  var r2=await _sb.from('setting_stars').select('id').eq('user_id',_user.id).gte('created_at',ws);
+  var c1=(r1.data||[]).length,c2=(r2.data||[]).length;
+  console.log('[StarLimit] used:',c1+c2,'(chars:'+c1+' settings:'+c2+')');
+  return c1+c2;
+}
+async function updateGiveBadge(){
+  var give=document.getElementById('tb-give');
+  var cnt=document.getElementById('tb-give-count');
+  if(!give||!cnt)return;
+  var used=await getWeeklyStarsUsed();
+  var left=Math.max(0,5-used);
+  cnt.textContent=left;
+  if(left===0){
+    give.style.background='rgba(255,255,255,0.06)';
+    give.style.borderColor='rgba(255,255,255,0.15)';
+    give.style.color='rgba(255,255,255,0.35)';
+    give.title='No stars left this week — resets Monday';
+  } else {
+    give.style.background='rgba(108,92,231,0.3)';
+    give.style.borderColor='rgba(108,92,231,0.6)';
+    give.style.color='#C4A8FF';
+    give.title=left+' star'+(left!==1?'s':'')+' left to give this week';
+  }
+}
+
 async function getMyStars(){if(!_user)return new Set();var r=await _sb.from('stars').select('character_id').eq('user_id',_user.id);return new Set((r.data||[]).map(function(s){return s.character_id;}));}
 async function getMySettingStars(){if(!_user)return new Set();var r=await _sb.from('setting_stars').select('setting_id').eq('user_id',_user.id);return new Set((r.data||[]).map(function(s){return s.setting_id;}));}
 
@@ -234,22 +289,22 @@ async function loadClasses(){
     +r.data.map(function(c){return'<button class="class-pill" data-class-id="'+c.id+'" onclick="selectClass(\''+c.id+'\',this)">'+escHtml(c.name)+'</button>';}).join('');
 }
 function selectClass(id,btn){
-  _classId=id;document.querySelectorAll('.class-pill').forEach(function(p){p.classList.remove('active');});btn.classList.add('active');
+  _classId=id;_page=0;document.querySelectorAll('.class-pill').forEach(function(p){p.classList.remove('active');});btn.classList.add('active');
   if(_type==='settings')loadSettings();else applyFilters();
 }
 function setType(type){
-  _type=type;
+  _type=type;_page=0;
   document.getElementById('type-characters').className='type-btn'+(type==='characters'?' active':'');
   document.getElementById('type-settings').className='type-btn'+(type==='settings'?' active':'');
   document.getElementById('sort-az').style.display=type==='settings'?'none':'';
   if(type==='settings')loadSettings();else applyFilters();
 }
 function setSort(s){
-  _sortBy=s;document.querySelectorAll('.sort-btn').forEach(function(b){b.classList.remove('active');});
+  _sortBy=s;_page=0;document.querySelectorAll('.sort-btn').forEach(function(b){b.classList.remove('active');});
   document.getElementById('sort-'+(s==='newest'?'new':s==='az'?'az':'stars')).classList.add('active');
   if(_type==='settings')applySettingFilters();else applyFilters();
 }
-function onSearch(){if(_type==='settings')applySettingFilters();else applyFilters();}
+function onSearch(){_page=0;if(_type==='settings')applySettingFilters();else applyFilters();}
 
 async function loadCharacters(){
   showLoading();
@@ -278,8 +333,9 @@ function applyFilters(){
   if(_sortBy==='stars')f.sort(function(a,b){return(b.star_count||0)-(a.star_count||0);});
   else if(_sortBy==='newest')f.sort(function(a,b){return new Date(b.created_at)-new Date(a.created_at);});
   else f.sort(function(a,b){return(a.name||'').localeCompare(b.name||'');});
-  _renderedItems=f;renderChars(f);
+  _renderedItems=f;
   document.getElementById('results-count').textContent=f.length+' character'+(f.length===1?'':'s');
+  renderPage();
 }
 
 async function loadSettings(){
@@ -308,33 +364,59 @@ function applySettingFilters(){
   });
   if(_sortBy==='stars')f.sort(function(a,b){return(b.star_count||0)-(a.star_count||0);});
   else f.sort(function(a,b){return new Date(b.created_at)-new Date(a.created_at);});
-  _renderedItems=f;renderSettings(f);
+  _renderedItems=f;
   document.getElementById('results-count').textContent=f.length+' setting'+(f.length===1?'':'s');
+  renderPage();
+}
+
+// ── Pagination ──
+function changePage(dir){
+  var maxPage=Math.ceil(_renderedItems.length/PAGE_SIZE)-1;
+  _page=Math.max(0,Math.min(_page+dir,maxPage));
+  renderPage();
+  window.scrollTo({top:document.querySelector('.controls').offsetTop-10,behavior:'smooth'});
+}
+function renderPage(){
+  var total=_renderedItems.length;
+  var start=_page*PAGE_SIZE,end=Math.min(start+PAGE_SIZE,total);
+  var pageItems=_renderedItems.slice(start,end);
+  if(_type==='settings')renderSettings(pageItems);
+  else renderChars(pageItems);
+  // Pagination controls
+  var pg=document.getElementById('pagination');
+  if(total<=PAGE_SIZE){pg.style.display='none';return;}
+  pg.style.display='flex';
+  document.getElementById('pg-info').textContent=(start+1)+'–'+end+' of '+total;
+  document.getElementById('pg-prev').disabled=_page===0;
+  document.getElementById('pg-next').disabled=end>=total;
 }
 
 var GRADS=['linear-gradient(135deg,#3A1A6A,#6A2A9A)','linear-gradient(135deg,#1A3A6A,#2A6A9A)','linear-gradient(135deg,#1A5A3A,#2A9A6A)','linear-gradient(135deg,#5A1A3A,#9A2A6A)','linear-gradient(135deg,#3A3A1A,#7A7A2A)'];
 function renderChars(chars){
   var grid=document.getElementById('char-grid');
   if(!chars.length){grid.innerHTML='<div class="state-box"><svg viewBox="0 0 64 64" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" width="52" height="52" style="display:block;margin:0 auto;"><circle cx="32" cy="22" r="14"/><path d="M8 56c0-13 9-20 24-20s24 7 24 20"/></svg><h3>NO CHARACTERS YET</h3><p>Be the first to create and share one!</p></div>';return;}
-  grid.innerHTML=chars.map(function(c,i){
+  // Use global index for modal open
+  grid.innerHTML=chars.map(function(c){
+    var gi=_renderedItems.indexOf(c);
     var img=c.ai_art_url||c.sketch_url;var auth=c.profiles?(c.profiles.display_name||c.profiles.username||'?'):'?';
-    var starred=_starredIds.has(c.id);var bg=GRADS[i%GRADS.length];var init=(c.name||'?')[0].toUpperCase();
+    var starred=_starredIds.has(c.id);var bg=GRADS[gi%GRADS.length];var init=(c.name||'?')[0].toUpperCase();
     var tags=[];if(c.personality)tags.push(c.personality.split(',')[0].trim());if(c.features)tags.push(c.features.split(',')[0].trim());
-    return'<div class="zine-card" onclick="openModal('+i+')">'
+    return'<div class="zine-card" onclick="openModal('+gi+')">'
       +'<div class="card-img" style="background:'+bg+';">'+(img?'<img src="'+escHtml(img)+'" alt=""/>':'<div class="card-initial">'+init+'</div>')+'<div class="card-star-badge">⭐ '+(c.star_count||0)+'</div></div>'
       +'<div class="card-body"><div class="card-name">'+escHtml(c.name||'Unnamed')+'</div><div class="card-by">by '+escHtml(auth)+'</div>'
       +(tags.length?'<div class="card-tags">'+tags.slice(0,2).map(function(t){return'<span class="card-tag">'+escHtml(t)+'</span>';}).join('')+'</div>':'')
-      +'<button class="star-btn'+(starred?' starred':'') +'" onclick="event.stopPropagation();toggleStar(\''+c.id+'\',this)">'+(starred?'⭐ Starred':'☆ Star')+'</button></div></div>';
+      +'<button class="star-btn'+(starred?' starred':'')+'" onclick="event.stopPropagation();toggleStar(\''+c.id+'\',this)">'+(starred?'⭐ Starred':'☆ Star')+'</button></div></div>';
   }).join('');
 }
 function renderSettings(sets){
   var grid=document.getElementById('char-grid');
   if(!sets.length){grid.innerHTML='<div class="state-box"><svg viewBox="0 0 64 64" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" width="52" height="52" style="display:block;margin:0 auto;"><rect x="8" y="10" width="48" height="44" rx="6"/><path d="M8 22h48"/><circle cx="22" cy="36" r="5"/><path d="M30 36h16"/></svg><h3>NO SETTINGS YET</h3><p>Be the first to create and share one!</p></div>';return;}
-  grid.innerHTML=sets.map(function(s,i){
+  grid.innerHTML=sets.map(function(s){
+    var gi=_renderedItems.indexOf(s);
     var locs=Array.isArray(s.locations)?s.locations:[];var fi=locs[0]&&locs[0].imageDataUrl?locs[0].imageDataUrl:null;
-    var auth=s.profiles?(s.profiles.display_name||s.profiles.username||'?'):'?';var starred=_starredSettingIds.has(s.id);var bg=GRADS[i%GRADS.length];
+    var auth=s.profiles?(s.profiles.display_name||s.profiles.username||'?'):'?';var starred=_starredSettingIds.has(s.id);var bg=GRADS[gi%GRADS.length];
     var locTags=locs.slice(0,2).map(function(l){return'<span class="card-tag">📍 '+escHtml(l.name||'')+'</span>';}).join('');
-    return'<div class="zine-card set-card" onclick="openSettingModal('+i+')">'
+    return'<div class="zine-card set-card" onclick="openSettingModal('+gi+')">'
       +'<div class="card-img" style="background:'+bg+';">'+(fi?'<img src="'+escHtml(fi)+'" alt=""/>':'<div class="card-initial" style="font-size:40px;">📍</div>')+'<div class="card-star-badge">⭐ '+(s.star_count||0)+'</div></div>'
       +'<div class="card-body"><div class="card-name">'+escHtml(s.name||'Untitled')+'</div><div class="card-by">by '+escHtml(auth)+' · '+locs.length+' loc'+(locs.length===1?'':'s')+'</div>'
       +(locTags?'<div class="card-tags">'+locTags+'</div>':'')
@@ -383,19 +465,45 @@ function handleModalBgClick(e){if(e.target.id==='char-modal')closeModal();}
 async function toggleStar(id,btn){
   if(!_user){showToast('Sign in to star!');return;}
   var starred=_starredIds.has(id);
-  if(starred){_starredIds.delete(id);btn.className='star-btn';btn.textContent='☆ Star';await _sb.from('stars').delete().eq('user_id',_user.id).eq('character_id',id);showToast('Star removed');}
-  else{_starredIds.add(id);btn.className='star-btn starred';btn.textContent='⭐ Starred';await _sb.from('stars').insert({user_id:_user.id,character_id:id});showToast('⭐ Starred!');}
+  if(starred){
+    _starredIds.delete(id);btn.className='star-btn';btn.textContent='☆ Star';
+    await _sb.from('stars').delete().eq('user_id',_user.id).eq('character_id',id);
+    showToast('Star removed');
+  } else {
+    var used=await getWeeklyStarsUsed();
+    if(used>=5){
+      var now=new Date(),day=now.getDay(),d2m=day===0?1:8-day;
+      showToast('⭐ No stars left this week! Resets in '+d2m+' day'+(d2m!==1?'s':'')+'.');return;
+    }
+    _starredIds.add(id);btn.className='star-btn starred';btn.textContent='⭐ Starred';
+    await _sb.from('stars').insert({user_id:_user.id,character_id:id});
+    showToast('⭐ Starred!');
+  }
+  updateGiveBadge();
 }
 async function toggleSettingStar(id,btn){
   if(!_user){showToast('Sign in to star!');return;}
   var starred=_starredSettingIds.has(id);
-  if(starred){_starredSettingIds.delete(id);btn.className='star-btn';btn.textContent='☆ Star';await _sb.from('setting_stars').delete().eq('user_id',_user.id).eq('setting_id',id);showToast('Star removed');}
-  else{_starredSettingIds.add(id);btn.className='star-btn starred';btn.textContent='⭐ Starred';await _sb.from('setting_stars').insert({user_id:_user.id,setting_id:id});showToast('⭐ Starred!');}
+  if(starred){
+    _starredSettingIds.delete(id);btn.className='star-btn';btn.textContent='☆ Star';
+    await _sb.from('setting_stars').delete().eq('user_id',_user.id).eq('setting_id',id);
+    showToast('Star removed');
+  } else {
+    var used=await getWeeklyStarsUsed();
+    if(used>=5){
+      var now=new Date(),day=now.getDay(),d2m=day===0?1:8-day;
+      showToast('⭐ No stars left this week! Resets in '+d2m+' day'+(d2m!==1?'s':'')+'.');return;
+    }
+    _starredSettingIds.add(id);btn.className='star-btn starred';btn.textContent='⭐ Starred';
+    await _sb.from('setting_stars').insert({user_id:_user.id,setting_id:id});
+    showToast('⭐ Starred!');
+  }
+  updateGiveBadge();
 }
 async function toggleStarModal(){if(_activeItem)await toggleStar(_activeItem.id,document.getElementById('m-star-btn'));var starred=_starredIds.has(_activeItem.id);document.getElementById('m-star-btn').className='modal-star-btn'+(starred?' starred':'');document.getElementById('m-star-label').textContent=starred?'Starred!':'Star this character';}
 async function toggleStarSettingModal(){if(_activeItem)await toggleSettingStar(_activeItem.id,document.getElementById('m-star-btn'));var starred=_starredSettingIds.has(_activeItem.id);document.getElementById('m-star-btn').className='modal-star-btn'+(starred?' starred':'');document.getElementById('m-star-label').textContent=starred?'Starred!':'Star this setting';}
 
-function showLoading(){document.getElementById('char-grid').innerHTML='<div class="state-box"><div class="spinner"></div></div>';}
+function showLoading(){document.getElementById('char-grid').innerHTML='<div class="state-box"><div class="spinner"></div></div>';document.getElementById('pagination').style.display='none';}
 function showError(msg){document.getElementById('char-grid').innerHTML='<div class="state-box"><h3>SOMETHING WENT WRONG</h3><p>'+escHtml(msg)+'</p></div>';}
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2600);}
 function escHtml(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
