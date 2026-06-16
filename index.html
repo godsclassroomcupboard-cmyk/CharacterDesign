@@ -588,6 +588,9 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         <div id="topbar-stars" style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:5px;font-family:'Bangers',cursive;font-size:15px;color:#FFD700;letter-spacing:1px;">
           <span style="font-size:15px;">⭐</span> <span id="topbar-star-count">0</span>
         </div>
+        <div id="topbar-stars-to-give" title="Stars you can give out this week" style="background:rgba(108,92,231,0.2);border:1px solid rgba(108,92,231,0.5);border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:5px;font-family:'Bangers',cursive;font-size:13px;color:#C4A8FF;letter-spacing:1px;cursor:default;">
+          <span style="font-size:13px;">🎁</span> <span id="topbar-give-count">5</span><span style="font-size:10px;opacity:0.7;">LEFT</span>
+        </div>
         <!-- Profile dropdown -->
         <div class="profile-dropdown" id="profile-dropdown">
           <div class="profile-menu-item" onclick="switchSection('profile');toggleProfileDropdown()">
@@ -888,6 +891,9 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         </div>
         <div id="topbar-stars-map" style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:5px;font-family:'Bangers',cursive;font-size:15px;color:#FFD700;letter-spacing:1px;">
           <span style="font-size:15px;">⭐</span> <span id="topbar-star-count-map">0</span>
+        </div>
+        <div id="topbar-stars-to-give-map" title="Stars you can give out this week" style="background:rgba(108,92,231,0.2);border:1px solid rgba(108,92,231,0.5);border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:5px;font-family:'Bangers',cursive;font-size:13px;color:#C4A8FF;letter-spacing:1px;cursor:default;">
+          <span style="font-size:13px;">🎁</span> <span id="topbar-give-count-map">5</span><span style="font-size:10px;opacity:0.7;">LEFT</span>
         </div>
       </div>
     </div>
@@ -2546,14 +2552,14 @@ let _communitySortBy = 'stars';
 })();
 
 async function _onSignIn(user) {
-  _currentUser = user; window._currentUser = user; // expose for settingBank
+  _currentUser = user; window._currentUser = user;
   const { data } = await _sb.from('profiles').select('*').eq('id', user.id).single();
   _currentProfile = data;
   _myStarredIds   = await _getMyStarredIds();
   _updateTopbar();
   _showSaveButton();
   loadMyCharacters();
-  // Load this student's saved settings from Supabase
+  updateWeeklyStarsBadge();
   if (window.settingBank && typeof window.settingBank.loadMySettings === 'function') {
     window.settingBank.loadMySettings();
   }
@@ -2933,16 +2939,40 @@ function showStarLimitToast() {
 }
 
 async function updateWeeklyStarsBadge() {
-  const badge = document.getElementById('weekly-stars-badge');
-  if (!badge || !_currentUser) return;
+  if (!_currentUser) return;
   const used = await getWeeklyStarsUsed(_currentUser.id);
   const left = Math.max(0, 5 - used);
-  badge.textContent = left > 0
-    ? `⭐ ${left} star${left !== 1 ? 's' : ''} left this week`
-    : `⭐ No stars left until Monday`;
-  badge.style.color       = left > 0 ? '#FFD700' : 'rgba(255,255,255,0.4)';
-  badge.style.borderColor = left > 0 ? 'rgba(255,215,0,0.3)' : 'rgba(255,255,255,0.1)';
-  badge.style.background  = left > 0 ? 'rgba(255,215,0,0.12)' : 'rgba(255,255,255,0.05)';
+
+  // Community page badge
+  const badge = document.getElementById('weekly-stars-badge');
+  if (badge) {
+    badge.textContent = left > 0
+      ? `⭐ ${left} star${left !== 1 ? 's' : ''} left this week`
+      : `⭐ No stars left until Monday`;
+    badge.style.color       = left > 0 ? '#FFD700' : 'rgba(255,255,255,0.4)';
+    badge.style.borderColor = left > 0 ? 'rgba(255,215,0,0.3)' : 'rgba(255,255,255,0.1)';
+    badge.style.background  = left > 0 ? 'rgba(255,215,0,0.12)' : 'rgba(255,255,255,0.05)';
+  }
+
+  // Topbar pills (character section + map section)
+  ['topbar-give-count', 'topbar-give-count-map'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = left;
+    const pill = el.closest('div');
+    if (!pill) return;
+    if (left === 0) {
+      pill.style.background  = 'rgba(255,255,255,0.06)';
+      pill.style.borderColor = 'rgba(255,255,255,0.15)';
+      pill.style.color       = 'rgba(255,255,255,0.35)';
+      pill.title             = 'No stars left to give this week — resets Monday';
+    } else {
+      pill.style.background  = 'rgba(108,92,231,0.2)';
+      pill.style.borderColor = 'rgba(108,92,231,0.5)';
+      pill.style.color       = '#C4A8FF';
+      pill.title             = `${left} star${left !== 1 ? 's' : ''} left to give this week`;
+    }
+  });
 }
 
 async function _getMyStarredIds() {
