@@ -1937,8 +1937,12 @@ async function saveTeacherNote(charId) {
 
 async function deleteChar(id, name) {
   if (!confirm('Delete character "' + name + '"?\n\nThis cannot be undone.')) return;
-  var r = await _sb.from('characters').delete().eq('id', id);
+  var r = await _sb.from('characters').delete().eq('id', id).select();
   if (r.error) { toast('Error: ' + r.error.message); return; }
+  if (!r.data || r.data.length === 0) {
+    toast('⚠ Delete blocked — your account may not have teacher permissions set in Supabase.');
+    return;
+  }
   toast('✓ Character deleted');
   _charsLoaded = false;
   await loadAllChars();
@@ -2075,8 +2079,12 @@ function closeSettingModal() { document.getElementById('setting-modal').style.di
 
 async function deleteSetting(id, name) {
   if (!confirm('Delete setting "' + name + '"?\n\nThis cannot be undone.')) return;
-  var r = await _sb.from('settings').delete().eq('id', id);
+  var r = await _sb.from('settings').delete().eq('id', id).select();
   if (r.error) { toast('Error: ' + r.error.message); return; }
+  if (!r.data || r.data.length === 0) {
+    toast('⚠ Delete blocked — your account may not have teacher permissions set in Supabase.');
+    return;
+  }
   toast('✓ Setting deleted');
   _settingsLoaded = false;
   await loadAllSettings();
