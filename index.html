@@ -135,6 +135,25 @@ body { font-family: 'Nunito', sans-serif; background: #0A0520; min-height: 100vh
 @keyframes twinkle { from {opacity:0.25; transform:scale(0.6);} to {opacity:1; transform:scale(1.3);} }
 .mascot-bot { animation: botFloat 3s ease-in-out infinite; display:block; }
 @keyframes botFloat { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+.avatar-card { width: 100%; max-width:280px; padding: 14px 14px 16px; }
+.avatar-stage-img { width:120px;height:120px;object-fit:contain;display:block;margin:0 auto 10px; }
+.avatar-name-label { text-align:center;font-family:'Bangers',cursive;font-size:15px;letter-spacing:1px;color:#fff;margin-bottom:2px; }
+.avatar-stage-label { text-align:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.55);letter-spacing:0.5px;margin-bottom:10px; }
+.avatar-total-bar-track { background:rgba(0,0,0,0.35);border-radius:99px;height:8px;overflow:hidden;margin-bottom:12px; }
+.avatar-total-bar-fill { background:linear-gradient(90deg,#FFD700,#FFA500);height:100%;border-radius:99px;transition:width 0.4s ease; }
+.avatar-stat-list { display:flex;flex-direction:column;gap:5px; }
+.avatar-stat-row { display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px; }
+.avatar-stat-row-name { color:rgba(255,255,255,0.7);font-weight:700;flex-shrink:0; }
+.avatar-stat-row-track { flex:1;background:rgba(0,0,0,0.3);border-radius:99px;height:5px;overflow:hidden;margin:0 6px; }
+.avatar-stat-row-fill { background:var(--teal,#00C4B4);height:100%;border-radius:99px; }
+.avatar-stat-row-val { color:#FFD700;font-weight:800;flex-shrink:0;min-width:18px;text-align:right; }
+.avatar-pick-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%; }
+.avatar-pick-card { background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 8px;text-align:center;cursor:pointer;transition:all 0.15s; }
+.avatar-pick-card:hover { border-color:#FFD700;background:rgba(255,215,0,0.08); }
+.avatar-pick-card img { width:64px;height:64px;object-fit:contain;display:block;margin:0 auto 6px; }
+.avatar-pick-name { font-family:'Fredoka One',cursive;font-size:11px;color:#fff; }
+.avatar-trophy-strip { display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:10px; }
+.avatar-trophy-thumb { width:28px;height:28px;border-radius:6px;object-fit:contain;background:rgba(255,255,255,0.08);border:1px solid rgba(255,215,0,0.4);padding:2px; }
 .speech-bubble {
   background:#fff; border-radius:14px; padding:9px 13px;
   font-weight:800; font-size:13px; color:#222; line-height:1.4;
@@ -620,9 +639,9 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
     <!-- ── LEFT ── sits inside the dark folder-tab zone -->
     <div style="display:flex;flex-direction:column;gap:14px;overflow-y:auto;padding-top:0;">
 
-      <!-- Mascot Card — top-left corner is flat (flush with dark bg), 
+      <!-- Avatar Card — top-left corner is flat (flush with dark bg), 
            other corners rounded. The dark folder-tab behind it IS the frame. -->
-      <div class="mascot-card" style="margin-top:0;">
+      <div class="mascot-card avatar-card" style="margin-top:0;" id="avatar-card-char">
         <div class="star-dot" style="top:16px;left:28px;width:6px;height:6px;animation-delay:0s;"></div>
         <div class="star-dot" style="top:32px;right:38px;width:4px;height:4px;animation-delay:0.6s;"></div>
         <div class="star-dot" style="top:58px;left:52px;width:3px;height:3px;animation-delay:1.1s;"></div>
@@ -631,17 +650,12 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         <!-- Planets -->
         <div style="position:absolute;top:14px;right:58px;width:20px;height:20px;border-radius:50%;background:radial-gradient(circle,#8E6AE8,#4B2AAA);opacity:0.7;"></div>
         <div style="position:absolute;top:38px;left:12px;width:13px;height:13px;border-radius:50%;background:radial-gradient(circle,#C97AEA,#7B3BC8);opacity:0.5;"></div>
-        <div class="mascot-bot" style="position:relative;z-index:2;">
-          <img id="mascot-img-char" alt="Mascot" style="height:220px;width:auto;max-width:260px;object-fit:contain;display:block;" />
-          <!-- Setup prompt shown when no mascot loaded -->
-          <div id="mascot-setup-char" onclick="document.getElementById('mascot-file-input').click()" style="display:none;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:18px 10px;text-align:center;">
-            <svg viewBox="0 0 40 40" fill="none" width="38" height="38"><circle cx="20" cy="20" r="19" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-dasharray="4,3"/><path d="M20 12v16M12 20h16" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"/></svg>
-            <span style="color:rgba(255,255,255,0.75);font-size:11px;font-weight:800;line-height:1.3;">Click to load<br>mascot.png</span>
-          </div>
+        <div id="avatar-holder-char" style="position:relative;z-index:2;width:100%;">
+          <!-- Filled in by renderAvatarCard() -->
+          <div style="text-align:center;padding:30px 10px;color:rgba(255,255,255,0.5);font-size:11px;font-weight:700;">Loading your avatar…</div>
         </div>
         <div class="glow-ring"></div>
       </div>
-      <input type="file" id="mascot-file-input" accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;" onchange="loadMascotFile(event)" />
 
       <!-- My Characters — live list -->
       <div style="background:rgba(255,255,255,0.06);border-radius:18px;padding:16px;border:1.5px solid rgba(255,255,255,0.1);">
@@ -908,8 +922,8 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
     <!-- ── LEFT: Mascot + My Settings list ── -->
     <div style="display:flex;flex-direction:column;gap:14px;overflow-y:auto;padding-top:0;">
 
-      <!-- Mascot Card -->
-      <div class="mascot-card" style="margin-top:0;">
+      <!-- Avatar Card -->
+      <div class="mascot-card avatar-card" style="margin-top:0;" id="avatar-card-map">
         <div class="star-dot" style="top:16px;left:28px;width:6px;height:6px;animation-delay:0s;"></div>
         <div class="star-dot" style="top:32px;right:38px;width:4px;height:4px;animation-delay:0.6s;"></div>
         <div class="star-dot" style="top:58px;left:52px;width:3px;height:3px;animation-delay:1.1s;"></div>
@@ -917,8 +931,9 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         <div class="star-dot" style="top:75px;right:18px;width:3px;height:3px;animation-delay:1.6s;"></div>
         <div style="position:absolute;top:14px;right:58px;width:20px;height:20px;border-radius:50%;background:radial-gradient(circle,#8E6AE8,#4B2AAA);opacity:0.7;"></div>
         <div style="position:absolute;top:38px;left:12px;width:13px;height:13px;border-radius:50%;background:radial-gradient(circle,#C97AEA,#7B3BC8);opacity:0.5;"></div>
-        <div class="mascot-bot" style="position:relative;z-index:2;">
-          <img id="mascot-img-map" alt="Mascot" style="height:220px;width:auto;max-width:260px;object-fit:contain;display:block;" />
+        <div id="avatar-holder-map" style="position:relative;z-index:2;width:100%;">
+          <!-- Filled in by renderAvatarCard() -->
+          <div style="text-align:center;padding:30px 10px;color:rgba(255,255,255,0.5);font-size:11px;font-weight:700;">Loading your avatar…</div>
         </div>
         <div class="glow-ring"></div>
       </div>
@@ -1202,39 +1217,141 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 </div><!-- end content-area -->
 <script>
 // ══════════════════════════════════════════
-// MASCOT IMAGE
+// AVATAR SYSTEM (replaces old mascot upload)
 // ══════════════════════════════════════════
-function applyMascot(dataUrl) {
-  ['mascot-img-char','mascot-img-map'].forEach(id => {
+var _avatarTemplatesCache = null;
+var _myAvatar = null; // active student_avatars row (joined with template) or null
+var STAGE_URL_KEYS = ['stage_1_url','stage_2_url','stage_3_url','stage_4_url','stage_5_url','stage_6_url'];
+
+async function initAvatarDisplay() {
+  if (!_currentUser) {
+    renderAvatarSignedOut();
+    return;
+  }
+  await loadMyAvatarState();
+}
+
+async function loadMyAvatarState() {
+  // Fetch this student's active (non-completed) avatar, if any
+  const { data: activeRows } = await _sb
+    .from('student_avatar_view')
+    .select('*')
+    .eq('user_id', _currentUser.id)
+    .eq('is_completed', false)
+    .limit(1);
+
+  if (activeRows && activeRows.length) {
+    _myAvatar = activeRows[0];
+    renderAvatarProgressCard();
+    _attachAvatarThresholds();
+    return;
+  }
+
+  // No active avatar — show picker of avatars not yet completed
+  const { data: completedRows } = await _sb
+    .from('student_avatars')
+    .select('template_id')
+    .eq('user_id', _currentUser.id)
+    .eq('is_completed', true);
+  const completedIds = new Set((completedRows || []).map(r => r.template_id));
+
+  const { data: templates } = await _sb.from('avatar_templates').select('*').eq('is_active', true).order('sort_order');
+  _avatarTemplatesCache = templates || [];
+  const available = _avatarTemplatesCache.filter(t => !completedIds.has(t.id));
+
+  renderAvatarPicker(available, completedIds.size);
+}
+
+function renderAvatarSignedOut() {
+  ['avatar-holder-char', 'avatar-holder-map'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) { el.src = dataUrl; el.style.display = 'block'; }
+    if (el) el.innerHTML = '<div style="text-align:center;padding:30px 12px;color:rgba(255,255,255,0.5);font-size:11px;font-weight:700;">Sign in to get your avatar!</div>';
   });
-  const setup = document.getElementById('mascot-setup-char');
-  if (setup) setup.style.display = 'none';
 }
 
-function loadMascotFile(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    const dataUrl = ev.target.result;
-    try { localStorage.setItem('mascot_dataurl', dataUrl); } catch(err) {}
-    applyMascot(dataUrl);
-  };
-  reader.readAsDataURL(file);
-}
-
-function initMascot() {
-  const stored = localStorage.getItem('mascot_dataurl');
-  if (stored) {
-    applyMascot(stored);
+function renderAvatarPicker(available, completedCount) {
+  let html;
+  if (!available.length) {
+    html = '<div style="text-align:center;padding:20px 10px;">'
+      + '<div style="font-size:32px;margin-bottom:8px;">🏆</div>'
+      + '<div style="color:#fff;font-size:12px;font-weight:800;line-height:1.5;">You\'ve completed all available avatars!</div>'
+      + '</div>';
   } else {
-    // Show setup prompt on character section mascot
-    const img = document.getElementById('mascot-img-char');
-    if (img) img.style.display = 'none';
-    const setup = document.getElementById('mascot-setup-char');
-    if (setup) setup.style.display = 'flex';
+    html = '<div style="text-align:center;color:#fff;font-family:\'Fredoka One\',cursive;font-size:12px;letter-spacing:0.5px;margin-bottom:10px;">Choose your avatar!</div>'
+      + '<div class="avatar-pick-grid">'
+      + available.map(t => {
+          const img = t.stage_1_url || '';
+          return '<div class="avatar-pick-card" onclick="pickAvatar(\'' + t.id + '\')">'
+            + (img ? '<img src="' + img.replace(/"/g,'&quot;') + '" alt=""/>' : '<div style="font-size:32px;margin-bottom:4px;">🧬</div>')
+            + '<div class="avatar-pick-name">' + (t.name || 'Avatar').replace(/</g,'&lt;') + '</div>'
+            + '</div>';
+        }).join('')
+      + '</div>';
+  }
+  if (completedCount > 0) {
+    html += '<div style="text-align:center;margin-top:10px;font-size:10px;color:rgba(255,255,255,0.45);font-weight:700;">🏆 ' + completedCount + ' avatar' + (completedCount !== 1 ? 's' : '') + ' completed</div>';
+  }
+  ['avatar-holder-char', 'avatar-holder-map'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  });
+}
+
+async function pickAvatar(templateId) {
+  const { data, error } = await _sb.from('student_avatars').insert({
+    user_id: _currentUser.id,
+    template_id: templateId,
+  }).select().single();
+  if (error) { if (typeof toast === 'function') toast('Could not select avatar: ' + error.message); return; }
+  await loadMyAvatarState();
+  if (typeof toast === 'function') toast('🎉 Avatar chosen! Start writing to help it grow.');
+}
+
+function renderAvatarProgressCard() {
+  const a = _myAvatar;
+  const stageUrl = a[STAGE_URL_KEYS[(a.current_stage || 1) - 1]] || a.stage_1_url || '';
+  const stats = a.stats || {};
+  const statNames = Object.keys(stats);
+
+  // Figure out current/next threshold for the progress bar (best-effort without separate fetch)
+  const thresholds = a._thresholds || [0,20,40,60,80,100];
+  const curIdx  = Math.min((a.current_stage || 1) - 1, 5);
+  const curMin  = thresholds[curIdx] || 0;
+  const nextMax = thresholds[curIdx + 1] !== undefined ? thresholds[curIdx + 1] : (curMin + 20);
+  const span    = Math.max(nextMax - curMin, 1);
+  const pct     = Math.max(0, Math.min(100, ((a.total_points - curMin) / span) * 100));
+
+  let html = '';
+  if (stageUrl) html += '<img src="' + stageUrl.replace(/"/g,'&quot;') + '" class="avatar-stage-img" alt=""/>';
+  else html += '<div style="font-size:48px;text-align:center;margin-bottom:8px;">🧬</div>';
+  html += '<div class="avatar-name-label">' + (a.avatar_name || 'Your Avatar').replace(/</g,'&lt;') + '</div>';
+  html += '<div class="avatar-stage-label">STAGE ' + (a.current_stage || 1) + ' / 6 · ' + (a.total_points || 0) + ' PTS</div>';
+  html += '<div class="avatar-total-bar-track"><div class="avatar-total-bar-fill" style="width:' + pct + '%;"></div></div>';
+
+  html += '<div class="avatar-stat-list">';
+  statNames.forEach(name => {
+    const val = stats[name] || 0;
+    const barPct = Math.min(100, (val / 20) * 100); // visual scale, purely cosmetic
+    html += '<div class="avatar-stat-row">'
+      + '<span class="avatar-stat-row-name">' + name.replace(/</g,'&lt;') + '</span>'
+      + '<span class="avatar-stat-row-track"><span class="avatar-stat-row-fill" style="width:' + barPct + '%;"></span></span>'
+      + '<span class="avatar-stat-row-val">' + val + '</span>'
+      + '</div>';
+  });
+  html += '</div>';
+
+  ['avatar-holder-char', 'avatar-holder-map'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  });
+}
+
+// Fetch thresholds once and stash them on the avatar object for the progress bar
+async function _attachAvatarThresholds() {
+  const { data } = await _sb.from('avatar_settings').select('thresholds').eq('id', 1).single();
+  if (data && _myAvatar) {
+    _myAvatar._thresholds = data.thresholds;
+    renderAvatarProgressCard();
   }
 }
 
@@ -2520,11 +2637,7 @@ window._sb = _sb; // expose for settingBank
   // sessionStorage missing — check if Supabase still has a live session
   // (happens when navigating back from community.html in same tab)
   try {
-    const sbCheck = supabase.createClient(
-      'https://nwhaliuajvovesnrdfrr.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53aGFsaXVhanZvdmVzbnJkZnJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDUyMzEsImV4cCI6MjA5NTQ4MTIzMX0.cGZ_yqeTyQYyyUAIc1CrV-M6iwN34CtSzjYBF_nG9xE'
-    );
-    const { data: { session } } = await sbCheck.auth.getSession();
+    const { data: { session } } = await _sb.auth.getSession();
     if (session?.user) {
       // Valid Supabase session — restore sessionStorage and continue
       sessionStorage.setItem('aurabot_auth', 'true');
@@ -2565,12 +2678,14 @@ async function _onSignIn(user) {
   if (window.settingBank && typeof window.settingBank.loadMySettings === 'function') {
     window.settingBank.loadMySettings();
   }
+  initAvatarDisplay();
 }
 
 function _onSignOut() {
   _currentUser = null; window._currentUser = null; _currentProfile = null; _myStarredIds = new Set();
   _updateTopbar();
   _showSaveButton();
+  renderAvatarSignedOut();
 }
 
 function _updateTopbar() {
@@ -3110,9 +3225,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('load', () => {
-  initMascot();
+  initAvatarDisplay();
   if (typeof gsap !== 'undefined') {
-    gsap.from('.mascot-bot', { y:28, opacity:0, duration:0.8, ease:'back.out(1.4)', delay:0.15 });
+    gsap.from('.avatar-card', { y:28, opacity:0, duration:0.8, ease:'back.out(1.4)', delay:0.15 });
     gsap.from('.speech-bubble', { x:-16, opacity:0, duration:0.5, ease:'power2.out', delay:0.5 });
     gsap.from('.char-card', { y:16, opacity:0, duration:0.45, stagger:0.08, ease:'power2.out', delay:0.25 });
     gsap.from('.field-row', { x:-8, opacity:0, duration:0.35, stagger:0.04, ease:'power2.out', delay:0.35 });
