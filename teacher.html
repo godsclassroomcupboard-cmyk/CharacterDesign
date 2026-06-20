@@ -310,6 +310,31 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
 .char-detail-val{font-size:12px;font-weight:700;color:#fff;line-height:1.4;}
 .char-img-pair{display:flex;gap:10px;margin-bottom:14px;}
 .char-img-pair img{flex:1;max-width:50%;border-radius:8px;object-fit:cover;border:1.5px solid rgba(255,255,255,0.15);}
+
+/* ── AVATAR SYSTEM ── */
+.avatar-template-card{background:rgba(0,0,0,0.35);border:1.5px solid rgba(255,255,255,0.12);border-radius:12px;padding:16px;}
+.avatar-template-name-input{width:100%;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:6px;padding:8px 12px;color:#fff;font-family:'Bangers',cursive;font-size:16px;letter-spacing:1px;outline:none;margin-bottom:12px;}
+.stage-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;}
+.stage-slot{position:relative;aspect-ratio:1;border:2px dashed rgba(255,255,255,0.2);border-radius:8px;overflow:hidden;cursor:pointer;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;transition:border-color 0.15s;}
+.stage-slot:hover{border-color:var(--teal);}
+.stage-slot.filled{border-style:solid;border-color:rgba(0,196,180,0.4);}
+.stage-slot img{width:100%;height:100%;object-fit:cover;}
+.stage-slot-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);color:#fff;font-size:8px;font-weight:800;text-align:center;padding:2px 0;letter-spacing:0.5px;}
+.stage-slot-plus{font-size:20px;color:rgba(255,255,255,0.25);}
+.stage-slot input[type=file]{display:none;}
+.threshold-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.threshold-row label{flex:0 0 90px;font-family:'Fredoka One',cursive;font-size:11px;color:rgba(255,255,255,0.6);}
+.threshold-row input{flex:1;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:6px;padding:7px 10px;color:#fff;font-weight:700;outline:none;}
+.stat-pill-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+.stat-pill{background:rgba(255,255,255,0.05);border-radius:8px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.stat-pill-name{font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);}
+.stat-pill-val{font-family:'Bangers',cursive;font-size:14px;color:var(--yellow);min-width:22px;text-align:center;}
+.stat-plus-btn{background:var(--teal);border:none;border-radius:5px;width:24px;height:24px;color:var(--ink);font-weight:900;font-size:14px;cursor:pointer;line-height:1;}
+.stat-plus-btn:hover{opacity:0.8;}
+.avatar-progress-thumb{width:36px;height:36px;border-radius:8px;object-fit:cover;border:1.5px solid rgba(255,255,255,0.15);}
+.stage-pip-row{display:flex;gap:3px;margin-top:4px;}
+.stage-pip{width:14px;height:5px;border-radius:3px;background:rgba(255,255,255,0.15);}
+.stage-pip.lit{background:var(--yellow);}
 </style>
 </head>
 <body>
@@ -351,6 +376,10 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
   <div class="tab" id="tab-settings-tab" onclick="switchTab('settings-tab')">
     <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="9" cy="9" r="3"/><path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.2 3.2l1.4 1.4M13.4 13.4l1.4 1.4M3.2 14.8l1.4-1.4M13.4 4.6l1.4-1.4"/></svg>
     SETTINGS
+  </div>
+  <div class="tab" id="tab-avatars" onclick="switchTab('avatars')">
+    <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 2l2.5 5 5.5.5-4 4 1 5.5L9 14l-5 3 1-5.5-4-4 5.5-.5z"/></svg>
+    AVATARS
   </div>
 </nav>
 
@@ -656,6 +685,70 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
   </div>
 </div>
 
+<!-- ══ TAB: AVATARS ══ -->
+<div class="tab-content" id="content-avatars">
+  <div class="mgmt-wrap" style="max-width:1300px;">
+
+    <!-- Sub-nav within Avatars tab -->
+    <div style="display:flex;gap:8px;margin-bottom:18px;">
+      <button class="comm-filter-btn active" id="av-subtab-templates" onclick="switchAvatarSubtab('templates')" style="flex:none;padding:8px 18px;">🖼️ TEMPLATES &amp; STAGES</button>
+      <button class="comm-filter-btn" id="av-subtab-thresholds" onclick="switchAvatarSubtab('thresholds')" style="flex:none;padding:8px 18px;">📊 THRESHOLDS</button>
+      <button class="comm-filter-btn" id="av-subtab-progress" onclick="switchAvatarSubtab('progress')" style="flex:none;padding:8px 18px;">🏆 STUDENT PROGRESS</button>
+    </div>
+
+    <!-- TEMPLATES SUB-TAB -->
+    <div id="av-sub-templates">
+      <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:16px;line-height:1.6;">
+        Upload 6 evolution-stage images for each of your 4 starter avatars. Stage 1 is what students see when they first pick the avatar; Stage 6 is the final completed form.
+      </div>
+      <div id="avatar-template-cards" style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+        <div class="empty-state">Loading avatar templates…</div>
+      </div>
+    </div>
+
+    <!-- THRESHOLDS SUB-TAB -->
+    <div id="av-sub-thresholds" style="display:none;">
+      <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:16px;line-height:1.6;">
+        Set how many <strong>total stat points</strong> (summed across all 8 stats) a student needs to reach each evolution stage. Stage 1 should stay at 0.
+      </div>
+      <div id="threshold-editor" style="background:rgba(0,0,0,0.3);border-radius:10px;padding:18px 20px;max-width:560px;">
+        <div class="empty-state">Loading thresholds…</div>
+      </div>
+      <div style="margin-top:14px;font-size:12px;color:rgba(255,255,255,0.4);max-width:560px;">
+        <strong>Stat names</strong> (8 total, comma separated):
+      </div>
+      <textarea id="stat-names-input" class="field-inp" style="max-width:560px;margin-top:6px;min-height:50px;" placeholder="Hook, Introduction, Paragraphing, Spelling, Vocabulary, Editing, Creativity, Story Structure"></textarea>
+      <div style="margin-top:12px;">
+        <button class="btn-add" onclick="saveAvatarSettings()">💾 Save Thresholds &amp; Stat Names</button>
+      </div>
+    </div>
+
+    <!-- STUDENT PROGRESS SUB-TAB -->
+    <div id="av-sub-progress" style="display:none;">
+      <div class="mgmt-toolbar">
+        <input class="mgmt-search" id="avatar-progress-search" type="text" placeholder="Search by student name…" oninput="filterAvatarProgress()"/>
+        <span class="mgmt-count" id="avatar-progress-count"></span>
+      </div>
+      <table class="mgmt-table">
+        <thead>
+          <tr>
+            <th style="width:48px;"></th>
+            <th>STUDENT</th>
+            <th>AVATAR</th>
+            <th>STAGE</th>
+            <th>TOTAL PTS</th>
+            <th style="width:260px;">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="avatar-progress-tbody">
+          <tr><td colspan="6"><div class="empty-state">Loading student progress…</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
 </div><!-- end page -->
 
 <!-- ══ STUDENT MODAL ══ -->
@@ -730,6 +823,20 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
 </div>
 <div class="toast" id="toast"></div>
 
+<!-- ══ STAT AWARD MODAL ══ -->
+<div class="modal-overlay" id="stat-award-modal" style="display:none;" onclick="if(event.target===this)closeStatAwardModal()">
+  <div class="modal-box" style="max-width:460px;">
+    <div class="modal-hdr">
+      <span class="modal-title" id="stat-award-title">AWARD STAT POINTS</span>
+      <button class="modal-close" onclick="closeStatAwardModal()">✕</button>
+    </div>
+    <div class="modal-body" id="stat-award-body"></div>
+    <div class="modal-footer">
+      <button class="btn-discard" onclick="closeStatAwardModal()">Done</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── Auth guard: teachers only ──
 (function guard() {
@@ -792,6 +899,7 @@ function switchTab(name) {
   if (name === 'students')     loadStudents();
   if (name === 'characters')   loadAllChars();
   if (name === 'settings-tab') loadAllSettings();
+  if (name === 'avatars')      initAvatarsTab();
 }
 
 function focusImageUpload() {
@@ -1285,6 +1393,276 @@ function resetImgZone() {
 }
 
 function formatDate(d) { if(!d)return'TODAY'; var dt=new Date(d+'T12:00:00'); return dt.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'}).toUpperCase(); }
+// ══════════════════════════════════════════════════════
+//  AVATARS TAB
+// ══════════════════════════════════════════════════════
+var _avatarTemplatesLoaded = false;
+var _avatarTemplates = [];
+var _avatarSettings = null;
+var _allAvatarProgress = [];
+var _avatarProgressLoaded = false;
+var STAGE_KEYS = ['stage_1_url','stage_2_url','stage_3_url','stage_4_url','stage_5_url','stage_6_url'];
+
+function initAvatarsTab() {
+  if (!_avatarTemplatesLoaded) {
+    _avatarTemplatesLoaded = true;
+    loadAvatarTemplates();
+    loadAvatarSettings();
+  }
+}
+
+function switchAvatarSubtab(name) {
+  ['templates','thresholds','progress'].forEach(function(t) {
+    document.getElementById('av-subtab-' + t).classList.toggle('active', t === name);
+    document.getElementById('av-sub-' + t).style.display = (t === name) ? '' : 'none';
+  });
+  if (name === 'progress' && !_avatarProgressLoaded) loadAvatarProgress();
+}
+
+// ── Templates ──
+async function loadAvatarTemplates() {
+  var r = await _sb.from('avatar_templates').select('*').order('sort_order');
+  if (r.error) { toast('Error loading avatars: ' + r.error.message); return; }
+  _avatarTemplates = r.data || [];
+
+  // Ensure there are always 4 template slots — create blanks if missing
+  while (_avatarTemplates.length < 4) {
+    var insertRes = await _sb.from('avatar_templates').insert({
+      name: 'Avatar ' + (_avatarTemplates.length + 1),
+      sort_order: _avatarTemplates.length,
+    }).select().single();
+    if (insertRes.error) { toast('Error creating avatar slot: ' + insertRes.error.message); break; }
+    _avatarTemplates.push(insertRes.data);
+  }
+  renderAvatarTemplateCards();
+}
+
+function renderAvatarTemplateCards() {
+  var wrap = document.getElementById('avatar-template-cards');
+  wrap.innerHTML = _avatarTemplates.map(function(t, ti) {
+    var stagesHtml = STAGE_KEYS.map(function(key, si) {
+      var url = t[key];
+      var stageNum = si + 1;
+      return '<label class="stage-slot' + (url ? ' filled' : '') + '" title="Stage ' + stageNum + '">'
+        + (url ? '<img src="' + escHtml(url) + '" alt=""/>' : '<span class="stage-slot-plus">+</span>')
+        + '<span class="stage-slot-label">STAGE ' + stageNum + '</span>'
+        + '<input type="file" accept="image/*" onchange="uploadAvatarStage(\'' + t.id + '\',' + stageNum + ',this)"/>'
+        + '</label>';
+    }).join('');
+
+    return '<div class="avatar-template-card">'
+      + '<input class="avatar-template-name-input" value="' + escHtml(t.name || '') + '" placeholder="Avatar name…" onblur="saveAvatarName(\'' + t.id + '\',this.value)"/>'
+      + '<div class="stage-grid">' + stagesHtml + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+async function saveAvatarName(templateId, newName) {
+  newName = newName.trim();
+  if (!newName) return;
+  var r = await _sb.from('avatar_templates').update({ name: newName }).eq('id', templateId);
+  if (r.error) { toast('Error saving name: ' + r.error.message); return; }
+  var t = _avatarTemplates.find(function(x){ return x.id === templateId; });
+  if (t) t.name = newName;
+  toast('✓ Avatar name saved');
+}
+
+async function uploadAvatarStage(templateId, stageNum, inputEl) {
+  var file = inputEl.files && inputEl.files[0];
+  if (!file) return;
+  toast('Uploading stage ' + stageNum + '…');
+
+  var ext = (file.name.split('.').pop() || 'png').toLowerCase();
+  var path = templateId + '/stage_' + stageNum + '_' + Date.now() + '.' + ext;
+
+  var upRes = await _sb.storage.from('avatar-images').upload(path, file, { upsert: true, contentType: file.type });
+  if (upRes.error) { toast('Upload failed: ' + upRes.error.message); return; }
+
+  var publicUrl = _sb.storage.from('avatar-images').getPublicUrl(path).data.publicUrl;
+  var colKey = 'stage_' + stageNum + '_url';
+  var updateRes = await _sb.from('avatar_templates').update(
+    Object.fromEntries([[colKey, publicUrl]])
+  ).eq('id', templateId);
+  if (updateRes.error) { toast('Error saving image: ' + updateRes.error.message); return; }
+
+  var t = _avatarTemplates.find(function(x){ return x.id === templateId; });
+  if (t) t[colKey] = publicUrl;
+  renderAvatarTemplateCards();
+  toast('✓ Stage ' + stageNum + ' image uploaded!');
+}
+
+// ── Thresholds & stat names ──
+async function loadAvatarSettings() {
+  var r = await _sb.from('avatar_settings').select('*').eq('id', 1).single();
+  if (r.error) {
+    document.getElementById('threshold-editor').innerHTML = '<div class="empty-state">Could not load settings — has avatar-schema.sql been run in Supabase?</div>';
+    return;
+  }
+  _avatarSettings = r.data;
+  renderThresholdEditor();
+  document.getElementById('stat-names-input').value = (_avatarSettings.stat_names || []).join(', ');
+}
+
+function renderThresholdEditor() {
+  var thresholds = _avatarSettings.thresholds || [0,20,40,60,80,100];
+  document.getElementById('threshold-editor').innerHTML = thresholds.map(function(val, i) {
+    return '<div class="threshold-row">'
+      + '<label>STAGE ' + (i + 1) + '</label>'
+      + '<input type="number" min="0" id="threshold-input-' + i + '" value="' + val + '"' + (i === 0 ? ' disabled title="Stage 1 always starts at 0"' : '') + '/>'
+      + '</div>';
+  }).join('');
+}
+
+async function saveAvatarSettings() {
+  var thresholds = [];
+  for (var i = 0; i < 6; i++) {
+    var el = document.getElementById('threshold-input-' + i);
+    thresholds.push(el ? (parseInt(el.value, 10) || 0) : 0);
+  }
+  thresholds[0] = 0; // stage 1 always 0
+
+  var statNames = document.getElementById('stat-names-input').value
+    .split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  if (statNames.length !== 8) {
+    toast('⚠ Please enter exactly 8 stat names, separated by commas');
+    return;
+  }
+
+  var r = await _sb.from('avatar_settings').update({ thresholds: thresholds, stat_names: statNames }).eq('id', 1);
+  if (r.error) { toast('Error saving: ' + r.error.message); return; }
+  _avatarSettings.thresholds = thresholds;
+  _avatarSettings.stat_names = statNames;
+  toast('✓ Thresholds & stat names saved');
+}
+
+// ── Student progress ──
+async function loadAvatarProgress() {
+  _avatarProgressLoaded = true;
+  var r = await _sb.from('student_avatar_view').select('*').eq('is_completed', false).order('total_points', { ascending: false });
+  if (r.error) {
+    document.getElementById('avatar-progress-tbody').innerHTML = '<tr><td colspan="6"><div class="empty-state">Error: ' + escHtml(r.error.message) + '</div></td></tr>';
+    return;
+  }
+  _allAvatarProgress = r.data || [];
+  renderAvatarProgress(_allAvatarProgress);
+}
+
+function renderAvatarProgress(list) {
+  var tbody = document.getElementById('avatar-progress-tbody');
+  document.getElementById('avatar-progress-count').textContent = list.length + ' student' + (list.length !== 1 ? 's' : '') + ' in progress';
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state">No students have picked an avatar yet</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(function(sa) {
+    var stageUrl = sa['stage_' + sa.current_stage + '_url'];
+    var thumb = stageUrl
+      ? '<img src="' + escHtml(stageUrl) + '" class="avatar-progress-thumb" alt=""/>'
+      : '<div class="char-thumb-ph">🧬</div>';
+    var pips = '';
+    for (var i = 1; i <= 6; i++) pips += '<span class="stage-pip' + (i <= sa.current_stage ? ' lit' : '') + '"></span>';
+    return '<tr>'
+      + '<td>' + thumb + '</td>'
+      + '<td>' + escHtml(sa.display_name || sa.username || '?') + '</td>'
+      + '<td>' + escHtml(sa.avatar_name || '?') + '</td>'
+      + '<td>Stage ' + sa.current_stage + ' / 6<div class="stage-pip-row">' + pips + '</div></td>'
+      + '<td style="color:var(--yellow);font-weight:800;">' + sa.total_points + '</td>'
+      + '<td><button class="action-btn btn-edit-row" onclick="openStatAwardModal(\'' + sa.id + '\')">⭐ Award Stats</button></td>'
+      + '</tr>';
+  }).join('');
+}
+
+function filterAvatarProgress() {
+  var q = document.getElementById('avatar-progress-search').value.toLowerCase();
+  if (!q) { renderAvatarProgress(_allAvatarProgress); return; }
+  renderAvatarProgress(_allAvatarProgress.filter(function(sa) {
+    return (sa.display_name || '').toLowerCase().includes(q) || (sa.username || '').toLowerCase().includes(q);
+  }));
+}
+
+// ── Stat award modal ──
+var _statAwardTargetId = null;
+function openStatAwardModal(studentAvatarId) {
+  _statAwardTargetId = studentAvatarId;
+  var sa = _allAvatarProgress.find(function(x){ return x.id === studentAvatarId; });
+  if (!sa) return;
+  document.getElementById('stat-award-title').textContent = (sa.display_name || sa.username) + ' — ' + sa.avatar_name;
+  renderStatAwardBody(sa);
+  document.getElementById('stat-award-modal').style.display = 'flex';
+}
+function closeStatAwardModal() {
+  document.getElementById('stat-award-modal').style.display = 'none';
+  _statAwardTargetId = null;
+  loadAvatarProgress(); // refresh table with any changes
+}
+
+function renderStatAwardBody(sa) {
+  var statNames = (_avatarSettings && _avatarSettings.stat_names) || Object.keys(sa.stats || {});
+  var stats = sa.stats || {};
+  var thresholds = (_avatarSettings && _avatarSettings.thresholds) || [0,20,40,60,80,100];
+
+  var html = '<div style="margin-bottom:10px;font-size:12px;color:rgba(255,255,255,0.5);">Total points: <strong style="color:var(--yellow);">' + sa.total_points + '</strong> · Stage <strong>' + sa.current_stage + ' / 6</strong> (next stage at ' + (thresholds[sa.current_stage] !== undefined ? thresholds[sa.current_stage] : '—') + ' pts)</div>';
+  html += '<div class="stat-pill-grid">';
+  statNames.forEach(function(name) {
+    var val = stats[name] || 0;
+    html += '<div class="stat-pill">'
+      + '<span class="stat-pill-name">' + escHtml(name) + '</span>'
+      + '<span class="stat-pill-val" id="stat-val-' + escHtml(name).replace(/\s+/g,'_') + '">' + val + '</span>'
+      + '<button class="stat-plus-btn" onclick="awardStatPoint(\'' + name.replace(/'/g, "\\'") + '\')">+1</button>'
+      + '</div>';
+  });
+  html += '</div>';
+  document.getElementById('stat-award-body').innerHTML = html;
+}
+
+async function awardStatPoint(statName) {
+  if (!_statAwardTargetId) return;
+  var sa = _allAvatarProgress.find(function(x){ return x.id === _statAwardTargetId; });
+  if (!sa) return;
+
+  var newStats = Object.assign({}, sa.stats || {});
+  newStats[statName] = (newStats[statName] || 0) + 1;
+  var newTotal = Object.values(newStats).reduce(function(sum, v){ return sum + (v || 0); }, 0);
+
+  var thresholds = (_avatarSettings && _avatarSettings.thresholds) || [0,20,40,60,80,100];
+  var newStage = 1;
+  for (var i = thresholds.length - 1; i >= 0; i--) {
+    if (newTotal >= thresholds[i]) { newStage = i + 1; break; }
+  }
+  var isCompleted = newStage >= 6;
+
+  var updatePayload = {
+    stats: newStats,
+    total_points: newTotal,
+    current_stage: newStage,
+  };
+  if (isCompleted) {
+    updatePayload.is_completed = true;
+    updatePayload.completed_at = new Date().toISOString();
+  }
+
+  var r = await _sb.from('student_avatars').update(updatePayload).eq('id', _statAwardTargetId);
+  if (r.error) { toast('Error awarding point: ' + r.error.message); return; }
+
+  // Update local cache + UI
+  sa.stats = newStats;
+  sa.total_points = newTotal;
+  sa.current_stage = newStage;
+  var pillEl = document.getElementById('stat-val-' + statName.replace(/\s+/g,'_'));
+  if (pillEl) pillEl.textContent = newStats[statName];
+
+  if (isCompleted) {
+    toast('🎉 ' + (sa.display_name || sa.username) + "'s avatar reached its final form! Added to their collection.");
+    closeStatAwardModal();
+    loadAvatarProgress();
+  } else {
+    toast('✓ +1 ' + statName);
+    renderStatAwardBody(sa); // refresh totals/stage display
+  }
+}
+
+// ── End Avatars tab JS ──
+
 function toast(msg) { var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},2600); }
 function escHtml(s) { if(!s)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
