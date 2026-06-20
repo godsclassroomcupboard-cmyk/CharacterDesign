@@ -4,7 +4,7 @@
 -- ============================================================
 
 alter table public.stories
-  add column if not exists scaffold jsonb not null default '{"type":"problem","checked":{}}'::jsonb;
+  add column if not exists scaffold jsonb not null default '{"type":"default","checked":{}}'::jsonb;
 
 -- scaffold.type    — which structure the student picked: 'problem' or 'hero'
 -- scaffold.checked — object of {stepId: true/false} for ticked-off steps

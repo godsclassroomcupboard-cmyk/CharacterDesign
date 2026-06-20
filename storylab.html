@@ -249,6 +249,7 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic2);
         <div class="scaffold-header">
           <span class="scaffold-title">🗺️ Story Map</span>
           <select class="scaffold-type-select" id="scaffold-type-select" onchange="setScaffoldType(this.value)">
+            <option value="default">Default (free write)</option>
             <option value="problem">Problem → Resolution</option>
             <option value="hero">Hero's Journey</option>
           </select>
@@ -541,7 +542,7 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic2);
         </div>
 
         <!-- Layer 6: Resolution (bottom bun) -->
-        <div class="layer layer-resolution bun-bottom" id="layer-resolution">
+        <div class="layer layer-resolution" id="layer-resolution">
           <div class="layer-header" onclick="toggleLayer('resolution')">
             <span class="layer-icon">🍞</span>
             <div class="layer-info">
@@ -589,6 +590,60 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic2);
             </div>
             </div>
                         <textarea class="layer-textarea" id="text-resolution" placeholder="And in the end…" oninput="onTextChange('resolution')"></textarea>
+          </div>
+        </div>
+
+        <!-- Layer 7: Return (Hero's Journey only) -->
+        <div class="layer layer-return" id="layer-return" style="display:none;">
+          <div class="layer-header" onclick="toggleLayer('return')">
+            <span class="layer-icon">🍞</span>
+            <div class="layer-info">
+              <div class="layer-title">Return</div>
+              <div class="layer-subtitle">They come back changed — what is different now?</div>
+            </div>
+            <div class="layer-meta">
+              <span class="word-count" id="wc-return">0 words</span>
+              <div class="complete-dot" id="dot-return"></div>
+              <span class="chevron">▼</span>
+            </div>
+          </div>
+          <div class="layer-body">
+            <div class="layer-prompts">
+              <div class="layer-prompts-title">✨ Writing tips for the return</div>
+              <ul>
+                <li>Show your character back in their ordinary world — but they're not the same person who left</li>
+                <li>What do they now understand, value, or fear differently?</li>
+                <li>Consider echoing the very beginning of your story (a full-circle ending)</li>
+                <li>What will they do differently because of everything that happened?</li>
+              </ul>
+            </div>
+            <div class="ref-chips" id="chips-return"></div>
+            <button class="examples-btn" onclick="toggleExamples('examples-return', this)">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="8" cy="8" r="7"/><line x1="8" y1="6" x2="8" y2="10"/><line x1="8" y1="4" x2="8" y2="4.5"/></svg>
+              See examples
+            </button>
+            <div class="examples-panel" id="examples-return">
+              <div class="examples-panel-header">
+                <span>✦ 3 examples of great writing</span>
+                <span style="font-size:9px;opacity:0.7;">Click a word to copy it to your writing</span>
+              </div>
+              <div class="example-item">
+                <div class="example-num">Example 1 — Changed perspective</div>
+                <div class="example-text">Maya walked back through her front door for the first time in what felt like a lifetime, though the clock said only three hours had passed. Her room looked smaller somehow. Safer, but smaller. She understood now that safe wasn't always the same as good.</div>
+                <button class="example-use-btn" onclick="useExample('text-return', 'Maya walked back through her front door for the first time in what felt like a lifetime, though the clock said only three hours had passed. Her room looked smaller somehow. Safer, but smaller. She understood now that safe wasn\'t always the same as good.')">Use as inspiration →</button>
+              </div>
+              <div class="example-item">
+                <div class="example-num">Example 2 — A new habit</div>
+                <div class="example-text">These days, Eli always checked the lighthouse window before bed, just to be sure. Not because he was scared anymore. Because he'd learned that some things were worth watching over, and some lights were worth keeping on.</div>
+                <button class="example-use-btn" onclick="useExample('text-return', 'These days, Eli always checked the lighthouse window before bed, just to be sure. Not because he was scared anymore. Because he\'d learned that some things were worth watching over, and some lights were worth keeping on.')">Use as inspiration →</button>
+              </div>
+              <div class="example-item">
+                <div class="example-num">Example 3 — Quiet confidence</div>
+                <div class="example-text">Tom still kept the key in his pocket, cold and heavy. But he didn't need it to feel brave anymore. That part of him had stayed, somehow, even after he'd left the observatory far behind.</div>
+                <button class="example-use-btn" onclick="useExample('text-return', 'Tom still kept the key in his pocket, cold and heavy. But he didn\'t need it to feel brave anymore. That part of him had stayed, somehow, even after he\'d left the observatory far behind.')">Use as inspiration →</button>
+              </div>
+            </div>
+            <textarea class="layer-textarea" id="text-return" placeholder="When it was all over…" oninput="onTextChange('return')"></textarea>
           </div>
         </div>
 
@@ -683,9 +738,13 @@ var _refTab     = 'chars';
 var _pickTab    = 'chars';
 var _selectedPicks = new Set();
 var _loadedRefs = { chars: [], settings: [] }; // refs attached to this story
-var _scaffold = { type: 'problem', checked: {} }; // plot scaffold state for this story
+var _scaffold = { type: 'default', checked: {} }; // plot scaffold state for this story
 
 var SCAFFOLD_STRUCTURES = {
+  default: {
+    label: 'Default (free write)',
+    steps: [], // no checklist in default mode
+  },
   problem: {
     label: 'Problem → Resolution',
     steps: [
@@ -707,9 +766,43 @@ var SCAFFOLD_STRUCTURES = {
     ],
   },
 };
+
+// Maps each scaffold type onto the underlying layer ids (hook/intro
+// always stay separate and untouched). Layer "return" only exists
+// in the DOM for hero's journey — it stays hidden otherwise.
+var SCAFFOLD_LAYER_PLAN = {
+  default: {
+    layers: ['hook','intro','rising','climax','falling','resolution'],
+    titles: {
+      rising:     { title: 'Rising Action',  subtitle: 'The problem builds — tension and trouble' },
+      climax:     { title: 'Climax',         subtitle: 'The biggest, most powerful moment' },
+      falling:    { title: 'Falling Action', subtitle: 'After the peak — things begin to settle' },
+      resolution: { title: 'Resolution',     subtitle: 'How it ends — what your character learns' },
+    },
+  },
+  problem: {
+    layers: ['hook','intro','rising','climax','falling','resolution'],
+    titles: {
+      rising:     { title: 'Problem',     subtitle: 'What goes wrong, or what does your character want?' },
+      climax:     { title: 'Try',         subtitle: 'Your character makes a plan and attempts it' },
+      falling:    { title: 'Try Again',   subtitle: 'The first try fails or hits a snag — what now?' },
+      resolution: { title: 'Resolution',  subtitle: 'How does it all get sorted out in the end?' },
+    },
+  },
+  hero: {
+    layers: ['hook','intro','rising','climax','falling','resolution','return'],
+    titles: {
+      rising:     { title: 'Call to Adventure', subtitle: 'Something happens that pulls your character away from normal life' },
+      climax:     { title: 'Challenges',        subtitle: 'Obstacles, tests, or new allies and enemies appear' },
+      falling:    { title: 'Crisis',            subtitle: 'The biggest, scariest moment — all seems lost' },
+      resolution: { title: 'Transformation',    subtitle: 'Your character changes or grows because of it' },
+      // 'return' layer keeps its own built-in title/subtitle in the DOM
+    },
+  },
+};
 var _starterPrompt = '';
 var _allWords   = [];
-var _layers     = ['hook','intro','rising','climax','falling','resolution'];
+var _layers     = ['hook','intro','rising','climax','falling','resolution','return'];
 var _autoSaveTimer = null;
 var _pickData   = [];
 
@@ -725,6 +818,7 @@ async function init() {
   await loadWordBank();
   await loadMyStories();
   renderScaffold();
+  applyScaffoldToLayers(_scaffold.type);
 
   // Auto-open first layer
   toggleLayer('hook');
@@ -769,8 +863,9 @@ async function switchStory(id) {
   _loadedRefs = data.refs || { chars: [], settings: [] };
   renderRefPanel();
   // Load plot scaffold
-  _scaffold = data.scaffold || { type: 'problem', checked: {} };
+  _scaffold = data.scaffold || { type: 'default', checked: {} };
   renderScaffold();
+  applyScaffoldToLayers(_scaffold.type);
   markSaved();
   toast('📖 Loaded "' + (data.title || 'Untitled') + '"');
 }
@@ -784,8 +879,9 @@ function clearStory() {
   });
   _loadedRefs = { chars: [], settings: [] };
   renderRefPanel();
-  _scaffold = { type: 'problem', checked: {} };
+  _scaffold = { type: 'default', checked: {} };
   renderScaffold();
+  applyScaffoldToLayers(_scaffold.type);
   markSaved();
 }
 
@@ -858,11 +954,13 @@ function onTextChange(layer) {
 function updateProgress() {
   var total = 0, done = 0;
   _layers.forEach(function(l) {
+    var layerEl = document.getElementById('layer-' + l);
+    if (layerEl && layerEl.style.display === 'none') return; // skip hidden layers (e.g. Return outside hero's journey)
     total++;
     var ta = document.getElementById('text-' + l);
     if (ta && ta.value.trim().split(/\s+/).length >= 15) done++;
   });
-  var pct = Math.round((done / total) * 100);
+  var pct = total ? Math.round((done / total) * 100) : 0;
   document.getElementById('progress-fill').style.width = pct + '%';
 }
 
@@ -897,6 +995,7 @@ function setScaffoldType(type) {
   _scaffold.type = type;
   _scaffold.checked = {}; // fresh checklist when switching structure
   renderScaffold();
+  applyScaffoldToLayers(type);
   markUnsaved();
 }
 
@@ -907,12 +1006,20 @@ function toggleScaffoldStep(stepId) {
 }
 
 function renderScaffold() {
-  var structure = SCAFFOLD_STRUCTURES[_scaffold.type] || SCAFFOLD_STRUCTURES.problem;
+  var structure = SCAFFOLD_STRUCTURES[_scaffold.type] || SCAFFOLD_STRUCTURES.default;
   var select = document.getElementById('scaffold-type-select');
   if (select) select.value = _scaffold.type;
 
   var list = document.getElementById('scaffold-list');
+  var progressTrack = document.querySelector('.scaffold-progress-track');
   if (!list) return;
+
+  if (!structure.steps.length) {
+    list.innerHTML = '<div style="font-size:10px;color:rgba(255,255,255,0.4);line-height:1.5;padding:2px 2px 4px;">Writing freely with Hook → Introduction → Rising Action → Climax → Falling Action → Resolution. Pick a story map above for a guided checklist!</div>';
+    if (progressTrack) progressTrack.style.display = 'none';
+    return;
+  }
+  if (progressTrack) progressTrack.style.display = '';
 
   var doneCount = 0;
   list.innerHTML = structure.steps.map(function(step) {
@@ -930,6 +1037,44 @@ function renderScaffold() {
   var pct = structure.steps.length ? Math.round((doneCount / structure.steps.length) * 100) : 0;
   var fill = document.getElementById('scaffold-progress-fill');
   if (fill) fill.style.width = pct + '%';
+}
+
+// Relabels Hook/Intro-adjacent layers and shows/hides the "Return"
+// layer based on which story map the student picked. Hook and
+// Introduction are never touched — they always exist.
+function applyScaffoldToLayers(type) {
+  var plan = SCAFFOLD_LAYER_PLAN[type] || SCAFFOLD_LAYER_PLAN.default;
+
+  // Apply titles/subtitles for the 4 flexible middle/end layers
+  ['rising', 'climax', 'falling', 'resolution'].forEach(function(layerId) {
+    var cfg = plan.titles[layerId];
+    if (!cfg) return;
+    var layerEl = document.getElementById('layer-' + layerId);
+    if (!layerEl) return;
+    var titleEl = layerEl.querySelector('.layer-title');
+    var subtitleEl = layerEl.querySelector('.layer-subtitle');
+    if (titleEl) titleEl.textContent = cfg.title;
+    if (subtitleEl) subtitleEl.textContent = cfg.subtitle;
+  });
+
+  // Show/hide the Return layer (only exists for hero's journey)
+  var returnLayer = document.getElementById('layer-return');
+  if (returnLayer) {
+    returnLayer.style.display = plan.layers.indexOf('return') !== -1 ? '' : 'none';
+  }
+
+  // Re-apply the rounded "bun" corners to whichever layer is
+  // currently first/last in the VISIBLE stack.
+  document.querySelectorAll('.layer').forEach(function(el) {
+    el.classList.remove('bun-top', 'bun-bottom');
+  });
+  var visibleLayers = plan.layers
+    .map(function(id) { return document.getElementById('layer-' + id); })
+    .filter(function(el) { return el && el.style.display !== 'none'; });
+  if (visibleLayers.length) {
+    visibleLayers[0].classList.add('bun-top');
+    visibleLayers[visibleLayers.length - 1].classList.add('bun-bottom');
+  }
 }
 
 function renderRefPanel() {
