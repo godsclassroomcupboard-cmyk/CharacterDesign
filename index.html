@@ -1255,11 +1255,54 @@ async function loadMyAvatarState() {
     .eq('is_completed', true);
   const completedIds = new Set((completedRows || []).map(r => r.template_id));
 
-  const { data: templates } = await _sb.from('avatar_templates').select('*').eq('is_active', true).order('sort_order');
-  _avatarTemplatesCache = templates || [];
-  const available = _avatarTemplatesCache.filter(t => !completedIds.has(t.id));
+  let { data: templates } = await _sb.from('avatar_templates').select('*').eq('is_active', true).order('sort_order');
+  templates = templates || [];
 
-  renderAvatarPicker(available, completedIds.size);
+  // First-run: no templates exist yet in Supabase — seed 4 placeholders
+  // so students always have something to pick from. Teacher can replace
+  // the artwork later from the Avatars tab without losing any progress.
+  if (templates.length === 0) {
+    templates = await _seedPlaceholderAvatarTemplates();
+  } else {
+    // Templates exist already (from a previous seed or the teacher's own
+    // entries). Any without Stage 1 artwork yet get a friendly placeholder
+    // emoji so the picker never looks broken.
+    templates = templates.map((t, i) => {
+      if (!t.stage_1_url) {
+        const seedMatch = PLACEHOLDER_AVATAR_SEEDS.find(s => s.name === t.name);
+        t._placeholderEmoji = seedMatch ? seedMatch.emoji : PLACEHOLDER_AVATAR_SEEDS[i % 4].emoji;
+      }
+      return t;
+    });
+  }
+
+  _avatarTemplatesCache = templates;
+  const available = templates.filter(t => !completedIds.has(t.id));
+
+  renderAvatarPicker(available, completedIds.size, templates.length);
+}
+
+// Creates 4 placeholder avatar templates (emoji-based, no images needed)
+// the first time the app runs with an empty avatar_templates table.
+const PLACEHOLDER_AVATAR_SEEDS = [
+  { name: 'Ember the Fox',    emoji: '🦊' },
+  { name: 'Splash the Otter', emoji: '🦦' },
+  { name: 'Nova the Owl',     emoji: '🦉' },
+  { name: 'Rumble the Bear',  emoji: '🐻' },
+];
+async function _seedPlaceholderAvatarTemplates() {
+  const inserts = PLACEHOLDER_AVATAR_SEEDS.map((seed, i) => ({
+    name: seed.name,
+    sort_order: i,
+    is_active: true,
+    placeholder_emoji: seed.emoji, // ignored if column doesn't exist — see catch below
+  }));
+  let { data, error } = await _sb.from('avatar_templates').insert(
+    inserts.map(({ placeholder_emoji, ...rest }) => rest) // strip emoji field — it's not a real DB column
+  ).select();
+  if (error) { console.warn('[Avatar] could not seed placeholder templates:', error.message); return []; }
+  // Re-attach emoji client-side so the picker can render something nice
+  return (data || []).map((row, i) => Object.assign({}, row, { _placeholderEmoji: PLACEHOLDER_AVATAR_SEEDS[i]?.emoji || '🧬' }));
 }
 
 function renderAvatarSignedOut() {
@@ -1269,20 +1312,22 @@ function renderAvatarSignedOut() {
   });
 }
 
-function renderAvatarPicker(available, completedCount) {
+function renderAvatarPicker(available, completedCount, totalTemplateCount) {
   let html;
-  if (!available.length) {
+  if (totalTemplateCount > 0 && available.length === 0) {
     html = '<div style="text-align:center;padding:20px 10px;">'
       + '<div style="font-size:32px;margin-bottom:8px;">🏆</div>'
       + '<div style="color:#fff;font-size:12px;font-weight:800;line-height:1.5;">You\'ve completed all available avatars!</div>'
       + '</div>';
   } else {
-    html = '<div style="text-align:center;color:#fff;font-family:\'Fredoka One\',cursive;font-size:12px;letter-spacing:0.5px;margin-bottom:10px;">Choose your avatar!</div>'
+    html = '<div style="text-align:center;color:#fff;font-family:\'Fredoka One\',cursive;font-size:12px;letter-spacing:0.5px;margin-bottom:2px;">✨ Click to choose your avatar!</div>'
+      + '<div style="text-align:center;color:rgba(255,255,255,0.5);font-size:9px;font-weight:700;margin-bottom:10px;">Pick wisely — you\'ll grow this one until it\'s fully evolved</div>'
       + '<div class="avatar-pick-grid">'
       + available.map(t => {
           const img = t.stage_1_url || '';
+          const emoji = t._placeholderEmoji || '🧬';
           return '<div class="avatar-pick-card" onclick="pickAvatar(\'' + t.id + '\')">'
-            + (img ? '<img src="' + img.replace(/"/g,'&quot;') + '" alt=""/>' : '<div style="font-size:32px;margin-bottom:4px;">🧬</div>')
+            + (img ? '<img src="' + img.replace(/"/g,'&quot;') + '" alt=""/>' : '<div style="font-size:32px;margin-bottom:4px;">' + emoji + '</div>')
             + '<div class="avatar-pick-name">' + (t.name || 'Avatar').replace(/</g,'&lt;') + '</div>'
             + '</div>';
         }).join('')
@@ -1322,8 +1367,12 @@ function renderAvatarProgressCard() {
   const pct     = Math.max(0, Math.min(100, ((a.total_points - curMin) / span) * 100));
 
   let html = '';
-  if (stageUrl) html += '<img src="' + stageUrl.replace(/"/g,'&quot;') + '" class="avatar-stage-img" alt=""/>';
-  else html += '<div style="font-size:48px;text-align:center;margin-bottom:8px;">🧬</div>';
+  if (stageUrl) {
+    html += '<img src="' + stageUrl.replace(/"/g,'&quot;') + '" class="avatar-stage-img" alt=""/>';
+  } else {
+    const seedMatch = PLACEHOLDER_AVATAR_SEEDS.find(s => s.name === a.avatar_name);
+    html += '<div style="font-size:48px;text-align:center;margin-bottom:8px;">' + (seedMatch ? seedMatch.emoji : '🧬') + '</div>';
+  }
   html += '<div class="avatar-name-label">' + (a.avatar_name || 'Your Avatar').replace(/</g,'&lt;') + '</div>';
   html += '<div class="avatar-stage-label">STAGE ' + (a.current_stage || 1) + ' / 6 · ' + (a.total_points || 0) + ' PTS</div>';
   html += '<div class="avatar-total-bar-track"><div class="avatar-total-bar-fill" style="width:' + pct + '%;"></div></div>';
