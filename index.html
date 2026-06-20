@@ -147,11 +147,11 @@ body { font-family: 'Nunito', sans-serif; background: #0A0520; min-height: 100vh
 .avatar-stat-row-track { flex:1;background:rgba(0,0,0,0.3);border-radius:99px;height:5px;overflow:hidden;margin:0 6px; }
 .avatar-stat-row-fill { background:var(--teal,#00C4B4);height:100%;border-radius:99px; }
 .avatar-stat-row-val { color:#FFD700;font-weight:800;flex-shrink:0;min-width:18px;text-align:right; }
-.avatar-pick-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%; }
-.avatar-pick-card { background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 8px;text-align:center;cursor:pointer;transition:all 0.15s; }
+.avatar-pick-grid { display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-height:340px;overflow-y:auto;padding-right:2px; }
+.avatar-pick-card { background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;padding:8px 6px;text-align:center;cursor:pointer;transition:all 0.15s; }
 .avatar-pick-card:hover { border-color:#FFD700;background:rgba(255,215,0,0.08); }
-.avatar-pick-card img { width:64px;height:64px;object-fit:contain;display:block;margin:0 auto 6px; }
-.avatar-pick-name { font-family:'Fredoka One',cursive;font-size:11px;color:#fff; }
+.avatar-pick-card img { width:52px;height:52px;object-fit:contain;display:block;margin:0 auto 5px; }
+.avatar-pick-name { font-family:'Fredoka One',cursive;font-size:10px;color:#fff;line-height:1.3; }
 .avatar-trophy-strip { display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:10px; }
 .avatar-trophy-thumb { width:28px;height:28px;border-radius:6px;object-fit:contain;background:rgba(255,255,255,0.08);border:1px solid rgba(255,215,0,0.4);padding:2px; }
 .speech-bubble {
@@ -1270,7 +1270,7 @@ async function loadMyAvatarState() {
     templates = templates.map((t, i) => {
       if (!t.stage_1_url) {
         const seedMatch = PLACEHOLDER_AVATAR_SEEDS.find(s => s.name === t.name);
-        t._placeholderEmoji = seedMatch ? seedMatch.emoji : PLACEHOLDER_AVATAR_SEEDS[i % 4].emoji;
+        t._placeholderEmoji = seedMatch ? seedMatch.emoji : PLACEHOLDER_AVATAR_SEEDS[i % PLACEHOLDER_AVATAR_SEEDS.length].emoji;
       }
       return t;
     });
@@ -1282,13 +1282,19 @@ async function loadMyAvatarState() {
   renderAvatarPicker(available, completedIds.size, templates.length);
 }
 
-// Creates 4 placeholder avatar templates (emoji-based, no images needed)
+// Creates 10 placeholder avatar templates (emoji-based, no images needed)
 // the first time the app runs with an empty avatar_templates table.
 const PLACEHOLDER_AVATAR_SEEDS = [
-  { name: 'Ember the Fox',    emoji: '🦊' },
-  { name: 'Splash the Otter', emoji: '🦦' },
-  { name: 'Nova the Owl',     emoji: '🦉' },
-  { name: 'Rumble the Bear',  emoji: '🐻' },
+  { name: 'Ember the Fox',     emoji: '🦊' },
+  { name: 'Splash the Otter',  emoji: '🦦' },
+  { name: 'Nova the Owl',      emoji: '🦉' },
+  { name: 'Rumble the Bear',   emoji: '🐻' },
+  { name: 'Blaze the Tiger',   emoji: '🐯' },
+  { name: 'Misty the Wolf',    emoji: '🐺' },
+  { name: 'Coral the Axolotl', emoji: '🦎' },
+  { name: 'Drift the Penguin', emoji: '🐧' },
+  { name: 'Zara the Dragon',   emoji: '🐉' },
+  { name: 'Pip the Hedgehog',  emoji: '🦔' },
 ];
 async function _seedPlaceholderAvatarTemplates() {
   const inserts = PLACEHOLDER_AVATAR_SEEDS.map((seed, i) => ({
@@ -1327,7 +1333,7 @@ function renderAvatarPicker(available, completedCount, totalTemplateCount) {
           const img = t.stage_1_url || '';
           const emoji = t._placeholderEmoji || '🧬';
           return '<div class="avatar-pick-card" onclick="pickAvatar(\'' + t.id + '\')">'
-            + (img ? '<img src="' + img.replace(/"/g,'&quot;') + '" alt=""/>' : '<div style="font-size:32px;margin-bottom:4px;">' + emoji + '</div>')
+            + (img ? '<img src="' + img.replace(/"/g,'&quot;') + '" alt=""/>' : '<div style="font-size:26px;margin-bottom:3px;">' + emoji + '</div>')
             + '<div class="avatar-pick-name">' + (t.name || 'Avatar').replace(/</g,'&lt;') + '</div>'
             + '</div>';
         }).join('')

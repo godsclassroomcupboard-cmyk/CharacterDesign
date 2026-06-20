@@ -699,7 +699,7 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
     <!-- TEMPLATES SUB-TAB -->
     <div id="av-sub-templates">
       <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:16px;line-height:1.6;">
-        Upload 6 evolution-stage images for each of your 4 starter avatars. Stage 1 is what students see when they first pick the avatar; Stage 6 is the final completed form.
+        Upload 6 evolution-stage images for each of your 10 starter avatars. Stage 1 is what students see when they first pick the avatar; Stage 6 is the final completed form.
       </div>
       <div id="avatar-template-cards" style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
         <div class="empty-state">Loading avatar templates…</div>
@@ -1425,8 +1425,8 @@ async function loadAvatarTemplates() {
   if (r.error) { toast('Error loading avatars: ' + r.error.message); return; }
   _avatarTemplates = r.data || [];
 
-  // Ensure there are always 4 template slots — create blanks if missing
-  while (_avatarTemplates.length < 4) {
+  // Ensure there are always 10 template slots — create blanks if missing
+  while (_avatarTemplates.length < 10) {
     var insertRes = await _sb.from('avatar_templates').insert({
       name: 'Avatar ' + (_avatarTemplates.length + 1),
       sort_order: _avatarTemplates.length,
