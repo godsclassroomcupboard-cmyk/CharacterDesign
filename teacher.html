@@ -326,10 +326,10 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
 .threshold-row label{flex:0 0 90px;font-family:'Fredoka One',cursive;font-size:11px;color:rgba(255,255,255,0.6);}
 .threshold-row input{flex:1;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:6px;padding:7px 10px;color:#fff;font-weight:700;outline:none;}
 .stat-pill-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
-.stat-pill{background:rgba(255,255,255,0.05);border-radius:8px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.stat-pill{background:rgba(255,255,255,0.05);border-radius:8px;padding:8px 10px;display:flex;gap:8px;}
 .stat-pill-name{font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);}
 .stat-pill-val{font-family:'Bangers',cursive;font-size:14px;color:var(--yellow);min-width:22px;text-align:center;}
-.stat-plus-btn{background:var(--teal);border:none;border-radius:5px;width:24px;height:24px;color:var(--ink);font-weight:900;font-size:14px;cursor:pointer;line-height:1;}
+.stat-plus-btn{border:none;border-radius:5px;height:26px;color:var(--ink);font-weight:900;font-size:12px;cursor:pointer;line-height:1;}
 .stat-plus-btn:hover{opacity:0.8;}
 .avatar-progress-thumb{width:36px;height:36px;border-radius:8px;object-fit:cover;border:1.5px solid rgba(255,255,255,0.15);}
 .stage-pip-row{display:flex;gap:3px;margin-top:4px;}
@@ -825,7 +825,7 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
 
 <!-- ══ STAT AWARD MODAL ══ -->
 <div class="modal-overlay" id="stat-award-modal" style="display:none;" onclick="if(event.target===this)closeStatAwardModal()">
-  <div class="modal-box" style="max-width:460px;">
+  <div class="modal-box" style="max-width:560px;">
     <div class="modal-hdr">
       <span class="modal-title" id="stat-award-title">AWARD STAT POINTS</span>
       <button class="modal-close" onclick="closeStatAwardModal()">✕</button>
@@ -1602,26 +1602,39 @@ function renderStatAwardBody(sa) {
   var thresholds = (_avatarSettings && _avatarSettings.thresholds) || [0,20,40,60,80,100];
 
   var html = '<div style="margin-bottom:10px;font-size:12px;color:rgba(255,255,255,0.5);">Total points: <strong style="color:var(--yellow);">' + sa.total_points + '</strong> · Stage <strong>' + sa.current_stage + ' / 6</strong> (next stage at ' + (thresholds[sa.current_stage] !== undefined ? thresholds[sa.current_stage] : '—') + ' pts)</div>';
+  html += '<div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:12px;display:flex;gap:14px;">'
+    + '<span><strong style="color:#FF8A8A;">1</strong> = did some</span>'
+    + '<span><strong style="color:#FFD27D;">2</strong> = good evidence</span>'
+    + '<span><strong style="color:#7DFFB0;">3</strong> = great job!</span>'
+    + '</div>';
   html += '<div class="stat-pill-grid">';
   statNames.forEach(function(name) {
     var val = stats[name] || 0;
-    html += '<div class="stat-pill">'
+    var safeId = escHtml(name).replace(/\s+/g,'_');
+    html += '<div class="stat-pill" style="flex-direction:column;align-items:stretch;gap:6px;">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;">'
       + '<span class="stat-pill-name">' + escHtml(name) + '</span>'
-      + '<span class="stat-pill-val" id="stat-val-' + escHtml(name).replace(/\s+/g,'_') + '">' + val + '</span>'
-      + '<button class="stat-plus-btn" onclick="awardStatPoint(\'' + name.replace(/'/g, "\\'") + '\')">+1</button>'
+      + '<span class="stat-pill-val" id="stat-val-' + safeId + '">' + val + '</span>'
+      + '</div>'
+      + '<div style="display:flex;gap:5px;">'
+      + '<button class="stat-plus-btn" style="flex:1;background:#FF8A8A;" title="Did some" onclick="awardStatPoint(\'' + name.replace(/'/g, "\\'") + '\',1)">+1</button>'
+      + '<button class="stat-plus-btn" style="flex:1;background:#FFD27D;" title="Good evidence" onclick="awardStatPoint(\'' + name.replace(/'/g, "\\'") + '\',2)">+2</button>'
+      + '<button class="stat-plus-btn" style="flex:1;background:#7DFFB0;" title="Great job!" onclick="awardStatPoint(\'' + name.replace(/'/g, "\\'") + '\',3)">+3</button>'
+      + '</div>'
       + '</div>';
   });
   html += '</div>';
   document.getElementById('stat-award-body').innerHTML = html;
 }
 
-async function awardStatPoint(statName) {
+async function awardStatPoint(statName, points) {
+  points = points || 1;
   if (!_statAwardTargetId) return;
   var sa = _allAvatarProgress.find(function(x){ return x.id === _statAwardTargetId; });
   if (!sa) return;
 
   var newStats = Object.assign({}, sa.stats || {});
-  newStats[statName] = (newStats[statName] || 0) + 1;
+  newStats[statName] = (newStats[statName] || 0) + points;
   var newTotal = Object.values(newStats).reduce(function(sum, v){ return sum + (v || 0); }, 0);
 
   var thresholds = (_avatarSettings && _avatarSettings.thresholds) || [0,20,40,60,80,100];
@@ -1642,7 +1655,7 @@ async function awardStatPoint(statName) {
   }
 
   var r = await _sb.from('student_avatars').update(updatePayload).eq('id', _statAwardTargetId);
-  if (r.error) { toast('Error awarding point: ' + r.error.message); return; }
+  if (r.error) { toast('Error awarding points: ' + r.error.message); return; }
 
   // Update local cache + UI
   sa.stats = newStats;
@@ -1656,7 +1669,7 @@ async function awardStatPoint(statName) {
     closeStatAwardModal();
     loadAvatarProgress();
   } else {
-    toast('✓ +1 ' + statName);
+    toast('✓ +' + points + ' ' + statName);
     renderStatAwardBody(sa); // refresh totals/stage display
   }
 }
