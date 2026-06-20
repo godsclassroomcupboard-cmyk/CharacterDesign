@@ -210,6 +210,7 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic2);
     </select>
     <input class="story-title-input" id="story-title" type="text" placeholder="Untitled Story — click to name it…" maxlength="80" oninput="markUnsaved()"/>
     <div class="topbar-right">
+      <button onclick="openStoryStarter()" class="btn" style="background:var(--yellow);color:#3A2200;border:none;">🎲 Story Starter</button>
       <span class="save-indicator" id="save-indicator">●  Unsaved</span>
       <button onclick="saveStory()" class="btn btn-purple">💾 Save</button>
       <button onclick="toggleExport()" class="btn btn-outline" id="export-btn">📖 Read Story</button>
@@ -589,6 +590,19 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic2);
   </div><!-- end body -->
 </div><!-- end page -->
 
+<!-- Story Starter Modal -->
+<div class="modal-bg" id="story-starter-modal" onclick="handleModalBg(event,'story-starter-modal')">
+  <div class="modal-box" style="max-width:560px;">
+    <div class="modal-header" style="background:var(--yellow);">
+      <h3 style="color:#3A2200;">🎲 STORY STARTER</h3>
+      <button class="modal-close" style="color:#3A2200;" onclick="closeModal('story-starter-modal')">×</button>
+    </div>
+    <div class="modal-body" id="story-starter-body" style="padding:18px 20px 20px;">
+      <!-- Filled in by JS -->
+    </div>
+  </div>
+</div>
+
 <!-- Add Reference Modal -->
 <div class="modal-bg" id="add-ref-modal" onclick="handleModalBg(event,'add-ref-modal')">
   <div class="modal-box">
@@ -639,6 +653,7 @@ var _refTab     = 'chars';
 var _pickTab    = 'chars';
 var _selectedPicks = new Set();
 var _loadedRefs = { chars: [], settings: [] }; // refs attached to this story
+var _starterPrompt = '';
 var _allWords   = [];
 var _layers     = ['hook','intro','rising','climax','falling','resolution'];
 var _autoSaveTimer = null;
@@ -893,6 +908,175 @@ function renderRefChips(layerName) {
 function highlightRef(type, name) {
   switchRefTab(type);
   toast('📖 Check the ' + (type === 'chars' ? 'character' : 'setting') + ' panel →');
+}
+
+// ══════════════════════════════════════════
+//  STORY STARTER
+// ══════════════════════════════════════════
+var _starterChars = [];
+var _starterSettings = [];
+var _starterPick = { char: null, setting: null };
+var _starterLock = { char: false, setting: false };
+
+var STARTER_TEMPLATES = [
+  "What happens when {char} discovers {setting}?",
+  "{char} never expected to end up at {setting} — but here they are.",
+  "Something is wrong at {setting}, and only {char} seems to notice.",
+  "{char} has one rule: never go near {setting}. Today, that rule breaks.",
+  "Deep inside {setting}, {char} finds something that changes everything.",
+  "The last place {char} wanted to be was {setting}. Too bad they're stuck there now.",
+  "Everyone said {setting} was just a story — until {char} saw it with their own eyes.",
+  "{char} made a promise to return to {setting}. They didn't say when... or why.",
+  "If {char} had known what waited at {setting}, would they have gone at all?",
+  "It started as an ordinary day for {char} — until {setting} changed everything.",
+];
+
+async function openStoryStarter() {
+  if (!_user) { toast('Please sign in to use Story Starter'); return; }
+  document.getElementById('story-starter-modal').classList.add('open');
+  renderStarterLoading();
+
+  const [{ data: chars }, { data: sets }] = await Promise.all([
+    _sb.from('characters').select('id, name, ai_art_url, sketch_url').eq('user_id', _user.id),
+    _sb.from('settings').select('id, name, locations').eq('user_id', _user.id),
+  ]);
+  _starterChars    = chars || [];
+  _starterSettings = sets  || [];
+
+  if (!_starterChars.length || !_starterSettings.length) {
+    renderStarterEmpty();
+    return;
+  }
+
+  rollStarter(true, true);
+}
+
+function renderStarterLoading() {
+  document.getElementById('story-starter-body').innerHTML =
+    '<div style="text-align:center;padding:30px;"><div class="spinner" style="margin:0 auto 10px;"></div><div style="font-size:12px;color:var(--muted);font-weight:700;">Shuffling your characters & settings…</div></div>';
+}
+
+function renderStarterEmpty() {
+  const needChars = !_starterChars.length;
+  const needSettings = !_starterSettings.length;
+  let msg = 'You need at least one saved ';
+  if (needChars && needSettings) msg += 'character <b>and</b> one saved setting';
+  else if (needChars) msg += 'character';
+  else msg += 'setting';
+  msg += ' before Story Starter can mix things up for you!';
+  document.getElementById('story-starter-body').innerHTML =
+    '<div style="text-align:center;padding:20px 10px;">'
+    + '<div style="font-size:40px;margin-bottom:10px;">🎭📍</div>'
+    + '<div style="font-size:13px;font-weight:700;color:#fff;line-height:1.5;margin-bottom:16px;">' + msg + '</div>'
+    + '<button onclick="closeModal(\'story-starter-modal\')" class="btn btn-outline">Got it</button>'
+    + '</div>';
+}
+
+function rollStarter(rollChar, rollSetting) {
+  if (rollChar)    _starterPick.char    = _starterChars[Math.floor(Math.random() * _starterChars.length)];
+  if (rollSetting) _starterPick.setting = _starterSettings[Math.floor(Math.random() * _starterSettings.length)];
+  renderStarterCard();
+}
+
+function renderStarterCard() {
+  const c = _starterPick.char;
+  const s = _starterPick.setting;
+  const cImg = c.ai_art_url || c.sketch_url;
+  const locs = Array.isArray(s.locations) ? s.locations : [];
+  const sImg = locs[0] && locs[0].imageDataUrl ? locs[0].imageDataUrl : null;
+
+  const template = STARTER_TEMPLATES[Math.floor(Math.random() * STARTER_TEMPLATES.length)];
+  const prompt = template
+    .replace('{char}', c.name || 'your character')
+    .replace('{setting}', (s.name || 'this place'));
+  _starterPrompt = prompt;
+
+  let html = '<div style="display:flex;gap:12px;margin-bottom:16px;">';
+
+  // Character card
+  html += '<div style="flex:1;background:rgba(255,255,255,0.05);border:1.5px solid ' + (_starterLock.char ? 'var(--pink)' : 'rgba(255,255,255,0.15)') + ';border-radius:10px;padding:10px;text-align:center;">'
+    + '<div style="width:56px;height:56px;border-radius:10px;overflow:hidden;margin:0 auto 8px;background:linear-gradient(135deg,#EDE0FF,#D8CBFF);display:flex;align-items:center;justify-content:center;font-size:24px;">'
+    + (cImg ? '<img src="' + escHtml(cImg) + '" style="width:100%;height:100%;object-fit:cover;"/>' : '🎭')
+    + '</div>'
+    + '<div style="font-family:\'Fredoka One\',cursive;font-size:13px;color:#fff;margin-bottom:6px;">' + escHtml(c.name || 'Unnamed') + '</div>'
+    + '<button onclick="toggleStarterLock(\'char\')" style="background:none;border:none;cursor:pointer;font-size:16px;" title="' + (_starterLock.char ? 'Unlock' : 'Lock this character') + '">' + (_starterLock.char ? '🔒' : '🔓') + '</button>'
+    + '</div>';
+
+  // Setting card
+  html += '<div style="flex:1;background:rgba(255,255,255,0.05);border:1.5px solid ' + (_starterLock.setting ? 'var(--pink)' : 'rgba(255,255,255,0.15)') + ';border-radius:10px;padding:10px;text-align:center;">'
+    + '<div style="width:56px;height:56px;border-radius:10px;overflow:hidden;margin:0 auto 8px;background:linear-gradient(135deg,#D0F0EC,#A8E8DE);display:flex;align-items:center;justify-content:center;font-size:24px;">'
+    + (sImg ? '<img src="' + escHtml(sImg) + '" style="width:100%;height:100%;object-fit:cover;"/>' : '📍')
+    + '</div>'
+    + '<div style="font-family:\'Fredoka One\',cursive;font-size:13px;color:#fff;margin-bottom:6px;">' + escHtml(s.name || 'Unnamed') + '</div>'
+    + '<button onclick="toggleStarterLock(\'setting\')" style="background:none;border:none;cursor:pointer;font-size:16px;" title="' + (_starterLock.setting ? 'Unlock' : 'Lock this setting') + '">' + (_starterLock.setting ? '🔒' : '🔓') + '</button>'
+    + '</div>';
+
+  html += '</div>';
+
+  // Generated prompt
+  html += '<div style="background:rgba(255,215,0,0.1);border:1.5px solid rgba(255,215,0,0.35);border-radius:10px;padding:14px 16px;margin-bottom:16px;">'
+    + '<div style="font-family:\'Fredoka One\',cursive;font-size:9px;letter-spacing:1.5px;color:var(--yellow);margin-bottom:6px;">YOUR STORY STARTER</div>'
+    + '<div style="font-size:15px;color:#fff;font-weight:700;line-height:1.5;font-style:italic;">"' + escHtml(prompt) + '"</div>'
+    + '</div>';
+
+  // Buttons
+  html += '<div style="display:flex;gap:10px;">'
+    + '<button onclick="rollStarter(!_starterLock.char, !_starterLock.setting)" class="btn btn-outline" style="flex:1;">🎲 Shuffle Again</button>'
+    + '<button onclick="useStoryStarter()" class="btn btn-purple" style="flex:1;">✓ Use This!</button>'
+    + '</div>';
+
+  if (_starterChars.length < 2 && _starterSettings.length < 2) {
+    html += '<div style="text-align:center;font-size:10px;color:var(--muted);margin-top:8px;">Add more characters or settings to get more variety!</div>';
+  }
+
+  document.getElementById('story-starter-body').innerHTML = html;
+}
+
+function toggleStarterLock(type) {
+  _starterLock[type] = !_starterLock[type];
+  renderStarterCard();
+}
+
+function useStoryStarter() {
+  const c = _starterPick.char;
+  const s = _starterPick.setting;
+
+  // Add both as references if not already added
+  ['chars', 'settings'].forEach(function(){}); // no-op, kept for clarity
+  const charList = _loadedRefs.chars || [];
+  if (!charList.find(function(e){ return e.id === c.id; })) charList.push(c);
+  _loadedRefs.chars = charList;
+
+  const settingList = _loadedRefs.settings || [];
+  if (!settingList.find(function(e){ return e.id === s.id; })) settingList.push(s);
+  _loadedRefs.settings = settingList;
+
+  renderRefPanel();
+  _layers.forEach(function(l) {
+    if (document.getElementById('layer-' + l).classList.contains('active')) renderRefChips(l);
+  });
+
+  // Drop the prompt into the Hook layer
+  const hookTa = document.getElementById('text-hook');
+  if (hookTa) {
+    if (!hookTa.value.trim()) {
+      hookTa.value = _starterPrompt;
+    } else {
+      hookTa.value = _starterPrompt + '\n\n' + hookTa.value;
+    }
+    onTextChange('hook');
+  }
+
+  // Make sure the hook layer is open and scrolled into view
+  const hookLayer = document.getElementById('layer-hook');
+  if (hookLayer && !hookLayer.classList.contains('active')) toggleLayer('hook');
+  setTimeout(function() {
+    hookLayer?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 150);
+
+  markUnsaved();
+  closeModal('story-starter-modal');
+  toast('🎲 Story Starter added to your Hook!');
 }
 
 // ── Add ref modal ──
