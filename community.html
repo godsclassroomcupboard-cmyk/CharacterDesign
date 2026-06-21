@@ -164,6 +164,7 @@ html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--cosmi
     <div class="type-toggle">
       <button class="type-btn active" id="type-characters" onclick="setType('characters')">🎭 Characters</button>
       <button class="type-btn" id="type-settings" onclick="setType('settings')">📍 Settings</button>
+      <button class="type-btn" id="type-stories" onclick="setType('stories')">📖 Stories</button>
     </div>
     <div class="class-row">
       <span class="class-label">CLASS:</span>
@@ -211,6 +212,29 @@ html,body{min-height:100%;font-family:'Nunito',sans-serif;background:var(--cosmi
     </div>
   </div>
 </div>
+
+<!-- Story modal -->
+<div class="modal-bg" id="story-modal" onclick="handleStoryModalBgClick(event)">
+  <div class="modal-box" style="width:620px;">
+    <div class="modal-hdr">
+      <div><div class="modal-hdr-title" id="sm-title"></div><div class="modal-hdr-sub" id="sm-by"></div></div>
+      <button class="modal-close" onclick="closeStoryModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="sm-story-text" style="font-family:'Patrick Hand',cursive;font-size:15px;line-height:1.8;color:rgba(255,255,255,0.9);max-height:280px;overflow-y:auto;padding-right:6px;margin-bottom:18px;"></div>
+      <div style="border-top:1.5px solid rgba(255,255,255,0.12);padding-top:16px;">
+        <div style="font-family:'Bangers',cursive;font-size:15px;letter-spacing:1px;color:var(--teal,#00C4B4);margin-bottom:10px;">💬 Leave Feedback</div>
+        <div id="sm-feedback-form">
+          <label style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.5);display:block;margin-bottom:4px;">What worked well?</label>
+          <textarea id="sm-worked-well" rows="2" placeholder="I loved how you described…" style="width:100%;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.18);border-radius:8px;color:#fff;font-family:'Nunito',sans-serif;font-size:13px;padding:9px 12px;resize:vertical;outline:none;margin-bottom:10px;"></textarea>
+          <label style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.5);display:block;margin-bottom:4px;">What would you add?</label>
+          <textarea id="sm-would-add" rows="2" placeholder="Maybe try adding more about…" style="width:100%;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.18);border-radius:8px;color:#fff;font-family:'Nunito',sans-serif;font-size:13px;padding:9px 12px;resize:vertical;outline:none;margin-bottom:12px;"></textarea>
+          <button class="modal-star-btn" id="sm-submit-btn" onclick="submitStoryFeedback()" style="width:100%;">✓ Send Feedback</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -219,7 +243,7 @@ var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 window.__aurabot_sb = window.__aurabot_sb || supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 var _sb = window.__aurabot_sb;
 var _user=null,_profile=null,_type='characters',_sortBy='stars',_classId='all';
-var _allChars=[],_allSettings=[],_starredIds=new Set(),_starredSettingIds=new Set();
+var _allChars=[],_allSettings=[],_allStories=[],_starredIds=new Set(),_starredSettingIds=new Set();
 var _activeItem=null,_classes=[],_renderedItems=[];
 var PAGE_SIZE=10,_page=0;
 
@@ -296,15 +320,20 @@ function setType(type){
   _type=type;_page=0;
   document.getElementById('type-characters').className='type-btn'+(type==='characters'?' active':'');
   document.getElementById('type-settings').className='type-btn'+(type==='settings'?' active':'');
-  document.getElementById('sort-az').style.display=type==='settings'?'none':'';
-  if(type==='settings')loadSettings();else applyFilters();
+  document.getElementById('type-stories').className='type-btn'+(type==='stories'?' active':'');
+  document.getElementById('sort-az').style.display=type==='characters'?'':'none';
+  if(type==='settings')loadSettings();
+  else if(type==='stories')loadStories();
+  else applyFilters();
 }
 function setSort(s){
   _sortBy=s;_page=0;document.querySelectorAll('.sort-btn').forEach(function(b){b.classList.remove('active');});
   document.getElementById('sort-'+(s==='newest'?'new':s==='az'?'az':'stars')).classList.add('active');
-  if(_type==='settings')applySettingFilters();else applyFilters();
+  if(_type==='settings')applySettingFilters();
+  else if(_type==='stories')applyStoryFilters();
+  else applyFilters();
 }
-function onSearch(){_page=0;if(_type==='settings')applySettingFilters();else applyFilters();}
+function onSearch(){_page=0;if(_type==='settings')applySettingFilters();else if(_type==='stories')applyStoryFilters();else applyFilters();}
 
 async function loadCharacters(){
   showLoading();
@@ -369,6 +398,33 @@ function applySettingFilters(){
   renderPage();
 }
 
+async function loadStories(){
+  showLoading();
+  var q=_sb.from('community_stories_view').select('*');
+  if(_classId!=='all'&&_classes.length){
+    var m=await _sb.from('class_members').select('user_id').eq('class_id',_classId);
+    var ids=(m.data||[]).map(function(x){return x.user_id;});
+    if(!ids.length){_allStories=[];renderStories([]);return;}
+    q=q.in('user_id',ids);
+  }
+  var r=await q.order('created_at',{ascending:false});
+  if(r.error){showError(r.error.message);return;}
+  _allStories=r.data||[];
+  applyStoryFilters();
+}
+function applyStoryFilters(){
+  var q=document.getElementById('search-input').value.toLowerCase().trim();
+  var f=_allStories.filter(function(s){
+    if(!q)return true;
+    return(s.title||'').toLowerCase().includes(q)||((s.display_name||s.username)||'').toLowerCase().includes(q);
+  });
+  if(_sortBy==='stars')f.sort(function(a,b){return(b.feedback_count||0)-(a.feedback_count||0);});
+  else f.sort(function(a,b){return new Date(b.created_at)-new Date(a.created_at);});
+  _renderedItems=f;
+  document.getElementById('results-count').textContent=f.length+' stor'+(f.length===1?'y':'ies');
+  renderPage();
+}
+
 // ── Pagination ──
 function changePage(dir){
   var maxPage=Math.ceil(_renderedItems.length/PAGE_SIZE)-1;
@@ -381,6 +437,7 @@ function renderPage(){
   var start=_page*PAGE_SIZE,end=Math.min(start+PAGE_SIZE,total);
   var pageItems=_renderedItems.slice(start,end);
   if(_type==='settings')renderSettings(pageItems);
+  else if(_type==='stories')renderStories(pageItems);
   else renderChars(pageItems);
   // Pagination controls
   var pg=document.getElementById('pagination');
@@ -424,6 +481,27 @@ function renderSettings(sets){
   }).join('');
 }
 
+function renderStories(stories){
+  var grid=document.getElementById('char-grid');
+  if(!stories.length){grid.innerHTML='<div class="state-box"><svg viewBox="0 0 64 64" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" width="52" height="52" style="display:block;margin:0 auto;"><rect x="10" y="6" width="44" height="52" rx="4"/><path d="M18 18h28M18 28h28M18 38h18"/></svg><h3>NO STORIES YET</h3><p>Be the first to share one from Story Lab!</p></div>';return;}
+  grid.innerHTML=stories.map(function(s){
+    var gi=_renderedItems.indexOf(s);
+    var auth=s.display_name||s.username||'?';var bg=GRADS[gi%GRADS.length];
+    var preview=getStoryPreviewText(s.paragraphs);
+    return'<div class="zine-card" onclick="openStoryModal('+gi+')">'
+      +'<div class="card-img" style="background:'+bg+';align-items:flex-start;justify-content:flex-start;padding:14px;"><div style="font-size:11px;color:rgba(255,255,255,0.85);line-height:1.5;font-family:\'Patrick Hand\',cursive;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;">'+escHtml(preview)+'</div><div class="card-star-badge">💬 '+(s.feedback_count||0)+'</div></div>'
+      +'<div class="card-body"><div class="card-name">'+escHtml(s.title||'Untitled Story')+'</div><div class="card-by">by '+escHtml(auth)+'</div>'
+      +'<button class="star-btn" onclick="event.stopPropagation();openStoryModal('+gi+')">💬 Give Feedback</button></div></div>';
+  }).join('');
+}
+function getStoryPreviewText(paragraphs){
+  if(!paragraphs)return'';
+  var order=['hook','intro','rising','climax','falling','resolution','return'];
+  for(var i=0;i<order.length;i++){if(paragraphs[order[i]]&&paragraphs[order[i]].trim())return paragraphs[order[i]].trim();}
+  return'';
+}
+
+
 function openModal(i){
   var c=_renderedItems[i];_activeItem=c;
   var auth=c.profiles?(c.profiles.display_name||c.profiles.username||'?'):'?';
@@ -461,6 +539,64 @@ function openSettingModal(i){
 }
 function closeModal(){document.getElementById('char-modal').classList.remove('open');_activeItem=null;}
 function handleModalBgClick(e){if(e.target.id==='char-modal')closeModal();}
+
+// ── Story modal + peer feedback ──
+var _activeStory=null;
+function openStoryModal(i){
+  var s=_renderedItems[i];
+  if(!s)return;
+  _activeStory=s;
+  var auth=s.display_name||s.username||'?';
+  document.getElementById('sm-title').textContent=s.title||'Untitled Story';
+  document.getElementById('sm-by').textContent='by '+auth;
+
+  var order=[['hook','Hook'],['intro','Introduction'],['rising','Rising Action / Problem / Call to Adventure'],['climax','Climax / Try / Challenges'],['falling','Falling Action / Try Again / Crisis'],['resolution','Resolution / Transformation'],['return','Return']];
+  var p=s.paragraphs||{};
+  var html=order.map(function(o){
+    var text=p[o[0]];
+    if(!text||!text.trim())return'';
+    return'<p style="margin-bottom:14px;">'+escHtml(text)+'</p>';
+  }).join('');
+  document.getElementById('sm-story-text').innerHTML=html||'<p style="color:rgba(255,255,255,0.4);font-style:italic;">This story doesn\'t have any text yet.</p>';
+
+  document.getElementById('sm-worked-well').value='';
+  document.getElementById('sm-would-add').value='';
+  var btn=document.getElementById('sm-submit-btn');
+  btn.disabled=false;btn.textContent='✓ Send Feedback';
+
+  document.getElementById('story-modal').classList.add('open');
+}
+function closeStoryModal(){document.getElementById('story-modal').classList.remove('open');_activeStory=null;}
+function handleStoryModalBgClick(e){if(e.target.id==='story-modal')closeStoryModal();}
+
+async function submitStoryFeedback(){
+  if(!_activeStory)return;
+  if(!_user){showToast('Sign in to leave feedback!');return;}
+  var workedWell=document.getElementById('sm-worked-well').value.trim();
+  var wouldAdd=document.getElementById('sm-would-add').value.trim();
+  if(!workedWell&&!wouldAdd){showToast('Write something in at least one box first!');return;}
+
+  var btn=document.getElementById('sm-submit-btn');
+  btn.disabled=true;btn.textContent='Sending…';
+
+  var r=await _sb.from('story_feedback').insert({
+    story_id:_activeStory.id,
+    author_id:_activeStory.user_id,
+    commenter_id:_user.id,
+    worked_well:workedWell,
+    would_add:wouldAdd,
+  });
+  if(r.error){showToast('Error: '+r.error.message);btn.disabled=false;btn.textContent='✓ Send Feedback';return;}
+
+  showToast('💬 Feedback sent!');
+  document.getElementById('sm-worked-well').value='';
+  document.getElementById('sm-would-add').value='';
+  btn.disabled=false;btn.textContent='✓ Send Feedback';
+
+  // Update the local feedback_count so the card reflects it without a full reload
+  _activeStory.feedback_count=(_activeStory.feedback_count||0)+1;
+}
+
 
 async function toggleStar(id,btn){
   if(!_user){showToast('Sign in to star!');return;}

@@ -189,6 +189,16 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic2);
 /* ── Export ── */
 .export-area{display:none;max-width:700px;margin:0 auto;width:100%;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:14px;padding:28px 32px;font-family:'Patrick Hand',cursive;font-size:14px;line-height:1.8;color:#fff;}
 .export-area.visible{display:block;}
+
+/* ── PEER FEEDBACK ── */
+.feedback-card{background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:12px;padding:14px 16px;margin-bottom:12px;}
+.feedback-card-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.feedback-card-name{font-family:'Bangers',cursive;font-size:13px;letter-spacing:0.5px;color:var(--teal);}
+.feedback-card-date{font-size:10px;color:rgba(255,255,255,0.35);}
+.feedback-card-section{margin-bottom:6px;}
+.feedback-card-label{font-size:9.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:2px;}
+.feedback-card-text{font-size:13px;color:rgba(255,255,255,0.88);line-height:1.5;}
+#feedback-count-badge{background:var(--pink);color:#fff;border-radius:99px;font-size:9px;padding:1px 6px;margin-left:3px;font-family:'Fredoka One',cursive;}
 .export-title{font-family:'Bangers',cursive;font-size:30px;letter-spacing:2px;color:var(--yellow);margin-bottom:10px;}
 .export-para{margin-bottom:16px;}
 
@@ -230,9 +240,14 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic2);
     <input class="story-title-input" id="story-title" type="text" placeholder="Untitled Story — click to name it…" maxlength="80" oninput="markUnsaved()"/>
     <div class="topbar-right">
       <button onclick="openStoryStarter()" class="btn" style="background:var(--yellow);color:#3A2200;border:none;">🎲 Story Starter</button>
+      <label id="publish-toggle-wrap" style="display:flex;align-items:center;gap:6px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:11px;color:rgba(255,255,255,0.65);user-select:none;">
+        <input type="checkbox" id="publish-toggle" onchange="togglePublish(this.checked)" style="width:15px;height:15px;cursor:pointer;accent-color:var(--teal);"/>
+        🌍 Share to Community
+      </label>
       <span class="save-indicator" id="save-indicator">●  Unsaved</span>
       <button onclick="saveStory()" class="btn btn-purple">💾 Save</button>
       <button onclick="toggleExport()" class="btn btn-outline" id="export-btn">📖 Read Story</button>
+      <button onclick="toggleFeedbackPanel()" class="btn btn-outline" id="feedback-btn" style="display:none;">💬 Feedback <span id="feedback-count-badge"></span></button>
       <a href="wordbank.html" target="_blank" class="btn btn-outline" style="text-decoration:none;font-size:11px;">📚 Word Bank</a>
     </div>
   </header>
@@ -659,6 +674,18 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic2);
         </div>
       </div>
 
+      <!-- Peer Feedback view (author-only, hidden by default) -->
+      <div class="export-area" id="feedback-area">
+        <div class="export-title">💬 Peer Feedback</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:18px;line-height:1.5;">
+          Feedback from other students on your shared story. Only visible to you.
+        </div>
+        <div id="feedback-list"></div>
+        <div style="margin-top:20px;">
+          <button onclick="toggleFeedbackPanel()" class="btn btn-outline">← Back to writing</button>
+        </div>
+      </div>
+
     </main><!-- end hamburger-wrap -->
 
     <!-- Right: Word Bank quick panel -->
@@ -866,6 +893,9 @@ async function switchStory(id) {
   _scaffold = data.scaffold || { type: 'default', checked: {} };
   renderScaffold();
   applyScaffoldToLayers(_scaffold.type);
+  // Load publish state + feedback
+  document.getElementById('publish-toggle').checked = !!data.is_public;
+  loadStoryFeedback(_storyId);
   markSaved();
   toast('📖 Loaded "' + (data.title || 'Untitled') + '"');
 }
@@ -882,7 +912,22 @@ function clearStory() {
   _scaffold = { type: 'default', checked: {} };
   renderScaffold();
   applyScaffoldToLayers(_scaffold.type);
+  document.getElementById('publish-toggle').checked = false;
+  hideFeedbackPanel();
   markSaved();
+}
+
+async function togglePublish(checked) {
+  if (!_storyId) {
+    // No saved story yet — just remember the intent, applied on next save
+    if (!_user) { toast('Please sign in first'); document.getElementById('publish-toggle').checked = false; return; }
+    toast(checked ? '🌍 Will share to Community when you save' : 'Will stay private');
+    return;
+  }
+  var { error } = await _sb.from('stories').update({ is_public: checked }).eq('id', _storyId).eq('user_id', _user.id);
+  if (error) { toast('Error: ' + error.message); document.getElementById('publish-toggle').checked = !checked; return; }
+  toast(checked ? '🌍 Shared to Community!' : 'Story made private');
+  if (checked) loadStoryFeedback(_storyId);
 }
 
 async function saveStory() {
@@ -899,6 +944,7 @@ async function saveStory() {
     paragraphs: paragraphs,
     refs:       _loadedRefs,
     scaffold:   _scaffold,
+    is_public:  document.getElementById('publish-toggle').checked,
   };
   var btn = document.querySelector('.btn-purple');
   if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
@@ -1706,6 +1752,71 @@ function printStory() {
   var win = window.open('', '_blank');
   win.document.write('<!DOCTYPE html><html><head><title>' + title + '</title><style>body{font-family:Georgia,serif;max-width:680px;margin:40px auto;font-size:15px;line-height:1.8;color:#1E1B4B;}h1{font-size:28px;margin-bottom:24px;}p{margin-bottom:16px;}@media print{body{margin:20mm;}}</style></head><body><h1>' + title + '</h1>' + content + '<script>window.print();<\/script></body></html>');
   win.document.close();
+}
+
+var _storyFeedback = [];
+
+// ══════════════════════════════════════════
+//  PEER FEEDBACK (author view)
+// ══════════════════════════════════════════
+async function loadStoryFeedback(storyId) {
+  var btn = document.getElementById('feedback-btn');
+  if (!storyId || !_user) { btn.style.display = 'none'; return; }
+
+  var { data, error } = await _sb
+    .from('story_feedback')
+    .select('*, profiles:commenter_id (display_name, username)')
+    .eq('story_id', storyId)
+    .order('created_at', { ascending: false });
+
+  if (error) { console.warn('[Feedback] load error:', error.message); btn.style.display = 'none'; return; }
+
+  _storyFeedback = data || [];
+  btn.style.display = 'inline-block';
+  var badge = document.getElementById('feedback-count-badge');
+  badge.textContent = _storyFeedback.length > 0 ? _storyFeedback.length : '';
+  renderFeedbackList();
+}
+
+function renderFeedbackList() {
+  var list = document.getElementById('feedback-list');
+  if (!_storyFeedback || !_storyFeedback.length) {
+    list.innerHTML = '<div style="text-align:center;padding:30px 10px;color:rgba(255,255,255,0.4);">'
+      + '<div style="font-size:36px;margin-bottom:8px;">💬</div>'
+      + '<div style="font-size:13px;font-weight:700;">No feedback yet. Once your story is shared, classmates can leave feedback from the Community page!</div>'
+      + '</div>';
+    return;
+  }
+  list.innerHTML = _storyFeedback.map(function(f) {
+    var name = (f.profiles && (f.profiles.display_name || f.profiles.username)) || 'A classmate';
+    var date = f.created_at ? new Date(f.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '';
+    var html = '<div class="feedback-card">'
+      + '<div class="feedback-card-meta"><span class="feedback-card-name">' + escHtml(name) + '</span><span class="feedback-card-date">' + date + '</span></div>';
+    if (f.worked_well) html += '<div class="feedback-card-section"><div class="feedback-card-label">✓ What worked well</div><div class="feedback-card-text">' + escHtml(f.worked_well) + '</div></div>';
+    if (f.would_add)   html += '<div class="feedback-card-section"><div class="feedback-card-label">+ What I would add</div><div class="feedback-card-text">' + escHtml(f.would_add) + '</div></div>';
+    html += '</div>';
+    return html;
+  }).join('');
+}
+
+function toggleFeedbackPanel() {
+  var panel = document.getElementById('feedback-area');
+  var hamburger = document.getElementById('hamburger-stack');
+  var exportArea = document.getElementById('export-area');
+  var showing = panel.classList.contains('visible');
+  if (showing) {
+    hideFeedbackPanel();
+  } else {
+    exportArea.classList.remove('visible');
+    panel.classList.add('visible');
+    hamburger.style.display = 'none';
+    panel.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+function hideFeedbackPanel() {
+  document.getElementById('feedback-area').classList.remove('visible');
+  document.getElementById('hamburger-stack').style.display = '';
 }
 
 // ── Utilities ──
