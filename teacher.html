@@ -335,6 +335,11 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
 .stage-pip-row{display:flex;gap:3px;margin-top:4px;}
 .stage-pip{width:14px;height:5px;border-radius:3px;background:rgba(255,255,255,0.15);}
 .stage-pip.lit{background:var(--yellow);}
+.diff-added-teacher{color:#FF6B6B;font-weight:700;background:rgba(255,107,107,0.12);border-radius:3px;padding:0 2px;}
+.story-stage-badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:10px;font-weight:800;letter-spacing:0.5px;}
+.story-stage-badge.planning{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);}
+.story-stage-badge.editing{background:rgba(255,215,0,0.15);color:var(--yellow);}
+.story-stage-badge.final{background:rgba(0,230,118,0.15);color:#00E676;}
 </style>
 </head>
 <body>
@@ -380,6 +385,10 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
   <div class="tab" id="tab-avatars" onclick="switchTab('avatars')">
     <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 2l2.5 5 5.5.5-4 4 1 5.5L9 14l-5 3 1-5.5-4-4 5.5-.5z"/></svg>
     AVATARS
+  </div>
+  <div class="tab" id="tab-stories" onclick="switchTab('stories')">
+    <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="2" width="12" height="14" rx="1.5"/><path d="M6 6h6M6 9h6M6 12h4"/></svg>
+    STORIES
   </div>
 </nav>
 
@@ -749,6 +758,30 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
   </div>
 </div>
 
+<!-- ══ TAB: STORIES ══ -->
+<div class="tab-content" id="content-stories">
+  <div class="mgmt-wrap">
+    <div class="mgmt-toolbar">
+      <input class="mgmt-search" id="story-search" type="text" placeholder="Search by story title or student…" oninput="filterStories()"/>
+      <span class="mgmt-count" id="story-count"></span>
+    </div>
+    <table class="mgmt-table">
+      <thead>
+        <tr>
+          <th>STORY TITLE</th>
+          <th>STUDENT</th>
+          <th>STAGE</th>
+          <th>SUBMITTED</th>
+          <th style="width:120px;">ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody id="story-tbody">
+        <tr><td colspan="5"><div class="empty-state">Loading stories…</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
 </div><!-- end page -->
 
 <!-- ══ STUDENT MODAL ══ -->
@@ -837,6 +870,20 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
   </div>
 </div>
 
+<!-- ══ STORY DETAIL MODAL ══ -->
+<div class="modal-overlay" id="story-modal" style="display:none;" onclick="if(event.target===this)closeStoryModal()">
+  <div class="modal-box" style="max-width:700px;">
+    <div class="modal-hdr">
+      <span class="modal-title" id="story-modal-title">STORY</span>
+      <button class="modal-close" onclick="closeStoryModal()">✕</button>
+    </div>
+    <div class="modal-body" id="story-modal-body" style="max-height:70vh;overflow-y:auto;"></div>
+    <div class="modal-footer">
+      <button class="btn-discard" onclick="closeStoryModal()">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── Auth guard: teachers only ──
 (function guard() {
@@ -900,6 +947,7 @@ function switchTab(name) {
   if (name === 'characters')   loadAllChars();
   if (name === 'settings-tab') loadAllSettings();
   if (name === 'avatars')      initAvatarsTab();
+  if (name === 'stories')      loadAllStories();
 }
 
 function focusImageUpload() {
@@ -2090,6 +2138,105 @@ async function deleteSetting(id, name) {
   await loadAllSettings();
 }
 
+// ══════════════════════════════════════════════════════
+//  STORIES TAB
+// ══════════════════════════════════════════════════════
+var _allStoriesT = [];
+var _storiesLoadedT = false;
+
+async function loadAllStories() {
+  if (_storiesLoadedT) return;
+  _storiesLoadedT = true;
+  var r = await _sb.from('stories').select('*, profiles(username,display_name)').order('updated_at', { ascending: false });
+  if (r.error) { toast('Error loading stories: ' + r.error.message); _storiesLoadedT = false; return; }
+  _allStoriesT = r.data || [];
+  renderStoriesTable(_allStoriesT);
+}
+
+function renderStoriesTable(list) {
+  var tbody = document.getElementById('story-tbody');
+  document.getElementById('story-count').textContent = list.length + ' stor' + (list.length !== 1 ? 'ies' : 'y');
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state">No stories found</div></td></tr>'; return; }
+  tbody.innerHTML = list.map(function(s) {
+    var studentName = s.profiles ? (s.profiles.display_name || s.profiles.username || '?') : '?';
+    var stage = s.stage || 'planning';
+    var submitted = s.submitted_at ? new Date(s.submitted_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+    return '<tr>'
+      + '<td style="font-weight:800;color:#fff;">' + escHtml(s.title || 'Untitled') + '</td>'
+      + '<td style="color:rgba(255,255,255,0.7);">' + escHtml(studentName) + '</td>'
+      + '<td><span class="story-stage-badge ' + stage + '">' + stage.toUpperCase() + '</span></td>'
+      + '<td style="color:rgba(255,255,255,0.4);font-size:11px;">' + submitted + '</td>'
+      + '<td><button class="action-btn btn-view-row" onclick="openStoryModal(\'' + s.id + '\')">👁 View</button></td>'
+      + '</tr>';
+  }).join('');
+}
+
+function filterStories() {
+  var q = document.getElementById('story-search').value.toLowerCase();
+  if (!q) { renderStoriesTable(_allStoriesT); return; }
+  renderStoriesTable(_allStoriesT.filter(function(s) {
+    var studentName = s.profiles ? (s.profiles.display_name || s.profiles.username || '') : '';
+    return (s.title || '').toLowerCase().includes(q) || studentName.toLowerCase().includes(q);
+  }));
+}
+
+// ── Word-level diff (same approach as storylab.html — no AI) ──
+function wordDiffTeacher(oldText, newText) {
+  var oldWords = (oldText || '').split(/(\s+)/);
+  var newWords = (newText || '').split(/(\s+)/);
+  var n = oldWords.length, m = newWords.length;
+  var dp = [];
+  for (var i = 0; i <= n; i++) dp.push(new Array(m + 1).fill(0));
+  for (i = n - 1; i >= 0; i--) {
+    for (var j = m - 1; j >= 0; j--) {
+      dp[i][j] = oldWords[i] === newWords[j] ? dp[i+1][j+1] + 1 : Math.max(dp[i+1][j], dp[i][j+1]);
+    }
+  }
+  var result = [];
+  i = 0; j = 0;
+  while (i < n && j < m) {
+    if (oldWords[i] === newWords[j]) { result.push({ type: 'same', text: newWords[j] }); i++; j++; }
+    else if (dp[i+1][j] >= dp[i][j+1]) { i++; }
+    else { result.push({ type: 'added', text: newWords[j] }); j++; }
+  }
+  while (j < m) { result.push({ type: 'added', text: newWords[j] }); j++; }
+  return result;
+}
+
+function openStoryModal(id) {
+  var s = _allStoriesT.find(function(x) { return x.id === id; });
+  if (!s) return;
+  var studentName = s.profiles ? (s.profiles.display_name || s.profiles.username || '?') : '?';
+  document.getElementById('story-modal-title').textContent = (s.title || 'Untitled Story') + ' — ' + studentName;
+
+  var stage = s.stage || 'planning';
+  var html = '<div style="margin-bottom:14px;"><span class="story-stage-badge ' + stage + '">' + stage.toUpperCase() + '</span></div>';
+
+  if (stage === 'planning') {
+    html += '<div style="font-size:12px;color:rgba(255,255,255,0.5);">This student hasn\'t moved their story to editing yet.</div>';
+    var planningPreview = Object.values(s.paragraphs || {}).filter(Boolean).join('\n\n');
+    if (planningPreview) html += '<div style="margin-top:14px;font-family:\'Patrick Hand\',cursive;font-size:14px;line-height:1.7;color:rgba(255,255,255,0.8);white-space:pre-wrap;">' + escHtml(planningPreview) + '</div>';
+  } else if (stage === 'editing') {
+    html += '<div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:10px;">Currently being edited — not yet submitted as final.</div>';
+    html += '<div style="font-family:\'Patrick Hand\',cursive;font-size:14px;line-height:1.7;color:rgba(255,255,255,0.85);white-space:pre-wrap;">' + escHtml(s.editing_text || '') + '</div>';
+  } else {
+    var submitted = s.submitted_at ? new Date(s.submitted_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+    html += '<div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:14px;">Submitted ' + submitted + '. Text in <span style="color:#FF6B6B;font-weight:800;">red</span> shows what the student added or changed during editing.</div>';
+    var diff = wordDiffTeacher(s.editing_snapshot || '', s.final_text || '');
+    var diffHtml = diff.map(function(seg) {
+      var safe = escHtml(seg.text);
+      return seg.type === 'added' ? '<span class="diff-added-teacher">' + safe + '</span>' : safe;
+    }).join('');
+    diffHtml = diffHtml.split(/\n\s*\n/).map(function(p) { return '<p style="margin-bottom:12px;">' + p.replace(/\n/g, '<br>') + '</p>'; }).join('');
+    html += '<div style="font-family:\'Patrick Hand\',cursive;font-size:14px;line-height:1.75;color:rgba(255,255,255,0.9);">' + (diffHtml || '<span style="color:rgba(255,255,255,0.4);font-style:italic;">No final text.</span>') + '</div>';
+  }
+
+  document.getElementById('story-modal-body').innerHTML = html;
+  document.getElementById('story-modal').style.display = 'flex';
+}
+function closeStoryModal() { document.getElementById('story-modal').style.display = 'none'; }
+
 </script>
+
 </body>
 </html>

@@ -220,6 +220,36 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic2);
 .progress-bar{height:3px;background:rgba(255,255,255,0.1);flex-shrink:0;}
 .progress-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--pink));border-radius:99px;transition:width 0.4s ease;}
 
+/* ── STAGE TRACKER ── */
+.stage-tracker{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 20px;background:rgba(0,0,0,0.25);border-bottom:1.5px solid rgba(255,255,255,0.08);flex-shrink:0;flex-wrap:wrap;}
+.stage-pills{display:flex;align-items:center;gap:8px;}
+.stage-pill{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:99px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);font-family:'Fredoka One',cursive;font-size:11.5px;color:rgba(255,255,255,0.5);cursor:pointer;transition:all 0.15s;}
+.stage-pill:hover{border-color:rgba(255,255,255,0.3);}
+.stage-pill.active{background:rgba(255,45,120,0.18);border-color:var(--pink);color:#fff;}
+.stage-pill.done{background:rgba(0,196,180,0.12);border-color:rgba(0,196,180,0.4);color:rgba(255,255,255,0.85);}
+.stage-pill-num{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.15);display:inline-flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;}
+.stage-pill.active .stage-pill-num{background:var(--pink);}
+.stage-pill.done .stage-pill-num{background:var(--teal,#00C4B4);color:#0A0520;}
+.stage-pill-arrow{color:rgba(255,255,255,0.25);font-size:13px;}
+
+/* ── EDITING STAGE ── */
+.editing-wrap{display:none;width:100%;max-width:1000px;margin:0 auto;gap:20px;align-items:flex-start;}
+.editing-wrap.visible{display:flex;}
+.editing-main{flex:1;min-width:0;}
+.editing-textarea{width:100%;min-height:420px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;padding:18px 20px;font-family:'Patrick Hand',cursive;font-size:15px;line-height:1.85;color:#fff;outline:none;resize:vertical;transition:border-color 0.18s;}
+.editing-textarea:focus{border-color:var(--pink);}
+.editing-checklist{width:260px;flex-shrink:0;background:rgba(0,0,0,0.3);border:1.5px solid rgba(255,255,255,0.12);border-radius:12px;padding:16px 18px;position:sticky;top:0;}
+.checklist-title{font-family:'Bangers',cursive;font-size:15px;letter-spacing:1px;color:#fff;margin-bottom:12px;}
+.checklist-group{display:flex;flex-direction:column;gap:11px;}
+.checklist-item{display:flex;align-items:flex-start;gap:9px;}
+.checklist-item input[type=checkbox]{width:16px;height:16px;margin-top:1px;flex-shrink:0;cursor:pointer;accent-color:var(--teal,#00C4B4);}
+.checklist-item label{font-size:11.5px;color:rgba(255,255,255,0.75);line-height:1.45;cursor:pointer;}
+.checklist-item input:checked + label{color:rgba(255,255,255,0.4);text-decoration:line-through;text-decoration-color:rgba(255,255,255,0.25);}
+
+/* ── DIFF HIGHLIGHTING ── */
+.diff-added{color:#FF6B6B;font-weight:700;background:rgba(255,107,107,0.12);border-radius:3px;padding:0 2px;}
+.diff-removed{display:none;} /* removed words are hidden in the final view, only additions are highlighted */
+
 /* Stories list */
 .story-item{padding:8px 10px;border-radius:8px;cursor:pointer;border:1.5px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);transition:all 0.15s;margin-bottom:5px;}
 .story-item:hover{border-color:var(--teal);}
@@ -268,6 +298,24 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic2);
 
   <!-- Progress bar -->
   <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+
+  <!-- Stage tracker -->
+  <div class="stage-tracker">
+    <div class="stage-pills">
+      <div class="stage-pill active" id="stage-pill-planning" onclick="goToStage('planning')">
+        <span class="stage-pill-num">1</span> Planning
+      </div>
+      <div class="stage-pill-arrow">→</div>
+      <div class="stage-pill" id="stage-pill-editing" onclick="goToStage('editing')">
+        <span class="stage-pill-num">2</span> Editing
+      </div>
+      <div class="stage-pill-arrow">→</div>
+      <div class="stage-pill" id="stage-pill-final" onclick="goToStage('final')">
+        <span class="stage-pill-num">3</span> Final
+      </div>
+    </div>
+    <button class="btn btn-purple" id="stage-action-btn" onclick="handleStageAction()">To Editing →</button>
+  </div>
 
   <!-- Body -->
   <div class="body">
@@ -700,6 +748,47 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic2);
         </div>
       </div>
 
+      <!-- EDITING STAGE -->
+      <div class="editing-wrap" id="editing-area">
+        <div class="editing-main">
+          <div class="export-title" style="margin-bottom:6px;">✏️ Edit Your Story</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:16px;line-height:1.5;">
+            Your planning has been combined into one story below. Read it carefully and make it shine!
+          </div>
+          <textarea class="editing-textarea" id="editing-textarea" placeholder="Your combined story will appear here…" oninput="onEditingTextChange()"></textarea>
+          <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+            <button onclick="goToStage('planning')" class="btn btn-outline">← Back to Planning</button>
+            <button onclick="finishEditing()" class="btn btn-purple">✓ Finish Editing</button>
+            <span class="save-indicator" id="editing-save-indicator" style="margin-left:auto;">●  Unsaved</span>
+          </div>
+        </div>
+        <aside class="editing-checklist">
+          <div class="checklist-title">📝 Editing Checklist</div>
+          <div class="checklist-group">
+            <div class="checklist-item"><input type="checkbox" id="ec-spelling"/><label for="ec-spelling">Spelling — read slowly and check every word</label></div>
+            <div class="checklist-item"><input type="checkbox" id="ec-punctuation"/><label for="ec-punctuation">Punctuation — capital letters, full stops, commas</label></div>
+            <div class="checklist-item"><input type="checkbox" id="ec-showdonttell"/><label for="ec-showdonttell">Show, don't tell — replace "she was sad" with what she did</label></div>
+            <div class="checklist-item"><input type="checkbox" id="ec-sentencestarters"/><label for="ec-sentencestarters">Varied sentence starters — not every sentence begins the same way</label></div>
+            <div class="checklist-item"><input type="checkbox" id="ec-wordchoice"/><label for="ec-wordchoice">Word choice — swap any boring or repeated words</label></div>
+            <div class="checklist-item"><input type="checkbox" id="ec-flow"/><label for="ec-flow">Flow — read it aloud, does it sound right?</label></div>
+            <div class="checklist-item"><input type="checkbox" id="ec-paragraphs"/><label for="ec-paragraphs">Paragraphs — new paragraph for a new idea or speaker</label></div>
+            <div class="checklist-item"><input type="checkbox" id="ec-ending"/><label for="ec-ending">Ending — does it wrap up the story properly?</label></div>
+          </div>
+        </aside>
+      </div>
+
+      <!-- FINAL STAGE -->
+      <div class="export-area" id="final-area">
+        <div class="export-title">🏁 Final Draft</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:18px;line-height:1.5;" id="final-area-subtitle">
+          This has been submitted to your teacher. Text in <span style="color:#FF6B6B;font-weight:800;">red</span> shows what you changed during editing.
+        </div>
+        <div id="final-diff-content" style="font-family:'Patrick Hand',cursive;font-size:15px;line-height:1.85;"></div>
+        <div style="margin-top:20px;">
+          <button onclick="goToStage('editing')" class="btn btn-outline">← Back to Editing</button>
+        </div>
+      </div>
+
     </main><!-- end hamburger-wrap -->
 
     <!-- Right: Word Bank quick panel -->
@@ -780,6 +869,13 @@ var _pickTab    = 'chars';
 var _selectedPicks = new Set();
 var _loadedRefs = { chars: [], settings: [] }; // refs attached to this story
 var _scaffold = { type: 'default', checked: {} }; // plot scaffold state for this story
+
+// ── Stage workflow state ──
+var _stage           = 'planning'; // 'planning' | 'editing' | 'final'
+var _editingText      = '';         // current text in the editing textarea
+var _editingSnapshot  = '';         // frozen "before" text, captured when editing began
+var _finalText        = '';         // locked final draft
+var _submittedAt      = null;
 
 var SCAFFOLD_STRUCTURES = {
   default: {
@@ -895,6 +991,8 @@ async function init() {
   await loadMyStories();
   renderScaffold();
   applyScaffoldToLayers(_scaffold.type);
+  showStageView('planning');
+  updateStagePillsUI();
 
   // Auto-open first layer
   toggleLayer('hook');
@@ -945,6 +1043,17 @@ async function switchStory(id) {
   // Load publish state + feedback
   document.getElementById('publish-toggle').checked = !!data.is_public;
   loadStoryFeedback(_storyId);
+  // Load stage workflow state
+  _stage           = data.stage || 'planning';
+  _editingText     = data.editing_text || '';
+  _editingSnapshot = data.editing_snapshot || '';
+  _finalText       = data.final_text || '';
+  _submittedAt     = data.submitted_at || null;
+  document.getElementById('editing-textarea').value = _editingText;
+  markEditingUnsaved(false);
+  showStageView(_stage);
+  updateStagePillsUI();
+  if (_stage === 'final') renderFinalDiff();
   markSaved();
   toast('📖 Loaded "' + (data.title || 'Untitled') + '"');
 }
@@ -963,6 +1072,16 @@ function clearStory() {
   applyScaffoldToLayers(_scaffold.type);
   document.getElementById('publish-toggle').checked = false;
   hideFeedbackPanel();
+  // Reset stage workflow state
+  _stage = 'planning';
+  _editingText = '';
+  _editingSnapshot = '';
+  _finalText = '';
+  _submittedAt = null;
+  document.getElementById('editing-textarea').value = '';
+  document.querySelectorAll('.checklist-item input[type=checkbox]').forEach(function(cb) { cb.checked = false; });
+  showStageView('planning');
+  updateStagePillsUI();
   markSaved();
 }
 
@@ -994,7 +1113,12 @@ async function saveStory() {
     refs:       _loadedRefs,
     scaffold:   _scaffold,
     is_public:  document.getElementById('publish-toggle').checked,
+    stage:            _stage,
+    editing_text:      _editingText,
+    editing_snapshot:  _editingSnapshot,
+    final_text:        _finalText,
   };
+  if (_submittedAt) payload.submitted_at = _submittedAt;
   var btn = document.querySelector('.btn-purple');
   if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
   try {
@@ -1277,6 +1401,214 @@ function applyScaffoldToLayers(type) {
   if (visibleLayers.length) {
     visibleLayers[0].classList.add('bun-top');
     visibleLayers[visibleLayers.length - 1].classList.add('bun-bottom');
+  }
+}
+
+// ══════════════════════════════════════════
+//  STAGE WORKFLOW: Planning → Editing → Final
+// ══════════════════════════════════════════
+
+// Combines the planning layers into one flowing block of prose,
+// in the order defined by the current scaffold's layer plan.
+function combinePlanningIntoProse() {
+  var plan = SCAFFOLD_LAYER_PLAN[_scaffold.type] || SCAFFOLD_LAYER_PLAN.default;
+  var parts = [];
+  plan.layers.forEach(function(layerId) {
+    var ta = document.getElementById('text-' + layerId);
+    if (ta && ta.value.trim()) parts.push(ta.value.trim());
+  });
+  return parts.join('\n\n');
+}
+
+function updateStagePillsUI() {
+  ['planning', 'editing', 'final'].forEach(function(s) {
+    var pill = document.getElementById('stage-pill-' + s);
+    if (!pill) return;
+    pill.classList.remove('active', 'done');
+    if (s === _stage) pill.classList.add('active');
+    else if (stageOrder(s) < stageOrder(_stage)) pill.classList.add('done');
+  });
+  var actionBtn = document.getElementById('stage-action-btn');
+  if (_stage === 'planning') { actionBtn.textContent = 'To Editing →'; actionBtn.style.display = ''; actionBtn.onclick = handleStageAction; }
+  else if (_stage === 'editing') { actionBtn.style.display = 'none'; }
+  else { actionBtn.style.display = 'none'; }
+}
+function stageOrder(s) { return { planning: 0, editing: 1, final: 2 }[s] || 0; }
+
+function showStageView(stage) {
+  document.getElementById('hamburger-stack').style.display = stage === 'planning' ? '' : 'none';
+  document.getElementById('editing-area').classList.toggle('visible', stage === 'editing');
+  document.getElementById('final-area').classList.toggle('visible', stage === 'final');
+  // Make sure export/feedback panels don't fight for screen space
+  document.getElementById('export-area').classList.remove('visible');
+  document.getElementById('feedback-area').classList.remove('visible');
+}
+
+// Clicking a stage pill directly — only allowed to jump to a stage
+// that's already been reached (no skipping ahead).
+function goToStage(stage) {
+  if (stage === 'editing' && !_editingText && _stage === 'planning') {
+    // No editing text yet — treat like the main action button
+    handleStageAction();
+    return;
+  }
+  if (stage === 'final' && !_finalText) {
+    toast('Finish editing first to create your final draft!');
+    return;
+  }
+  _stage = stage;
+  showStageView(stage);
+  updateStagePillsUI();
+  if (stage === 'final') renderFinalDiff();
+}
+
+// Main button at the top — its behavior depends on current stage
+function handleStageAction() {
+  if (_stage === 'planning') moveToEditing();
+}
+
+async function moveToEditing() {
+  var freshProse = combinePlanningIntoProse();
+  if (!freshProse.trim()) {
+    toast('Write something in your planning layers first!');
+    return;
+  }
+
+  if (_editingText && _editingText.trim()) {
+    // Editing text already exists — ask before overwriting
+    var overwrite = confirm(
+      'You have edits in progress.\n\n' +
+      'Click OK to OVERWRITE your editing text with your latest Planning text (your edits will be lost).\n' +
+      'Click Cancel to KEEP your current editing text and just go back to it.'
+    );
+    if (!overwrite) {
+      _stage = 'editing';
+      showStageView('editing');
+      updateStagePillsUI();
+      return;
+    }
+  }
+
+  _editingText = freshProse;
+  _editingSnapshot = freshProse; // freeze the "before" version for the diff
+  document.getElementById('editing-textarea').value = _editingText;
+  _stage = 'editing';
+  showStageView('editing');
+  updateStagePillsUI();
+  markEditingUnsaved(false);
+  await persistStageFields();
+  toast('✏️ Your story is ready to edit!');
+}
+
+function onEditingTextChange() {
+  _editingText = document.getElementById('editing-textarea').value;
+  markEditingUnsaved(true);
+  clearTimeout(_editingAutosaveTimer);
+  _editingAutosaveTimer = setTimeout(function() { persistStageFields(); }, 1500);
+}
+var _editingAutosaveTimer = null;
+
+function markEditingUnsaved(unsaved) {
+  var ind = document.getElementById('editing-save-indicator');
+  if (!ind) return;
+  ind.textContent = unsaved ? '●  Unsaved' : '✓  Saved';
+  ind.style.color = unsaved ? '' : '#00E676';
+}
+
+async function finishEditing() {
+  var text = document.getElementById('editing-textarea').value.trim();
+  if (!text) { toast('Your story is empty!'); return; }
+
+  var checklistTotal = document.querySelectorAll('.checklist-item input[type=checkbox]').length;
+  var checklistDone = document.querySelectorAll('.checklist-item input[type=checkbox]:checked').length;
+  if (checklistDone < checklistTotal) {
+    var proceed = confirm('You haven\'t ticked off every item on the editing checklist (' + checklistDone + '/' + checklistTotal + '). Submit anyway?');
+    if (!proceed) return;
+  }
+
+  _finalText = text;
+  _submittedAt = new Date().toISOString();
+  _stage = 'final';
+  await persistStageFields();
+  showStageView('final');
+  updateStagePillsUI();
+  renderFinalDiff();
+  toast('🏁 Submitted to your teacher!');
+}
+
+// Saves stage/editing/final fields to Supabase immediately
+// (separate from the main "Save" button, which still saves
+// the planning layers, refs, and scaffold as before).
+async function persistStageFields() {
+  if (!_storyId || !_user) return;
+  var payload = {
+    stage:            _stage,
+    editing_text:      _editingText,
+    editing_snapshot:  _editingSnapshot,
+    final_text:        _finalText,
+  };
+  if (_submittedAt) payload.submitted_at = _submittedAt;
+  var { error } = await _sb.from('stories').update(payload).eq('id', _storyId).eq('user_id', _user.id);
+  if (error) { console.warn('[Stage] save error:', error.message); return; }
+  markEditingUnsaved(false);
+}
+
+// ── Word-level diff (no AI, no external library) ──
+// Simple LCS-based word diff. Returns an array of {type, text}
+// where type is 'same' or 'added' (we don't show removals in the
+// final view — only additions are highlighted in red).
+function wordDiff(oldText, newText) {
+  var oldWords = oldText.split(/(\s+)/);
+  var newWords = newText.split(/(\s+)/);
+  var n = oldWords.length, m = newWords.length;
+
+  // Build LCS length table
+  var dp = [];
+  for (var i = 0; i <= n; i++) dp.push(new Array(m + 1).fill(0));
+  for (i = n - 1; i >= 0; i--) {
+    for (var j = m - 1; j >= 0; j--) {
+      dp[i][j] = oldWords[i] === newWords[j]
+        ? dp[i + 1][j + 1] + 1
+        : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    }
+  }
+
+  // Walk the table to build the diff sequence (only care about
+  // "same" and "added" — we skip emitting removed-only segments
+  // since the final view shows the finished text, not deletions).
+  var result = [];
+  i = 0; j = 0;
+  while (i < n && j < m) {
+    if (oldWords[i] === newWords[j]) {
+      result.push({ type: 'same', text: newWords[j] });
+      i++; j++;
+    } else if (dp[i + 1][j] >= dp[i][j + 1]) {
+      i++; // word removed from old — skip, not shown
+    } else {
+      result.push({ type: 'added', text: newWords[j] });
+      j++;
+    }
+  }
+  while (j < m) { result.push({ type: 'added', text: newWords[j] }); j++; }
+  return result;
+}
+
+function renderFinalDiff() {
+  var container = document.getElementById('final-diff-content');
+  if (!container) return;
+  var diff = wordDiff(_editingSnapshot || '', _finalText || '');
+  var html = diff.map(function(seg) {
+    var safe = escHtml(seg.text);
+    return seg.type === 'added' ? '<span class="diff-added">' + safe + '</span>' : safe;
+  }).join('');
+  // Convert double line breaks into paragraph breaks for readability
+  html = html.split(/\n\s*\n/).map(function(p) { return '<p style="margin-bottom:14px;">' + p.replace(/\n/g, '<br>') + '</p>'; }).join('');
+  container.innerHTML = html || '<p style="color:rgba(255,255,255,0.4);font-style:italic;">No final draft yet.</p>';
+
+  var subtitle = document.getElementById('final-area-subtitle');
+  if (subtitle && _submittedAt) {
+    var d = new Date(_submittedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    subtitle.innerHTML = 'Submitted to your teacher on ' + d + '. Text in <span style="color:#FF6B6B;font-weight:800;">red</span> shows what you added or changed during editing.';
   }
 }
 
