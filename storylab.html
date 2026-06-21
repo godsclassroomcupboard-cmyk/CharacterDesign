@@ -103,6 +103,20 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic2);
 .layer-textarea:focus{border-color:var(--pink);}
 .layer-textarea::placeholder{color:rgba(255,255,255,0.25);font-style:italic;}
 
+/* ── WORD CHOICE NUDGES ── */
+.word-nudge{display:none;align-items:flex-start;gap:8px;background:rgba(255,215,0,0.1);border:1.5px solid rgba(255,215,0,0.3);border-radius:10px;padding:9px 12px;margin-top:8px;animation:nudgeIn 0.2s ease;}
+.word-nudge.visible{display:flex;}
+@keyframes nudgeIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+.word-nudge-icon{font-size:15px;flex-shrink:0;margin-top:1px;}
+.word-nudge-body{flex:1;}
+.word-nudge-text{font-size:11.5px;color:rgba(255,255,255,0.8);margin-bottom:6px;line-height:1.4;}
+.word-nudge-text strong{color:var(--yellow);}
+.word-nudge-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.word-nudge-chip{background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.25);border-radius:99px;padding:4px 12px;font-family:'Fredoka One',cursive;font-size:11px;color:#fff;cursor:pointer;transition:all 0.15s;}
+.word-nudge-chip:hover{background:var(--teal,#00C4B4);border-color:var(--teal,#00C4B4);color:#0A0520;}
+.word-nudge-dismiss{background:none;border:none;color:rgba(255,255,255,0.4);font-size:15px;cursor:pointer;flex-shrink:0;padding:0 2px;line-height:1;}
+.word-nudge-dismiss:hover{color:#fff;}
+
 /* Layer colours */
 .layer-hook{background:linear-gradient(135deg,rgba(58,26,106,0.95),rgba(90,26,90,0.9));}
 .layer-intro{background:linear-gradient(135deg,rgba(26,58,58,0.95),rgba(26,90,58,0.9));}
@@ -830,6 +844,41 @@ var SCAFFOLD_LAYER_PLAN = {
 var _starterPrompt = '';
 var _allWords   = [];
 var _layers     = ['hook','intro','rising','climax','falling','resolution','return'];
+
+// ══════════════════════════════════════════
+//  WORD CHOICE NUDGES
+// ══════════════════════════════════════════
+// Lookup table of overused words → 3 stronger alternatives.
+// Pure string matching, no AI. Add to this freely.
+var OVERUSED_WORDS = {
+  'said':     ['whispered', 'exclaimed', 'muttered'],
+  'good':     ['wonderful', 'excellent', 'remarkable'],
+  'bad':      ['dreadful', 'terrible', 'awful'],
+  'nice':     ['delightful', 'charming', 'pleasant'],
+  'big':      ['enormous', 'massive', 'towering'],
+  'small':    ['tiny', 'miniature', 'minuscule'],
+  'happy':    ['overjoyed', 'delighted', 'thrilled'],
+  'sad':      ['heartbroken', 'miserable', 'gloomy'],
+  'scared':   ['terrified', 'petrified', 'frightened'],
+  'pretty':   ['beautiful', 'stunning', 'gorgeous'],
+  'fast':     ['swift', 'rapid', 'speedy'],
+  'slow':     ['sluggish', 'gradual', 'unhurried'],
+  'a lot':    ['plenty', 'an abundance of', 'countless'],
+  'very':     ['extremely', 'incredibly', 'remarkably'],
+  'really':   ['truly', 'genuinely', 'thoroughly'],
+  'went':     ['wandered', 'dashed', 'ventured'],
+  'looked':   ['glanced', 'stared', 'peered'],
+  'got':      ['received', 'obtained', 'grabbed'],
+  'walked':   ['strolled', 'wandered', 'marched'],
+  'ran':      ['sprinted', 'dashed', 'bolted'],
+  'thing':    ['object', 'item', 'detail'],
+  'stuff':    ['belongings', 'items', 'materials'],
+  'funny':    ['hilarious', 'amusing', 'comical'],
+  'angry':    ['furious', 'enraged', 'irritated'],
+  'tired':    ['exhausted', 'weary', 'drained'],
+};
+var _nudgeDismissed = {}; // per-layer set of words already dismissed this session
+var _nudgeTimers = {};    // per-layer debounce timer
 var _autoSaveTimer = null;
 var _pickData   = [];
 
@@ -995,6 +1044,114 @@ function onTextChange(layer) {
   updateProgress();
   markUnsaved();
   scheduleAutoSave();
+  scheduleWordNudgeCheck(layer);
+}
+
+function scheduleWordNudgeCheck(layer) {
+  clearTimeout(_nudgeTimers[layer]);
+  _nudgeTimers[layer] = setTimeout(function() { checkWordNudge(layer); }, 400);
+}
+
+function checkWordNudge(layer) {
+  var ta = document.getElementById('text-' + layer);
+  if (!ta) return;
+  var nudgeEl = ensureNudgeEl(layer);
+
+  var text = ta.value;
+  var caret = ta.selectionStart || text.length;
+  // Look at the chunk of text just before the caret to find the most
+  // recently completed word (i.e. followed by a space/punctuation/newline).
+  var beforeCaret = text.slice(0, caret);
+  var match = beforeCaret.match(/([a-zA-Z]+(?:\s+[a-zA-Z]+)?)[\s.,!?;:]\s*$/);
+  if (!match) { hideNudge(layer); return; }
+
+  var candidate = match[1].toLowerCase();
+  var dismissedSet = _nudgeDismissed[layer] || (_nudgeDismissed[layer] = new Set());
+
+  // Check two-word phrases first (e.g. "a lot"), then single words
+  var found = null;
+  if (OVERUSED_WORDS[candidate]) {
+    found = candidate;
+  } else {
+    var lastWord = candidate.split(/\s+/).pop();
+    if (OVERUSED_WORDS[lastWord]) found = lastWord;
+  }
+
+  if (!found || dismissedSet.has(found)) { hideNudge(layer); return; }
+
+  showNudge(layer, found);
+}
+
+function ensureNudgeEl(layer) {
+  var existing = document.getElementById('nudge-' + layer);
+  if (existing) return existing;
+  var ta = document.getElementById('text-' + layer);
+  if (!ta) return null;
+  var el = document.createElement('div');
+  el.className = 'word-nudge';
+  el.id = 'nudge-' + layer;
+  ta.insertAdjacentElement('afterend', el);
+  return el;
+}
+
+function showNudge(layer, word) {
+  var el = ensureNudgeEl(layer);
+  if (!el) return;
+  var alternatives = OVERUSED_WORDS[word] || [];
+  el.innerHTML = '<span class="word-nudge-icon">💡</span>'
+    + '<div class="word-nudge-body">'
+    + '<div class="word-nudge-text">You used <strong>"' + escHtml(word) + '"</strong> — try one of these instead?</div>'
+    + '<div class="word-nudge-chips">'
+    + alternatives.map(function(alt) {
+        return '<span class="word-nudge-chip" onclick="useNudgeWord(\'' + layer + '\',\'' + word.replace(/'/g, "\\'") + '\',\'' + alt.replace(/'/g, "\\'") + '\')">' + escHtml(alt) + '</span>';
+      }).join('')
+    + '</div></div>'
+    + '<button class="word-nudge-dismiss" onclick="dismissNudge(\'' + layer + '\',\'' + word.replace(/'/g, "\\'") + '\')" title="Dismiss">✕</button>';
+  el.classList.add('visible');
+}
+
+function hideNudge(layer) {
+  var el = document.getElementById('nudge-' + layer);
+  if (el) el.classList.remove('visible');
+}
+
+function dismissNudge(layer, word) {
+  var dismissedSet = _nudgeDismissed[layer] || (_nudgeDismissed[layer] = new Set());
+  dismissedSet.add(word);
+  hideNudge(layer);
+}
+
+// Replaces the most recently typed occurrence of `word` (right before
+// the caret) with the chosen alternative, preserving capitalization.
+function useNudgeWord(layer, word, alternative) {
+  var ta = document.getElementById('text-' + layer);
+  if (!ta) return;
+  var text = ta.value;
+  var caret = ta.selectionStart || text.length;
+  var beforeCaret = text.slice(0, caret);
+  var afterCaret = text.slice(caret);
+
+  var re = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')([\\s.,!?;:]*)$', 'i');
+  var match = beforeCaret.match(re);
+  if (!match) { dismissNudge(layer, word); return; }
+
+  var originalWord = match[1];
+  var trailing = match[2] || '';
+  // Preserve capitalization style of what the student actually typed
+  var replacement = alternative;
+  if (originalWord === originalWord.toUpperCase()) {
+    replacement = alternative.toUpperCase();
+  } else if (originalWord[0] === originalWord[0].toUpperCase()) {
+    replacement = alternative[0].toUpperCase() + alternative.slice(1);
+  }
+
+  var newBefore = beforeCaret.slice(0, match.index) + replacement + trailing;
+  ta.value = newBefore + afterCaret;
+  ta.selectionStart = ta.selectionEnd = newBefore.length;
+  ta.focus();
+
+  dismissNudge(layer, word);
+  onTextChange(layer); // recompute word count, trigger autosave, etc.
 }
 
 function updateProgress() {
