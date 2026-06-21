@@ -340,6 +340,17 @@ textarea.field-inp{min-height:110px;resize:vertical;font-family:'Patrick Hand',c
 .story-stage-badge.planning{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);}
 .story-stage-badge.editing{background:rgba(255,215,0,0.15);color:var(--yellow);}
 .story-stage-badge.final{background:rgba(0,230,118,0.15);color:#00E676;}
+
+/* ── BEFORE/AFTER TOGGLE ── */
+.story-toggle-row{display:flex;align-items:center;justify-content:center;gap:12px;background:rgba(0,0,0,0.3);border:1.5px solid rgba(255,255,255,0.12);border-radius:10px;padding:12px 16px;margin-bottom:16px;}
+.story-toggle-label{font-family:'Fredoka One',cursive;font-size:12px;color:rgba(255,255,255,0.4);transition:color 0.15s;}
+.story-toggle-label.active{color:#fff;}
+.story-toggle-switch{position:relative;display:inline-block;width:46px;height:24px;flex-shrink:0;}
+.story-toggle-switch input{opacity:0;width:0;height:0;}
+.story-toggle-slider{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,0.15);border-radius:99px;transition:background 0.2s;}
+.story-toggle-slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:transform 0.2s;}
+.story-toggle-switch input:checked + .story-toggle-slider{background:#FF6B6B;}
+.story-toggle-switch input:checked + .story-toggle-slider:before{transform:translateX(22px);}
 </style>
 </head>
 <body>
@@ -2142,6 +2153,7 @@ async function deleteSetting(id, name) {
 //  STORIES TAB
 // ══════════════════════════════════════════════════════
 var _allStoriesT = [];
+var _activeStoryModalData = null;
 var _storiesLoadedT = false;
 
 async function loadAllStories() {
@@ -2206,6 +2218,7 @@ function wordDiffTeacher(oldText, newText) {
 function openStoryModal(id) {
   var s = _allStoriesT.find(function(x) { return x.id === id; });
   if (!s) return;
+  _activeStoryModalData = s; // stash for the toggle switch to re-render against
   var studentName = s.profiles ? (s.profiles.display_name || s.profiles.username || '?') : '?';
   document.getElementById('story-modal-title').textContent = (s.title || 'Untitled Story') + ' — ' + studentName;
 
@@ -2216,25 +2229,67 @@ function openStoryModal(id) {
     html += '<div style="font-size:12px;color:rgba(255,255,255,0.5);">This student hasn\'t moved their story to editing yet.</div>';
     var planningPreview = Object.values(s.paragraphs || {}).filter(Boolean).join('\n\n');
     if (planningPreview) html += '<div style="margin-top:14px;font-family:\'Patrick Hand\',cursive;font-size:14px;line-height:1.7;color:rgba(255,255,255,0.8);white-space:pre-wrap;">' + escHtml(planningPreview) + '</div>';
+    document.getElementById('story-modal-body').innerHTML = html;
   } else if (stage === 'editing') {
     html += '<div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:10px;">Currently being edited — not yet submitted as final.</div>';
     html += '<div style="font-family:\'Patrick Hand\',cursive;font-size:14px;line-height:1.7;color:rgba(255,255,255,0.85);white-space:pre-wrap;">' + escHtml(s.editing_text || '') + '</div>';
+    document.getElementById('story-modal-body').innerHTML = html;
   } else {
     var submitted = s.submitted_at ? new Date(s.submitted_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
-    html += '<div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:14px;">Submitted ' + submitted + '. Text in <span style="color:#FF6B6B;font-weight:800;">red</span> shows what the student added or changed during editing.</div>';
+    html += '<div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:6px;">Submitted ' + submitted + '.</div>';
+
+    // Before / After toggle switch
+    html += '<div class="story-toggle-row">'
+      + '<span class="story-toggle-label" id="story-toggle-label-before">Before Editing</span>'
+      + '<label class="story-toggle-switch">'
+      + '<input type="checkbox" id="story-toggle-switch" onchange="renderStoryModalBody()"/>'
+      + '<span class="story-toggle-slider"></span>'
+      + '</label>'
+      + '<span class="story-toggle-label" id="story-toggle-label-after">After Editing <span style="color:#FF6B6B;">(changes in red)</span></span>'
+      + '</div>';
+
+    html += '<div id="story-modal-text-area"></div>';
+    document.getElementById('story-modal-body').innerHTML = html;
+    renderStoryModalBody(); // fills in #story-modal-text-area based on switch position
+  }
+
+  document.getElementById('story-modal').style.display = 'flex';
+}
+
+// Re-renders just the text area inside the final-stage modal,
+// based on whether the before/after switch is on.
+function renderStoryModalBody() {
+  var s = _activeStoryModalData;
+  if (!s) return;
+  var switchEl = document.getElementById('story-toggle-switch');
+  var showingAfter = switchEl ? switchEl.checked : false;
+  var textArea = document.getElementById('story-modal-text-area');
+  if (!textArea) return;
+
+  document.getElementById('story-toggle-label-before').classList.toggle('active', !showingAfter);
+  document.getElementById('story-toggle-label-after').classList.toggle('active', showingAfter);
+
+  var bodyHtml;
+  if (!showingAfter) {
+    // BEFORE: the plain text as it was when editing began, no highlighting
+    var before = s.editing_snapshot || '';
+    bodyHtml = escHtml(before).split(/\n\s*\n/).map(function(p) { return '<p style="margin-bottom:12px;">' + p.replace(/\n/g, '<br>') + '</p>'; }).join('');
+    bodyHtml = bodyHtml || '<span style="color:rgba(255,255,255,0.4);font-style:italic;">No earlier draft recorded.</span>';
+  } else {
+    // AFTER: the final text with additions/changes highlighted in red
     var diff = wordDiffTeacher(s.editing_snapshot || '', s.final_text || '');
     var diffHtml = diff.map(function(seg) {
       var safe = escHtml(seg.text);
       return seg.type === 'added' ? '<span class="diff-added-teacher">' + safe + '</span>' : safe;
     }).join('');
-    diffHtml = diffHtml.split(/\n\s*\n/).map(function(p) { return '<p style="margin-bottom:12px;">' + p.replace(/\n/g, '<br>') + '</p>'; }).join('');
-    html += '<div style="font-family:\'Patrick Hand\',cursive;font-size:14px;line-height:1.75;color:rgba(255,255,255,0.9);">' + (diffHtml || '<span style="color:rgba(255,255,255,0.4);font-style:italic;">No final text.</span>') + '</div>';
+    bodyHtml = diffHtml.split(/\n\s*\n/).map(function(p) { return '<p style="margin-bottom:12px;">' + p.replace(/\n/g, '<br>') + '</p>'; }).join('');
+    bodyHtml = bodyHtml || '<span style="color:rgba(255,255,255,0.4);font-style:italic;">No final text.</span>';
   }
 
-  document.getElementById('story-modal-body').innerHTML = html;
-  document.getElementById('story-modal').style.display = 'flex';
+  textArea.innerHTML = '<div style="font-family:\'Patrick Hand\',cursive;font-size:14px;line-height:1.75;color:rgba(255,255,255,0.9);">' + bodyHtml + '</div>';
 }
-function closeStoryModal() { document.getElementById('story-modal').style.display = 'none'; }
+
+function closeStoryModal() { document.getElementById('story-modal').style.display = 'none'; _activeStoryModalData = null; }
 
 </script>
 

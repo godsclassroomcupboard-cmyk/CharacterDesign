@@ -248,6 +248,17 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic2);
 
 /* ── DIFF HIGHLIGHTING ── */
 .diff-added{color:#FF6B6B;font-weight:700;background:rgba(255,107,107,0.12);border-radius:3px;padding:0 2px;}
+
+/* ── BEFORE/AFTER TOGGLE ── */
+.story-toggle-row{display:flex;align-items:center;justify-content:center;gap:12px;background:rgba(0,0,0,0.25);border:1.5px solid rgba(255,255,255,0.12);border-radius:10px;padding:12px 16px;margin-bottom:18px;}
+.story-toggle-label{font-family:'Fredoka One',cursive;font-size:12px;color:rgba(255,255,255,0.4);transition:color 0.15s;}
+.story-toggle-label.active{color:#fff;}
+.story-toggle-switch{position:relative;display:inline-block;width:46px;height:24px;flex-shrink:0;}
+.story-toggle-switch input{opacity:0;width:0;height:0;}
+.story-toggle-slider{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,0.15);border-radius:99px;transition:background 0.2s;}
+.story-toggle-slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:transform 0.2s;}
+.story-toggle-switch input:checked + .story-toggle-slider{background:#FF6B6B;}
+.story-toggle-switch input:checked + .story-toggle-slider:before{transform:translateX(22px);}
 .diff-removed{display:none;} /* removed words are hidden in the final view, only additions are highlighted */
 
 /* Stories list */
@@ -780,8 +791,16 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic2);
       <!-- FINAL STAGE -->
       <div class="export-area" id="final-area">
         <div class="export-title">🏁 Final Draft</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:18px;line-height:1.5;" id="final-area-subtitle">
-          This has been submitted to your teacher. Text in <span style="color:#FF6B6B;font-weight:800;">red</span> shows what you changed during editing.
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:14px;line-height:1.5;" id="final-area-subtitle">
+          This has been submitted to your teacher.
+        </div>
+        <div class="story-toggle-row">
+          <span class="story-toggle-label" id="story-toggle-label-before">Before Editing</span>
+          <label class="story-toggle-switch">
+            <input type="checkbox" id="story-toggle-switch" onchange="renderFinalDiff()"/>
+            <span class="story-toggle-slider"></span>
+          </label>
+          <span class="story-toggle-label" id="story-toggle-label-after">After Editing <span style="color:#FF6B6B;">(changes in red)</span></span>
         </div>
         <div id="final-diff-content" style="font-family:'Patrick Hand',cursive;font-size:15px;line-height:1.85;"></div>
         <div style="margin-top:20px;">
@@ -1053,6 +1072,8 @@ async function switchStory(id) {
   markEditingUnsaved(false);
   showStageView(_stage);
   updateStagePillsUI();
+  var toggleEl = document.getElementById('story-toggle-switch');
+  if (toggleEl) toggleEl.checked = false; // always start on "Before Editing" when loading a story
   if (_stage === 'final') renderFinalDiff();
   markSaved();
   toast('📖 Loaded "' + (data.title || 'Untitled') + '"');
@@ -1596,19 +1617,36 @@ function wordDiff(oldText, newText) {
 function renderFinalDiff() {
   var container = document.getElementById('final-diff-content');
   if (!container) return;
-  var diff = wordDiff(_editingSnapshot || '', _finalText || '');
-  var html = diff.map(function(seg) {
-    var safe = escHtml(seg.text);
-    return seg.type === 'added' ? '<span class="diff-added">' + safe + '</span>' : safe;
-  }).join('');
-  // Convert double line breaks into paragraph breaks for readability
-  html = html.split(/\n\s*\n/).map(function(p) { return '<p style="margin-bottom:14px;">' + p.replace(/\n/g, '<br>') + '</p>'; }).join('');
-  container.innerHTML = html || '<p style="color:rgba(255,255,255,0.4);font-style:italic;">No final draft yet.</p>';
+
+  var switchEl = document.getElementById('story-toggle-switch');
+  var showingAfter = switchEl ? switchEl.checked : false;
+
+  var beforeLabel = document.getElementById('story-toggle-label-before');
+  var afterLabel  = document.getElementById('story-toggle-label-after');
+  if (beforeLabel) beforeLabel.classList.toggle('active', !showingAfter);
+  if (afterLabel)  afterLabel.classList.toggle('active', showingAfter);
+
+  var html;
+  if (!showingAfter) {
+    // BEFORE: plain text as it was when editing began, no highlighting
+    html = escHtml(_editingSnapshot || '').split(/\n\s*\n/).map(function(p) { return '<p style="margin-bottom:14px;">' + p.replace(/\n/g, '<br>') + '</p>'; }).join('');
+    html = html || '<p style="color:rgba(255,255,255,0.4);font-style:italic;">No earlier draft recorded.</p>';
+  } else {
+    // AFTER: final text with additions/changes highlighted in red
+    var diff = wordDiff(_editingSnapshot || '', _finalText || '');
+    html = diff.map(function(seg) {
+      var safe = escHtml(seg.text);
+      return seg.type === 'added' ? '<span class="diff-added">' + safe + '</span>' : safe;
+    }).join('');
+    html = html.split(/\n\s*\n/).map(function(p) { return '<p style="margin-bottom:14px;">' + p.replace(/\n/g, '<br>') + '</p>'; }).join('');
+    html = html || '<p style="color:rgba(255,255,255,0.4);font-style:italic;">No final draft yet.</p>';
+  }
+  container.innerHTML = html;
 
   var subtitle = document.getElementById('final-area-subtitle');
   if (subtitle && _submittedAt) {
     var d = new Date(_submittedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-    subtitle.innerHTML = 'Submitted to your teacher on ' + d + '. Text in <span style="color:#FF6B6B;font-weight:800;">red</span> shows what you added or changed during editing.';
+    subtitle.textContent = 'Submitted to your teacher on ' + d + '. Use the switch below to compare your before and after.';
   }
 }
 
