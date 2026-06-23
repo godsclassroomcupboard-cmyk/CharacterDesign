@@ -1208,14 +1208,13 @@ async function loadMyAvatarState() {
   if (templates.length === 0) {
     templates = await _seedPlaceholderAvatarTemplates();
   } else {
-    // Templates exist already (from a previous seed or the teacher's own
-    // entries). Any without Stage 1 artwork yet get a friendly placeholder
-    // emoji so the picker never looks broken.
+    // Always attach a matching emoji to every template — the PICKER
+    // always shows emoji (regardless of uploaded art), so the small
+    // selection squares stay clean and consistent. The real uploaded
+    // image only appears once a student has actually chosen the avatar.
     templates = templates.map((t, i) => {
-      if (!t.stage_1_url) {
-        const seedMatch = PLACEHOLDER_AVATAR_SEEDS.find(s => s.name === t.name);
-        t._placeholderEmoji = seedMatch ? seedMatch.emoji : PLACEHOLDER_AVATAR_SEEDS[i % PLACEHOLDER_AVATAR_SEEDS.length].emoji;
-      }
+      const seedMatch = PLACEHOLDER_AVATAR_SEEDS.find(s => s.name === t.name);
+      t._placeholderEmoji = seedMatch ? seedMatch.emoji : PLACEHOLDER_AVATAR_SEEDS[i % PLACEHOLDER_AVATAR_SEEDS.length].emoji;
       return t;
     });
   }
@@ -1274,10 +1273,9 @@ function renderAvatarPicker(available, completedCount, totalTemplateCount) {
       + '<div style="text-align:center;color:rgba(255,255,255,0.5);font-size:9px;font-weight:700;margin-bottom:10px;">Pick wisely — you\'ll grow this one until it\'s fully evolved</div>'
       + '<div class="avatar-pick-grid">'
       + available.map(t => {
-          const img = t.stage_1_url || '';
           const emoji = t._placeholderEmoji || '🧬';
           return '<div class="avatar-pick-card" onclick="pickAvatar(\'' + t.id + '\')">'
-            + (img ? '<img src="' + img.replace(/"/g,'&quot;') + '" alt=""/>' : '<div style="font-size:26px;margin-bottom:3px;">' + emoji + '</div>')
+            + '<div style="font-size:26px;margin-bottom:3px;">' + emoji + '</div>'
             + '<div class="avatar-pick-name">' + (t.name || 'Avatar').replace(/</g,'&lt;') + '</div>'
             + '</div>';
         }).join('')
