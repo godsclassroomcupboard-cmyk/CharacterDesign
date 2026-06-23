@@ -1012,29 +1012,115 @@ var SCAFFOLD_LAYER_PLAN = {
   default: {
     layers: ['hook','intro','rising','climax','falling','resolution'],
     titles: {
-      rising:     { title: 'Rising Action',  subtitle: 'The problem builds — tension and trouble' },
-      climax:     { title: 'Climax',         subtitle: 'The biggest, most powerful moment' },
-      falling:    { title: 'Falling Action', subtitle: 'After the peak — things begin to settle' },
-      resolution: { title: 'Resolution',     subtitle: 'How it ends — what your character learns' },
+      rising:     { title: 'Rising Action',  subtitle: 'The problem builds — tension and trouble', promptsLabel: 'rising action',
+        tips: [
+          'Introduce the main problem or conflict — what goes wrong?',
+          'Show how your character reacts — thoughts, feelings, actions',
+          'Add obstacles — things that make solving the problem harder',
+          'Build suspense — slow down time during tense moments',
+          "Use your character's fears or weaknesses against them",
+          'Use short sentences to speed up the pace when needed',
+        ] },
+      climax:     { title: 'Climax',         subtitle: 'The biggest, most powerful moment', promptsLabel: 'your climax',
+        tips: [
+          'This is the turning point — the moment everything changes',
+          'Slow WAY down — write every second in detail',
+          "Use all five senses — make the reader feel like they're there",
+          'Show your character making a crucial decision or taking action',
+          'Use short, punchy sentences for maximum impact',
+          'This should be your most vivid, emotional writing',
+        ] },
+      falling:    { title: 'Falling Action', subtitle: 'After the peak — things begin to settle', promptsLabel: 'falling action',
+        tips: [
+          'Show the immediate aftermath of the climax',
+          'How has your character changed? What are they feeling?',
+          'Tie up loose ends — what happened to other characters?',
+          'Slow the pace back down — use longer, calmer sentences',
+          'Let the reader breathe before the ending',
+        ] },
+      resolution: { title: 'Resolution',     subtitle: 'How it ends — what your character learns', promptsLabel: 'your resolution',
+        tips: [
+          'How has your character grown or changed from the start?',
+          "End with something that feels earned — not rushed",
+          'Consider echoing something from your hook (a full-circle ending)',
+          'Leave the reader with a feeling — hope, wonder, satisfaction, or even a twist',
+          'A great last line is worth spending time on',
+        ] },
     },
   },
   problem: {
     layers: ['hook','intro','rising','climax','falling','resolution'],
     titles: {
-      rising:     { title: 'Problem',     subtitle: 'What goes wrong, or what does your character want?' },
-      climax:     { title: 'Try',         subtitle: 'Your character makes a plan and attempts it' },
-      falling:    { title: 'Try Again',   subtitle: 'The first try fails or hits a snag — what now?' },
-      resolution: { title: 'Resolution',  subtitle: 'How does it all get sorted out in the end?' },
+      rising:     { title: 'Problem',     subtitle: 'What goes wrong, or what does your character want?', promptsLabel: 'the problem',
+        tips: [
+          'Clearly show what the problem is, or what your character wants',
+          "Explain why it matters to them — what's at stake?",
+          "Show your character's first reaction — worry, excitement, frustration?",
+          'You can hint at why this problem will be hard to solve',
+          'Make the reader care about your character before things get hard',
+        ] },
+      climax:     { title: 'Try',         subtitle: 'Your character makes a plan and attempts it', promptsLabel: 'the try',
+        tips: [
+          'Show your character coming up with a plan, even a simple one',
+          'Walk through the attempt step by step — what do they actually do?',
+          'Build a little hope here — it might just work!',
+          'Use details to slow down the key moment of the attempt',
+          'Think about who or what could help or hinder them along the way',
+        ] },
+      falling:    { title: 'Try Again',   subtitle: 'The first try fails or hits a snag — what now?', promptsLabel: 'trying again',
+        tips: [
+          'Show exactly how or why the first attempt went wrong',
+          "Describe your character's reaction — disappointment, anger, determination?",
+          'This is a great place for a small twist or new piece of information',
+          'Show your character learning something from the failure',
+          'Build toward a second, smarter attempt or a new plan',
+        ] },
+      resolution: { title: 'Resolution',  subtitle: 'How does it all get sorted out in the end?', promptsLabel: 'your resolution',
+        tips: [
+          'Show how the problem finally gets solved — by skill, help, or a clever idea',
+          'How has your character grown or changed from the start?',
+          "End with something that feels earned — not rushed",
+          'Consider echoing something from your hook (a full-circle ending)',
+          'A great last line is worth spending time on',
+        ] },
     },
   },
   hero: {
     layers: ['hook','intro','rising','climax','falling','resolution','return'],
     titles: {
-      rising:     { title: 'Call to Adventure', subtitle: 'Something happens that pulls your character away from normal life' },
-      climax:     { title: 'Challenges',        subtitle: 'Obstacles, tests, or new allies and enemies appear' },
-      falling:    { title: 'Crisis',            subtitle: 'The biggest, scariest moment — all seems lost' },
-      resolution: { title: 'Transformation',    subtitle: 'Your character changes or grows because of it' },
-      // 'return' layer keeps its own built-in title/subtitle in the DOM
+      rising:     { title: 'Call to Adventure', subtitle: 'Something happens that pulls your character away from normal life', promptsLabel: 'the call to adventure',
+        tips: [
+          'Introduce the event, message, or discovery that starts everything',
+          'Show your character\'s first reaction — are they excited, scared, reluctant?',
+          'You can include a moment where they hesitate or refuse at first',
+          'Hint at what they might gain — or lose — by accepting this call',
+          'This is where their ordinary world starts to shift',
+        ] },
+      climax:     { title: 'Challenges',        subtitle: 'Obstacles, tests, or new allies and enemies appear', promptsLabel: 'the challenges',
+        tips: [
+          'Introduce obstacles, tests, or tricky decisions your character must face',
+          'New characters can appear here — helpers, rivals, or mentors',
+          'Show your character learning new skills or growing more confident',
+          'Use setbacks to raise the stakes before the big crisis',
+          'Vary your pacing — some challenges can be quick, others drawn out',
+        ] },
+      falling:    { title: 'Crisis',            subtitle: 'The biggest, scariest moment — all seems lost', promptsLabel: 'the crisis',
+        tips: [
+          'This is the lowest point — make the danger or fear feel real',
+          'Slow WAY down — write every second of this moment in detail',
+          "Use all five senses — make the reader feel like they're there",
+          'Show your character facing their biggest fear or hardest choice',
+          'This should be your most vivid, emotional writing',
+        ] },
+      resolution: { title: 'Transformation',    subtitle: 'Your character changes or grows because of it', promptsLabel: 'the transformation',
+        tips: [
+          'Show how your character overcomes the crisis — what do they do or realize?',
+          'How are they different now compared to the start of the story?',
+          'This is where their courage, growth, or new understanding shines through',
+          'You can show them helping others using what they\'ve learned',
+          'Build toward them being ready to go back to their normal world, changed',
+        ] },
+      // 'return' layer keeps its own built-in title/subtitle/tips in the DOM
     },
   },
 };
@@ -1552,7 +1638,7 @@ function renderScaffold() {
 function applyScaffoldToLayers(type) {
   var plan = SCAFFOLD_LAYER_PLAN[type] || SCAFFOLD_LAYER_PLAN.default;
 
-  // Apply titles/subtitles for the 4 flexible middle/end layers
+  // Apply titles/subtitles/tips for the 4 flexible middle/end layers
   ['rising', 'climax', 'falling', 'resolution'].forEach(function(layerId) {
     var cfg = plan.titles[layerId];
     if (!cfg) return;
@@ -1562,6 +1648,14 @@ function applyScaffoldToLayers(type) {
     var subtitleEl = layerEl.querySelector('.layer-subtitle');
     if (titleEl) titleEl.textContent = cfg.title;
     if (subtitleEl) subtitleEl.textContent = cfg.subtitle;
+
+    // Swap the writing tips list to match the new section
+    var promptsTitleEl = layerEl.querySelector('.layer-prompts-title');
+    var tipsListEl = layerEl.querySelector('.layer-prompts ul');
+    if (promptsTitleEl) promptsTitleEl.textContent = '✨ Writing tips for ' + cfg.promptsLabel;
+    if (tipsListEl && cfg.tips) {
+      tipsListEl.innerHTML = cfg.tips.map(function(tip) { return '<li>' + tip + '</li>'; }).join('');
+    }
   });
 
   // Show/hide the Return layer (only exists for hero's journey)
