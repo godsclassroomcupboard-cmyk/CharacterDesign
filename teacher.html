@@ -1479,15 +1479,23 @@ function switchAvatarSubtab(name) {
 }
 
 // ── Templates ──
+var TEACHER_AVATAR_SEED_NAMES = [
+  'Ember the Fox', 'Splash the Otter', 'Nova the Owl', 'Rumble the Bear',
+  'Blaze the Tiger', 'Misty the Wolf', 'Coral the Axolotl', 'Drift the Penguin',
+  'Zara the Dragon', 'Pip the Hedgehog',
+];
 async function loadAvatarTemplates() {
   var r = await _sb.from('avatar_templates').select('*').order('sort_order');
   if (r.error) { toast('Error loading avatars: ' + r.error.message); return; }
   _avatarTemplates = r.data || [];
 
-  // Ensure there are always 10 template slots — create blanks if missing
+  // Ensure there are always 10 template slots — create blanks if missing,
+  // using the same named list (Ember the Fox, Splash the Otter, etc.) that
+  // the student-side picker expects, so names always line up correctly.
   while (_avatarTemplates.length < 10) {
+    var nextName = TEACHER_AVATAR_SEED_NAMES[_avatarTemplates.length] || ('Avatar ' + (_avatarTemplates.length + 1));
     var insertRes = await _sb.from('avatar_templates').insert({
-      name: 'Avatar ' + (_avatarTemplates.length + 1),
+      name: nextName,
       sort_order: _avatarTemplates.length,
     }).select().single();
     if (insertRes.error) { toast('Error creating avatar slot: ' + insertRes.error.message); break; }
