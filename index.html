@@ -15,53 +15,18 @@
 body { font-family: 'Nunito', sans-serif; background: #0A0520; min-height: 100vh; overflow: hidden; }
 
 /* ══════════════════════════════════════════
-   SIDEBAR — narrow dark strip
+   TOP NAV — matches teacher.html style
 ══════════════════════════════════════════ */
-.sidebar {
-  width: 92px;
-  background: #1A1D3A;
-  display: flex; flex-direction: column; align-items: center;
-  flex-shrink: 0;
-  position: relative;
-  z-index: 10;
-}
-.sidebar-logo-area {
-  width: 100%;
-  background: #23274A;
-  padding: 18px 8px 16px;
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-.sidebar-nav {
-  width: 100%;
-  flex: 1;
-  display: flex; flex-direction: column; align-items: center;
-  padding: 12px 8px;
-  gap: 4px;
-  background: #1A1D3A;
-}
-.nav-tab {
-  width: 76px;
-  display: flex; flex-direction: column; align-items: center;
-  gap: 4px; padding: 9px 6px;
-  border-radius: 10px;
-  cursor: pointer;
-  color: rgba(255,255,255,0.45);
-  font-size: 10px; font-weight: 700;
-  text-align: center; line-height: 1.2;
-  transition: background 0.18s, color 0.18s;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid transparent;
-}
-.nav-tab:hover { background: rgba(255,45,120,0.12); color: #FF6EB4; border-color: rgba(255,45,120,0.2); }
-.nav-tab.active {
-  background: rgba(255,45,120,0.2);
-  color: #fff;
-  border-color: rgba(255,45,120,0.3);
-}
-.nav-tab.active .nav-icon { color: #FF2D78; }
-.nav-tab svg { width: 20px; height: 20px; }
-.sidebar-bottom { padding: 10px 8px 18px; width: 100%; display:flex; justify-content:center; }
+.student-topbar{height:56px;background:rgba(0,0,0,0.6);border-bottom:2px solid rgba(255,45,120,0.4);backdrop-filter:blur(10px);display:flex;align-items:center;gap:12px;padding:0 22px;flex-shrink:0;position:relative;z-index:100;}
+.student-topbar-brand{font-family:'Bangers',cursive;font-size:20px;letter-spacing:2px;color:#fff;display:flex;align-items:center;gap:8px;text-decoration:none;}
+.student-topbar-brand span{color:#FF6EB4;}
+.student-tabs-wrap{background:rgba(0,0,0,0.4);border-bottom:2px solid rgba(255,255,255,0.08);display:flex;padding:0 22px;flex-shrink:0;position:relative;z-index:90;backdrop-filter:blur(8px);overflow-x:auto;}
+.student-tab{padding:13px 18px;font-family:'Bangers',cursive;font-size:13px;letter-spacing:1.2px;color:rgba(255,255,255,0.45);cursor:pointer;border-bottom:3px solid transparent;transition:all 0.18s;display:flex;align-items:center;gap:6px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+.student-tab svg{width:16px;height:16px;}
+.student-tab:hover{color:rgba(255,255,255,0.8);}
+.student-tab.active{color:#FF6EB4;border-bottom-color:#FF6EB4;}
+.student-tab.active svg{color:#FF6EB4;}
+.app-shell{display:flex;flex-direction:column;height:100vh;overflow:hidden;}
 
 /* ══════════════════════════════════════════
    FOLDER-TAB EXTENSION
@@ -485,71 +450,50 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 </style>
 </head>
 <body>
-<div style="display:flex;height:100vh;overflow:hidden;">
+<div class="app-shell">
 
-<!-- ════════════════ SIDEBAR ════════════════ -->
-<aside class="sidebar">
-  <!-- Logo zone — distinct darker color -->
-  <div class="sidebar-logo-area">
-    <div style="width:42px;height:42px;background:linear-gradient(135deg,#6C5CE7,#E84393);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 14px rgba(108,92,231,0.40);">
-      <svg viewBox="0 0 32 32" fill="none" width="24" height="24">
-        <rect x="6" y="10" width="20" height="16" rx="5" fill="#fff" opacity="0.95"/>
-        <circle cx="12" cy="18" r="2.4" fill="#00C4B4"/>
-        <circle cx="20" cy="18" r="2.4" fill="#00C4B4"/>
-        <rect x="13" y="22" width="6" height="2" rx="1" fill="#E84393"/>
-        <rect x="14" y="5" width="4" height="6" rx="2" fill="#A29BFE"/>
-        <circle cx="16" cy="5" r="1.4" fill="#00C4B4"/>
-      </svg>
-    </div>
-    <span style="color:#A29BFE;font-size:9px;font-weight:900;letter-spacing:1.8px;text-transform:uppercase;margin-top:2px;">AURABOT</span>
-    <span style="color:#454870;font-size:7.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;">PROJECT</span>
-  </div>
+<!-- ════════════════ TOP NAV ════════════════ -->
+<div class="student-topbar">
+  <a href="dashboard.html" class="student-topbar-brand">
+    <svg viewBox="0 0 32 32" fill="none" width="22" height="22">
+      <rect x="6" y="10" width="20" height="16" rx="5" fill="#fff" opacity="0.95"/>
+      <circle cx="12" cy="18" r="2.4" fill="#00C4B4"/>
+      <circle cx="20" cy="18" r="2.4" fill="#00C4B4"/>
+      <rect x="13" y="22" width="6" height="2" rx="1" fill="#E84393"/>
+      <rect x="14" y="5" width="4" height="6" rx="2" fill="#A29BFE"/>
+      <circle cx="16" cy="5" r="1.4" fill="#00C4B4"/>
+    </svg>
+    AURA<span>BOT</span>
+  </a>
+</div>
 
-  <!-- Nav tabs -->
-  <div class="sidebar-nav">
-    <a href="dashboard.html" class="nav-tab" id="nav-dashboard" style="text-decoration:none;color:#5C618A;">
-      <span class="nav-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
-      </span>
-      <span>Dashboard</span>
-    </a>
-    <div class="nav-tab active" id="nav-character" onclick="switchSection('character')">
-      <span class="nav-icon" style="color:#E84393;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-      </span>
-      <span style="color:#E84393;">Character<br>Bank</span>
-    </div>
-    <div class="nav-tab" id="nav-map" onclick="switchSection('map')">
-      <span class="nav-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-      </span>
-      <span>Setting Bank</span>
-    </div>
-    <a href="storylab.html" class="nav-tab" id="nav-story" style="text-decoration:none;color:#5C618A;">
-      <span class="nav-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-      </span>
-      <span>Story Lab</span>
-    </a>
-    <a href="community.html" class="nav-tab" id="nav-community" style="text-decoration:none;color:#5C618A;">
-      <span class="nav-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      </span>
-      <span>Community</span>
-    </a>
-    <div class="nav-tab">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
-      <span>Challenges</span>
-    </div>
-    <div style="flex:1;"></div>
+<!-- ════════════════ TOP TABS ════════════════ -->
+<div class="student-tabs-wrap">
+  <a href="dashboard.html" class="student-tab" id="nav-dashboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+    Dashboard
+  </a>
+  <div class="student-tab active" id="nav-character" onclick="switchSection('character')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    Character Bank
   </div>
-  <div class="sidebar-bottom">
-    <div class="nav-tab">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-      <span>Settings</span>
-    </div>
+  <div class="student-tab" id="nav-map" onclick="switchSection('map')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    Setting Bank
   </div>
-</aside>
+  <a href="storylab.html" class="student-tab" id="nav-story">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    Story Lab
+  </a>
+  <a href="community.html" class="student-tab" id="nav-community">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Community
+  </a>
+  <a href="wordbank.html" class="student-tab" id="nav-wordbank">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Word Bank
+  </a>
+</div>
 
 <!-- ════════════════ MAIN AREA ════════════════ -->
 <div class="content-area">
@@ -3246,7 +3190,7 @@ function switchSection(name) {
     const el = document.getElementById(`section-${s}`);
     if (el) el.style.display = s === name ? (s === 'character' || s === 'map' ? 'contents' : 'flex') : 'none';
   });
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.student-tab').forEach(t => t.classList.remove('active'));
   const activeTab = document.getElementById(`nav-${name}`);
   if (activeTab) activeTab.classList.add('active');
 
@@ -3279,8 +3223,17 @@ document.addEventListener('DOMContentLoaded', () => {
   _showSaveButton();
 });
 
+window.addEventListener('hashchange', () => {
+  if (window.location.hash === '#map') switchSection('map');
+  else if (window.location.hash === '' || window.location.hash === '#character') switchSection('character');
+});
+
 window.addEventListener('load', () => {
   initAvatarDisplay();
+  // Support deep-linking to the Setting Bank from other pages (e.g. index.html#map)
+  if (window.location.hash === '#map') {
+    switchSection('map');
+  }
   if (typeof gsap !== 'undefined') {
     gsap.from('.avatar-card', { y:28, opacity:0, duration:0.8, ease:'back.out(1.4)', delay:0.15 });
     gsap.from('.speech-bubble', { x:-16, opacity:0, duration:0.5, ease:'power2.out', delay:0.5 });
