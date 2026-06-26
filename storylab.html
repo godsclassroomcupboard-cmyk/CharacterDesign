@@ -329,7 +329,7 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic2);
 .book-static-page.left-side{left:0;border-radius:6px 0 0 6px;}
 .book-static-page.right-side{right:0;border-radius:0 6px 6px 0;}
 
-.page-text-side{width:100%;height:100%;padding:30px 26px;display:flex;flex-direction:column;justify-content:center;font-family:'Patrick Hand',cursive;font-size:15px;line-height:1.7;color:#3A2A1A;overflow-y:auto;}
+.page-text-side{width:100%;height:100%;padding:30px 26px 48px;display:flex;flex-direction:column;justify-content:center;font-family:'Patrick Hand',cursive;font-size:15px;line-height:1.7;color:#3A2A1A;overflow-y:auto;position:relative;}
 .page-text-side::-webkit-scrollbar{width:4px;}
 .page-text-side::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:4px;}
 .page-num-label{position:absolute;bottom:10px;font-family:'Fredoka One',cursive;font-size:10px;color:rgba(0,0,0,0.3);}
@@ -339,6 +339,21 @@ html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cosmic2);
 .page-canvas-wrap{width:100%;height:100%;position:relative;background:#fff;}
 .page-canvas-wrap canvas{width:100%;height:100%;display:block;cursor:crosshair;touch-action:none;}
 .page-canvas-hint{position:absolute;top:8px;left:50%;transform:translateX(-50%);font-family:'Fredoka One',cursive;font-size:9px;color:rgba(0,0,0,0.25);letter-spacing:0.5px;pointer-events:none;}
+
+/* ── AUDIO NARRATION WIDGET ── */
+.audio-widget{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.85);border:1.5px solid rgba(0,0,0,0.12);border-radius:99px;padding:5px 10px;box-shadow:0 2px 8px rgba(0,0,0,0.12);z-index:6;}
+.audio-btn{width:26px;height:26px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;transition:all 0.15s;}
+.audio-btn-record{background:#FF6B6B;color:#fff;}
+.audio-btn-record:hover{background:#FF4848;}
+.audio-btn-record.recording{background:#D32F2F;animation:audioPulse 1s ease-in-out infinite;}
+@keyframes audioPulse{0%,100%{box-shadow:0 0 0 0 rgba(211,47,47,0.5);}50%{box-shadow:0 0 0 6px rgba(211,47,47,0);}}
+.audio-btn-play{background:#4A90D9;color:#fff;}
+.audio-btn-play:hover{background:#3A78BD;}
+.audio-btn-delete{background:rgba(0,0,0,0.08);color:rgba(0,0,0,0.5);width:22px;height:22px;font-size:10px;}
+.audio-btn-delete:hover{background:rgba(0,0,0,0.15);}
+.audio-widget-label{font-family:'Fredoka One',cursive;font-size:9.5px;color:rgba(0,0,0,0.55);white-space:nowrap;}
+.audio-widget-timer{font-family:'Fredoka One',cursive;font-size:9.5px;color:#D32F2F;min-width:28px;}
+.audio-widget.has-audio{background:rgba(74,144,217,0.12);border-color:rgba(74,144,217,0.3);}
 
 .book-cover-face{background:linear-gradient(150deg,#5C3A21,#3E2615) !important;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;position:relative;}
 .book-cover-face::before{content:'';position:absolute;inset:10px;border:2px solid rgba(212,168,87,0.4);border-radius:4px;pointer-events:none;}
@@ -2709,7 +2724,7 @@ window.addEventListener('beforeunload', function(e) {
 // ══════════════════════════════════════════════════════
 //  STORY BOOK
 // ══════════════════════════════════════════════════════
-var _book = { cover: { drawingDataUrl: null }, pages: [] };
+var _book = { cover: { drawingDataUrl: null, audioUrl: null }, pages: [] };
 var _bookLeaves = [];      // [{ frontPageIndex, backPageIndex }] — frontPageIndex/backPageIndex are indices into _bookFlatPages
 var _bookFlatPages = [];   // flattened list of page descriptors: { type:'cover'|'story'|'backcover', text, drawingDataUrl, pageNum }
 var _bookCurrentLeaf = 0;  // how many leaves have been flipped (0 = at the very start)
@@ -2735,6 +2750,15 @@ async function openBook() {
 }
 
 function closeBook() {
+  // Stop any in-progress recording or playback before closing
+  Object.keys(_audioRecorders).forEach(function(key) {
+    var rec = _audioRecorders[key];
+    if (rec && rec.mediaRecorder.state === 'recording') rec.mediaRecorder.stop();
+  });
+  Object.keys(_audioPlayers).forEach(function(key) {
+    if (_audioPlayers[key]) _audioPlayers[key].pause();
+  });
+  clearInterval(_audioTimerInterval);
   document.getElementById('book-overlay').classList.remove('open');
 }
 
@@ -2745,18 +2769,24 @@ function buildBookStructure() {
   var paragraphs = _finalText.split(/\n\s*\n/).map(function(p) { return p.trim(); }).filter(Boolean);
 
   // Make sure _book.pages has an entry for every paragraph (preserves
-  // existing drawings if the student already started this book before)
+  // existing drawings AND narration if the student already started
+  // this book before)
   var existingPages = _book.pages || [];
   var pages = paragraphs.map(function(text, i) {
     var existing = existingPages[i];
-    return { text: text, drawingDataUrl: existing ? existing.drawingDataUrl : null };
+    return {
+      text: text,
+      drawingDataUrl: existing ? existing.drawingDataUrl : null,
+      audioUrl: existing ? existing.audioUrl : null,
+    };
   });
   _book.pages = pages;
-  if (!_book.cover) _book.cover = { drawingDataUrl: null };
+  if (!_book.cover) _book.cover = { drawingDataUrl: null, audioUrl: null };
+  if (_book.cover.audioUrl === undefined) _book.cover.audioUrl = null;
 
   _bookFlatPages = [{ type: 'cover' }];
   pages.forEach(function(p, i) {
-    _bookFlatPages.push({ type: 'story', text: p.text, drawingDataUrl: p.drawingDataUrl, pageNum: i + 1, pageIndex: i });
+    _bookFlatPages.push({ type: 'story', text: p.text, drawingDataUrl: p.drawingDataUrl, audioUrl: p.audioUrl, pageNum: i + 1, pageIndex: i });
   });
   _bookFlatPages.push({ type: 'backcover' });
 
@@ -2834,7 +2864,10 @@ function renderPageContent(pageDesc, flatIndex, side) {
     holder.innerHTML = '<div class="book-cover-title">' + escHtml(document.getElementById('story-title').value || 'My Story') + '</div>'
       + '<div class="book-cover-author">by ' + escHtml((_user && (_user.user_metadata?.display_name || _user.email)) || 'A Young Author') + '</div>'
       + '<div class="book-cover-canvas-wrap" id="canvas-wrap-cover"></div>';
-    setTimeout(function() { mountCanvas('cover', holder.querySelector('#canvas-wrap-cover'), _book.cover.drawingDataUrl); }, 0);
+    setTimeout(function() {
+      mountCanvas('cover', holder.querySelector('#canvas-wrap-cover'), _book.cover.drawingDataUrl);
+      mountAudioWidget('cover', holder, _book.cover.audioUrl);
+    }, 0);
     return holder;
   }
 
@@ -2847,10 +2880,13 @@ function renderPageContent(pageDesc, flatIndex, side) {
   // Story page: left half = text, right half = drawing.
   // Each physical page (whether it lands on the book's left or right
   // side) keeps this same internal split, exactly as requested.
-  holder.innerHTML = '<div class="page-text-side">' + escHtml(pageDesc.text || '') + '</div>'
+  holder.innerHTML = '<div class="page-text-side" id="text-side-' + flatIndex + '">' + escHtml(pageDesc.text || '') + '</div>'
     + '<div class="page-canvas-wrap" id="canvas-wrap-' + flatIndex + '"><div class="page-canvas-hint">✏️ draw here</div></div>'
     + '<span class="page-num-label ' + side + '">' + pageDesc.pageNum + '</span>';
-  setTimeout(function() { mountCanvas(flatIndex, holder.querySelector('#canvas-wrap-' + flatIndex), pageDesc.drawingDataUrl); }, 0);
+  setTimeout(function() {
+    mountCanvas(flatIndex, holder.querySelector('#canvas-wrap-' + flatIndex), pageDesc.drawingDataUrl);
+    mountAudioWidget(flatIndex, holder.querySelector('#text-side-' + flatIndex), pageDesc.audioUrl);
+  }, 0);
   return holder;
 }
 
@@ -2910,6 +2946,159 @@ function mountCanvas(pageKey, containerEl, existingDataUrl) {
   canvas.addEventListener('touchend', end);
 
   _bookCanvases[pageKey] = { canvas: canvas, ctx: ctx };
+}
+
+// ── Audio narration recorder ──
+var _audioRecorders = {};   // pageKey -> { mediaRecorder, chunks, stream }
+var _audioPlayers = {};     // pageKey -> Audio element currently playing (if any)
+var _audioTimerInterval = null;
+
+function mountAudioWidget(pageKey, anchorEl, existingAudioUrl) {
+  if (!anchorEl) return;
+  var widget = document.createElement('div');
+  widget.className = 'audio-widget' + (existingAudioUrl ? ' has-audio' : '');
+  widget.id = 'audio-widget-' + pageKey;
+  renderAudioWidgetButtons(widget, pageKey, existingAudioUrl);
+  anchorEl.appendChild(widget);
+}
+
+function renderAudioWidgetButtons(widget, pageKey, audioUrl) {
+  var hasAudio = !!audioUrl;
+  widget.dataset.audioUrl = audioUrl || '';
+  widget.innerHTML = '';
+
+  if (!hasAudio) {
+    widget.innerHTML = '<button class="audio-btn audio-btn-record" id="audio-record-btn-' + pageKey + '" onclick="toggleRecording(\'' + pageKey + '\')" title="Record narration">🎙️</button>'
+      + '<span class="audio-widget-label" id="audio-label-' + pageKey + '">Record your voice</span>';
+  } else {
+    widget.innerHTML = '<button class="audio-btn audio-btn-play" id="audio-play-btn-' + pageKey + '" onclick="togglePlayback(\'' + pageKey + '\')" title="Play narration">▶️</button>'
+      + '<span class="audio-widget-label">Narration saved</span>'
+      + '<button class="audio-btn audio-btn-delete" onclick="deleteNarration(\'' + pageKey + '\')" title="Delete and re-record">🗑️</button>';
+  }
+}
+
+async function toggleRecording(pageKey) {
+  var existing = _audioRecorders[pageKey];
+  if (existing && existing.mediaRecorder.state === 'recording') {
+    existing.mediaRecorder.stop();
+    return;
+  }
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    toast('⚠ Your browser/device doesn\'t support audio recording');
+    return;
+  }
+
+  var stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (e) {
+    toast('🎙️ Microphone access was blocked or denied');
+    return;
+  }
+
+  var mediaRecorder = new MediaRecorder(stream);
+  var chunks = [];
+  mediaRecorder.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
+  mediaRecorder.onstop = function() {
+    stream.getTracks().forEach(function(track) { track.stop(); });
+    var blob = new Blob(chunks, { type: 'audio/webm' });
+    uploadNarration(pageKey, blob);
+  };
+
+  _audioRecorders[pageKey] = { mediaRecorder: mediaRecorder, chunks: chunks, stream: stream, startedAt: Date.now() };
+  mediaRecorder.start();
+
+  var btn = document.getElementById('audio-record-btn-' + pageKey);
+  var label = document.getElementById('audio-label-' + pageKey);
+  if (btn) { btn.classList.add('recording'); btn.textContent = '⏹️'; btn.title = 'Stop recording'; }
+  if (label) label.textContent = '0:00';
+
+  clearInterval(_audioTimerInterval);
+  _audioTimerInterval = setInterval(function() {
+    var rec = _audioRecorders[pageKey];
+    if (!rec || mediaRecorder.state !== 'recording') { clearInterval(_audioTimerInterval); return; }
+    var secs = Math.floor((Date.now() - rec.startedAt) / 1000);
+    var label = document.getElementById('audio-label-' + pageKey);
+    if (label) label.textContent = Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0');
+    if (secs >= 120) { toast('⏱️ Max 2 minutes per page — stopping recording'); mediaRecorder.stop(); }
+  }, 500);
+}
+
+async function uploadNarration(pageKey, blob) {
+  if (!_storyId) { toast('Save your story first before recording narration'); return; }
+  var label = document.getElementById('audio-label-' + pageKey);
+  if (label) label.textContent = 'Saving…';
+
+  var path = _storyId + '/' + pageKey + '_' + Date.now() + '.webm';
+  var upRes = await _sb.storage.from('book-audio').upload(path, blob, { upsert: true, contentType: 'audio/webm' });
+  if (upRes.error) { toast('Could not save recording: ' + upRes.error.message); return; }
+
+  var publicUrl = _sb.storage.from('book-audio').getPublicUrl(path).data.publicUrl;
+
+  if (pageKey === 'cover') {
+    _book.cover.audioUrl = publicUrl;
+  } else {
+    var flatPage = _bookFlatPages[pageKey];
+    if (flatPage && flatPage.type === 'story') _book.pages[flatPage.pageIndex].audioUrl = publicUrl;
+  }
+  await saveBookToSupabase();
+
+  var widget = document.getElementById('audio-widget-' + pageKey);
+  if (widget) {
+    widget.classList.add('has-audio');
+    renderAudioWidgetButtons(widget, pageKey, publicUrl);
+  }
+  toast('🎙️ Narration saved!');
+  delete _audioRecorders[pageKey];
+}
+
+function togglePlayback(pageKey) {
+  var widget = document.getElementById('audio-widget-' + pageKey);
+  if (!widget) return;
+  var audioUrl = widget.dataset.audioUrl;
+  if (!audioUrl) return;
+
+  var existingPlayer = _audioPlayers[pageKey];
+  var btn = document.getElementById('audio-play-btn-' + pageKey);
+
+  if (existingPlayer && !existingPlayer.paused) {
+    existingPlayer.pause();
+    if (btn) { btn.textContent = '▶️'; btn.title = 'Play narration'; }
+    return;
+  }
+
+  // Stop any other page's audio that might be playing
+  Object.keys(_audioPlayers).forEach(function(key) {
+    if (key !== pageKey && _audioPlayers[key]) { _audioPlayers[key].pause(); }
+  });
+
+  var player = existingPlayer || new Audio(audioUrl);
+  _audioPlayers[pageKey] = player;
+  player.play();
+  if (btn) { btn.textContent = '⏸️'; btn.title = 'Pause'; }
+  player.onended = function() { if (btn) { btn.textContent = '▶️'; btn.title = 'Play narration'; } };
+}
+
+async function deleteNarration(pageKey) {
+  if (!confirm('Delete this recording? You can record a new one after.')) return;
+
+  if (pageKey === 'cover') {
+    _book.cover.audioUrl = null;
+  } else {
+    var flatPage = _bookFlatPages[pageKey];
+    if (flatPage && flatPage.type === 'story') _book.pages[flatPage.pageIndex].audioUrl = null;
+  }
+  await saveBookToSupabase();
+
+  if (_audioPlayers[pageKey]) { _audioPlayers[pageKey].pause(); delete _audioPlayers[pageKey]; }
+
+  var widget = document.getElementById('audio-widget-' + pageKey);
+  if (widget) {
+    widget.classList.remove('has-audio');
+    renderAudioWidgetButtons(widget, pageKey, null);
+  }
+  toast('🗑️ Recording deleted');
 }
 
 function setDrawTool(tool) {
@@ -2974,6 +3163,14 @@ function bookTurnPage(dir) {
   var next = _bookCurrentLeaf + dir;
   if (next < 0 || next > _bookLeaves.length) return;
   _bookCurrentLeaf = next;
+  // Stop any narration currently playing — it belongs to the page we're leaving
+  Object.keys(_audioPlayers).forEach(function(key) {
+    if (_audioPlayers[key]) {
+      _audioPlayers[key].pause();
+      var btn = document.getElementById('audio-play-btn-' + key);
+      if (btn) { btn.textContent = '▶️'; btn.title = 'Play narration'; }
+    }
+  });
   updateBookFlipState();
 }
 
@@ -3029,7 +3226,7 @@ init();
     <button class="book-nav-arrow book-nav-next" id="book-next-btn" onclick="bookTurnPage(1)">›</button>
   </div>
 
-  <div class="book-bottom-hint" id="book-bottom-hint">Click the arrows or page edges to turn the page · Draw on the right page!</div>
+  <div class="book-bottom-hint" id="book-bottom-hint">Click the arrows or page edges to turn the page · Draw on the right page · 🎙️ Record yourself reading each page!</div>
 </div>
 
 </body>
